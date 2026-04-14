@@ -1,0 +1,27 @@
+import { renderToStaticMarkup } from "react-dom/server";
+import type { LoaderFunctionArgs } from "react-router";
+
+import { getProxyReportData } from "../lib/proxy-report-data.server";
+import IndexPage from "../pages/Index";
+import { authenticate } from "../shopify.server";
+
+export const loader = async ({ params, request }: LoaderFunctionArgs) => {
+	const { liquid } = await authenticate.public.appProxy(request);
+	const proxyId = params.proxyId || "";
+	const report = await getProxyReportData(proxyId, request);
+	const pageHtml = renderToStaticMarkup(<IndexPage report={report} />);
+	const appUrl = (process.env.SHOPIFY_APP_URL || "").replace(/\/$/, "");
+	const reportJson = JSON.stringify(report).replaceAll("<", "\\u003c");
+	const template = `
+<link rel="stylesheet" href="${appUrl}/proxy-report.css">
+<div data-proxy-id="${proxyId.replaceAll("&", "&amp;").replaceAll('"', "&quot;")}">
+  ${pageHtml}
+</div>
+<script id="proxy-report-data" type="application/json">${reportJson}</script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js" defer></script>
+<script src="${appUrl}/proxy-report-init.js" defer></script>
+`;
+
+	return liquid(template, { layout: true });
+};
