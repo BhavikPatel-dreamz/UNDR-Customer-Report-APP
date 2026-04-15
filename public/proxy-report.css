@@ -868,7 +868,12 @@ body {
 
 /* Multi Level Chart Section CSS */
 
-.multi_level_chart_section * div:empty {
+.multi_level_chart_section div.segment,
+.multi_level_chart_section div.user_marker,
+.multi_level_chart_section div.scale_placeholder_left,
+.multi_level_chart_section div.scale_tick_box,
+.multi_level_chart_section div.scale_placeholder_right,
+.multi_level_chart_section div.spacer_div {
     display: block;
 }
 
@@ -1087,7 +1092,8 @@ body {
         font-size: 16px;
     }
 
-    .multi_level_chart_section .scale_placeholder_left {
+    .multi_level_chart_section .scale_placeholder_left,
+    .multi_level_chart_section div.scale_placeholder_left {
         display: none;
     }
 
