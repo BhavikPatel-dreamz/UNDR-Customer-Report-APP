@@ -33,12 +33,39 @@ model Session {
 }
 
 model Registration {
-  id                   String   @id @default(cuid())
-  name                 String
-  email                String
-  phone                String
-  orderNumber          String
+  id                    String   @id @default(cuid())
+  shop                  String   @default("")
+  name                  String
+  email                 String
+  phone                 String
+  orderNumber           String
+  shopifyOrderId        String?
+  shopifyCustomerId     String?
   kitRegistrationNumber String
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  report                Report?
+}
+
+model Report {
+  id             String       @id @default(cuid())
+  registrationId String       @unique
+  registration   Registration @relation(fields: [registrationId], references: [id], onDelete: Cascade)
+  status         String       @default("pending")
+  csvFileName    String?
+  reportData     String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  rows           ReportRow[]
+}
+
+model ReportRow {
+  id       String @id @default(cuid())
+  reportId String
+  report   Report @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  element  String
+  rawValue Float
+  ppmValue Float
+  unit     String @default("ppm")
+  category String @default("")
 }

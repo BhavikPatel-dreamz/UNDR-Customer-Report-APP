@@ -1,254 +1,241 @@
-import { useEffect } from "react";
-import type {
-  ActionFunctionArgs,
-  HeadersFunction,
-  LoaderFunctionArgs,
-} from "react-router";
-import { useFetcher } from "react-router";
-import { useAppBridge } from "@shopify/app-bridge-react";
+import type { HeadersFunction, LoaderFunctionArgs } from "react-router";
+import { useLoaderData, useNavigate, useSearchParams, Form } from "react-router";
 import { authenticate } from "../shopify.server";
+import { listRegistrations } from "../models/registration.server";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   await authenticate.admin(request);
 
-  return null;
+  const url = new URL(request.url);
+  const page = Math.max(1, Number(url.searchParams.get("page") || "1"));
+  const query = url.searchParams.get("q") || "";
+  const sort = (url.searchParams.get("sort") || "desc") as "asc" | "desc";
+
+  const result = await listRegistrations({ page, query, sort, perPage: 25 });
+  return { ...result, query, sort };
 };
 
-export const action = async ({ request }: ActionFunctionArgs) => {
-  const { admin } = await authenticate.admin(request);
-  const color = ["Red", "Orange", "Yellow", "Green"][
-    Math.floor(Math.random() * 4)
-  ];
-  const response = await admin.graphql(
-    `#graphql
-      mutation populateProduct($product: ProductCreateInput!) {
-        productCreate(product: $product) {
-          product {
-            id
-            title
-            handle
-            status
-            variants(first: 10) {
-              edges {
-                node {
-                  id
-                  price
-                  barcode
-                  createdAt
-                }
-              }
-            }
-          }
-        }
-      }`,
-    {
-      variables: {
-        product: {
-          title: `${color} Snowboard`,
-        },
-      },
-    },
-  );
-  const responseJson = await response.json();
+export const headers: HeadersFunction = (headersArgs) =>
+  boundary.headers(headersArgs);
 
-  const product = responseJson.data!.productCreate!.product!;
-  const variantId = product.variants.edges[0]!.node!.id!;
+type LoaderData = Awaited<ReturnType<typeof loader>>;
 
-  const variantResponse = await admin.graphql(
-    `#graphql
-    mutation shopifyReactRouterTemplateUpdateVariant($productId: ID!, $variants: [ProductVariantsBulkInput!]!) {
-      productVariantsBulkUpdate(productId: $productId, variants: $variants) {
-        productVariants {
-          id
-          price
-          barcode
-          createdAt
-        }
-      }
-    }`,
-    {
-      variables: {
-        productId: product.id,
-        variants: [{ id: variantId, price: "100.00" }],
-      },
-    },
-  );
+import type { CSSProperties } from "react";
 
-  const variantResponseJson = await variantResponse.json();
+const statusStyle = (status: string | undefined): CSSProperties => ({
+  display: "inline-block",
+  padding: "2px 10px",
+  borderRadius: "999px",
+  background: status === "uploaded" ? "#d1fae5" : "#f3f4f6",
+  color: status === "uploaded" ? "#065f46" : "#6b7280",
+  fontSize: "12px",
+  fontWeight: 600,
+});
 
-  return {
-    product: responseJson!.data!.productCreate!.product,
-    variant:
-      variantResponseJson!.data!.productVariantsBulkUpdate!.productVariants,
-  };
-};
+const statusLabel = (status: string | undefined) =>
+  status === "uploaded" ? "Report uploaded" : "Pending";
 
-export default function Index() {
-  const fetcher = useFetcher<typeof action>();
+export default function RegistrationsIndex() {
+  const { items, total, page, totalPages, query, sort } =
+    useLoaderData<LoaderData>();
+  const navigate = useNavigate();
+  const [, setSearchParams] = useSearchParams();
 
-  const shopify = useAppBridge();
-  const isLoading =
-    ["loading", "submitting"].includes(fetcher.state) &&
-    fetcher.formMethod === "POST";
-
-  useEffect(() => {
-    if (fetcher.data?.product?.id) {
-      shopify.toast.show("Product created");
+  const buildSearch = (overrides: Record<string, string>) => {
+    const params = new URLSearchParams();
+    if (query) params.set("q", query);
+    if (sort !== "desc") params.set("sort", sort);
+    params.set("page", String(page));
+    for (const [k, v] of Object.entries(overrides)) {
+      if (v) params.set(k, v);
+      else params.delete(k);
     }
-  }, [fetcher.data?.product?.id, shopify]);
-
-  const generateProduct = () => fetcher.submit({}, { method: "POST" });
+    return `?${params.toString()}`;
+  };
 
   return (
-    <s-page heading="Shopify app template">
-      <s-button slot="primary-action" onClick={generateProduct}>
-        Generate a product
-      </s-button>
-
-      <s-section heading="Congrats on creating a new Shopify app 🎉">
-        <s-paragraph>
-          This embedded app template uses{" "}
-          <s-link
-            href="https://shopify.dev/docs/apps/tools/app-bridge"
-            target="_blank"
+    <s-page heading="Kit Registrations">
+      <s-section>
+        {/* Filters */}
+        <Form method="get" style={{ display: "flex", gap: "12px", flexWrap: "wrap", marginBottom: "20px" }}>
+          <input
+            name="q"
+            defaultValue={query}
+            placeholder="Search name, email, order #, kit #…"
+            style={{
+              flex: "1 1 260px",
+              minHeight: "38px",
+              padding: "0 12px",
+              borderRadius: "10px",
+              border: "1px solid rgba(15,23,42,0.2)",
+              fontSize: "14px",
+            }}
+          />
+          <select
+            name="sort"
+            defaultValue={sort}
+            style={{
+              minHeight: "38px",
+              padding: "0 12px",
+              borderRadius: "10px",
+              border: "1px solid rgba(15,23,42,0.2)",
+              fontSize: "14px",
+              background: "#fff",
+            }}
           >
-            App Bridge
-          </s-link>{" "}
-          interface examples like an{" "}
-          <s-link href="/app/additional">additional page in the app nav</s-link>
-          , as well as an{" "}
-          <s-link
-            href="https://shopify.dev/docs/api/admin-graphql"
-            target="_blank"
+            <option value="desc">Newest first</option>
+            <option value="asc">Oldest first</option>
+          </select>
+          <input type="hidden" name="page" value="1" />
+          <button
+            type="submit"
+            style={{
+              minHeight: "38px",
+              padding: "0 18px",
+              border: 0,
+              borderRadius: "10px",
+              background: "#111827",
+              color: "#fff",
+              fontSize: "14px",
+              fontWeight: 600,
+              cursor: "pointer",
+            }}
           >
-            Admin GraphQL
-          </s-link>{" "}
-          mutation demo, to provide a starting point for app development.
-        </s-paragraph>
-      </s-section>
-      <s-section heading="Get started with products">
-        <s-paragraph>
-          Generate a product with GraphQL and get the JSON output for that
-          product. Learn more about the{" "}
-          <s-link
-            href="https://shopify.dev/docs/api/admin-graphql/latest/mutations/productCreate"
-            target="_blank"
-          >
-            productCreate
-          </s-link>{" "}
-          mutation in our API references.
-        </s-paragraph>
-        <s-stack direction="inline" gap="base">
-          <s-button
-            onClick={generateProduct}
-            {...(isLoading ? { loading: true } : {})}
-          >
-            Generate a product
-          </s-button>
-          {fetcher.data?.product && (
-            <s-button
-              onClick={() => {
-                shopify.intents.invoke?.("edit:shopify/Product", {
-                  value: fetcher.data?.product?.id,
-                });
+            Search
+          </button>
+          {query && (
+            <button
+              type="button"
+              onClick={() => setSearchParams({})}
+              style={{
+                minHeight: "38px",
+                padding: "0 14px",
+                border: "1px solid rgba(15,23,42,0.2)",
+                borderRadius: "10px",
+                background: "#fff",
+                fontSize: "14px",
+                cursor: "pointer",
               }}
-              target="_blank"
-              variant="tertiary"
             >
-              Edit product
-            </s-button>
+              Clear
+            </button>
           )}
-        </s-stack>
-        {fetcher.data?.product && (
-          <s-section heading="productCreate mutation">
-            <s-stack direction="block" gap="base">
-              <s-box
-                padding="base"
-                borderWidth="base"
-                borderRadius="base"
-                background="subdued"
-              >
-                <pre style={{ margin: 0 }}>
-                  <code>{JSON.stringify(fetcher.data.product, null, 2)}</code>
-                </pre>
-              </s-box>
+        </Form>
 
-              <s-heading>productVariantsBulkUpdate mutation</s-heading>
-              <s-box
-                padding="base"
-                borderWidth="base"
-                borderRadius="base"
-                background="subdued"
+        {/* Table */}
+        <div style={{ overflowX: "auto" }}>
+          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "14px" }}>
+            <thead>
+              <tr style={{ borderBottom: "2px solid #e5e7eb", textAlign: "left" }}>
+                {["Customer", "Email", "Phone", "Order #", "Kit #", "Status", "Date", ""].map(
+                  (h) => (
+                    <th
+                      key={h}
+                      style={{ padding: "10px 12px", fontWeight: 600, color: "#374151", whiteSpace: "nowrap" }}
+                    >
+                      {h}
+                    </th>
+                  ),
+                )}
+              </tr>
+            </thead>
+            <tbody>
+              {items.length === 0 ? (
+                <tr>
+                  <td colSpan={8} style={{ padding: "40px", textAlign: "center", color: "#9ca3af" }}>
+                    No registrations found.
+                  </td>
+                </tr>
+              ) : (
+                items.map((reg) => (
+                  <tr
+                    key={reg.id}
+                    style={{ borderBottom: "1px solid #f3f4f6", cursor: "pointer" }}
+                    onClick={() => navigate(`/app/registrations/${reg.id}`)}
+                  >
+                    <td style={{ padding: "12px", fontWeight: 600 }}>{reg.name}</td>
+                    <td style={{ padding: "12px", color: "#6b7280" }}>{reg.email}</td>
+                    <td style={{ padding: "12px", color: "#6b7280" }}>{reg.phone}</td>
+                    <td style={{ padding: "12px" }}>{reg.orderNumber}</td>
+                    <td style={{ padding: "12px", fontFamily: "monospace", fontSize: "13px" }}>
+                      {reg.kitRegistrationNumber}
+                    </td>
+                    <td style={{ padding: "12px" }}>
+                      <span style={statusStyle(reg.report?.status)}>
+                        {statusLabel(reg.report?.status)}
+                      </span>
+                    </td>
+                    <td style={{ padding: "12px", color: "#9ca3af", whiteSpace: "nowrap" }}>
+                      {new Date(reg.createdAt).toLocaleDateString()}
+                    </td>
+                    <td style={{ padding: "12px" }}>
+                      <a
+                        href={`/app/registrations/${reg.id}`}
+                        onClick={(e) => e.stopPropagation()}
+                        style={{ color: "#111827", fontWeight: 600, textDecoration: "none" }}
+                      >
+                        View →
+                      </a>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div style={{ display: "flex", gap: "8px", justifyContent: "center", marginTop: "24px", flexWrap: "wrap" }}>
+            {page > 1 && (
+              <a
+                href={buildSearch({ page: String(page - 1) })}
+                style={{ padding: "6px 14px", border: "1px solid #e5e7eb", borderRadius: "8px", textDecoration: "none", color: "#374151", fontSize: "14px" }}
               >
-                <pre style={{ margin: 0 }}>
-                  <code>{JSON.stringify(fetcher.data.variant, null, 2)}</code>
-                </pre>
-              </s-box>
-            </s-stack>
-          </s-section>
+                ← Prev
+              </a>
+            )}
+            {Array.from({ length: Math.min(totalPages, 7) }, (_, i) => {
+              const p = i + 1;
+              return (
+                <a
+                  key={p}
+                  href={buildSearch({ page: String(p) })}
+                  style={{
+                    padding: "6px 14px",
+                    border: "1px solid #e5e7eb",
+                    borderRadius: "8px",
+                    textDecoration: "none",
+                    fontSize: "14px",
+                    background: p === page ? "#111827" : "#fff",
+                    color: p === page ? "#fff" : "#374151",
+                    fontWeight: p === page ? 600 : 400,
+                  }}
+                >
+                  {p}
+                </a>
+              );
+            })}
+            {page < totalPages && (
+              <a
+                href={buildSearch({ page: String(page + 1) })}
+                style={{ padding: "6px 14px", border: "1px solid #e5e7eb", borderRadius: "8px", textDecoration: "none", color: "#374151", fontSize: "14px" }}
+              >
+                Next →
+              </a>
+            )}
+          </div>
         )}
-      </s-section>
 
-      <s-section slot="aside" heading="App template specs">
-        <s-paragraph>
-          <s-text>Framework: </s-text>
-          <s-link href="https://reactrouter.com/" target="_blank">
-            React Router
-          </s-link>
-        </s-paragraph>
-        <s-paragraph>
-          <s-text>Interface: </s-text>
-          <s-link
-            href="https://shopify.dev/docs/api/app-home/using-polaris-components"
-            target="_blank"
-          >
-            Polaris web components
-          </s-link>
-        </s-paragraph>
-        <s-paragraph>
-          <s-text>API: </s-text>
-          <s-link
-            href="https://shopify.dev/docs/api/admin-graphql"
-            target="_blank"
-          >
-            GraphQL
-          </s-link>
-        </s-paragraph>
-        <s-paragraph>
-          <s-text>Database: </s-text>
-          <s-link href="https://www.prisma.io/" target="_blank">
-            Prisma
-          </s-link>
-        </s-paragraph>
-      </s-section>
-
-      <s-section slot="aside" heading="Next steps">
-        <s-unordered-list>
-          <s-list-item>
-            Build an{" "}
-            <s-link
-              href="https://shopify.dev/docs/apps/getting-started/build-app-example"
-              target="_blank"
-            >
-              example app
-            </s-link>
-          </s-list-item>
-          <s-list-item>
-            Explore Shopify&apos;s API with{" "}
-            <s-link
-              href="https://shopify.dev/docs/apps/tools/graphiql-admin-api"
-              target="_blank"
-            >
-              GraphiQL
-            </s-link>
-          </s-list-item>
-        </s-unordered-list>
+        <p style={{ marginTop: "16px", color: "#9ca3af", fontSize: "13px", textAlign: "center" }}>
+          {total} registration{total !== 1 ? "s" : ""} total
+          {query ? ` matching "${query}"` : ""}
+        </p>
       </s-section>
     </s-page>
   );
 }
 
-export const headers: HeadersFunction = (headersArgs) => {
-  return boundary.headers(headersArgs);
-};
+
+

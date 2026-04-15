@@ -1,6 +1,17 @@
 import prisma from "../db.server";
 
-type RegistrationInput = {
+export type RegistrationInput = {
+  shop: string;
+  name: string;
+  email: string;
+  phone: string;
+  orderNumber: string;
+  kitRegistrationNumber: string;
+  shopifyOrderId?: string | null;
+  shopifyCustomerId?: string | null;
+};
+
+export type RegistrationFormState = {
   name: string;
   email: string;
   phone: string;
@@ -8,9 +19,14 @@ type RegistrationInput = {
   kitRegistrationNumber: string;
 };
 
-export type RegistrationFormState = RegistrationInput;
+export type RegistrationFormErrors = Partial<Record<keyof RegistrationFormState, string>>;
 
-export type RegistrationFormErrors = Partial<Record<keyof RegistrationInput, string>>;
+export interface ListRegistrationsOptions {
+  page?: number;
+  perPage?: number;
+  query?: string;
+  sort?: "asc" | "desc";
+}
 
 export function getRegistrationDefaults(): RegistrationFormState {
   return {
@@ -23,7 +39,7 @@ export function getRegistrationDefaults(): RegistrationFormState {
 }
 
 export function validateRegistration(
-  input: Partial<RegistrationInput>,
+  input: Partial<RegistrationFormState>,
 ): RegistrationFormErrors | null {
   const errors: RegistrationFormErrors = {};
 
@@ -53,11 +69,57 @@ export function validateRegistration(
 export async function saveRegistration(input: RegistrationInput) {
   return prisma.registration.create({
     data: {
+      shop: input.shop,
       name: input.name.trim(),
       email: input.email.trim(),
       phone: input.phone.trim(),
       orderNumber: input.orderNumber.trim(),
       kitRegistrationNumber: input.kitRegistrationNumber.trim(),
+      shopifyOrderId: input.shopifyOrderId ?? null,
+      shopifyCustomerId: input.shopifyCustomerId ?? null,
     },
   });
+}
+
+export async function getRegistrationByKitNumber(kitRegistrationNumber: string) {
+  return prisma.registration.findFirst({
+    where: { kitRegistrationNumber },
+    include: { report: { include: { rows: true } } },
+  });
+}
+
+export async function getRegistrationById(id: string) {
+  return prisma.registration.findUnique({
+    where: { id },
+    include: { report: { include: { rows: { orderBy: { ppmValue: "desc" } } } } },
+  });
+}
+
+export async function listRegistrations(options: ListRegistrationsOptions = {}) {
+  const { page = 1, perPage = 25, query = "", sort = "desc" } = options;
+  const skip = (page - 1) * perPage;
+
+  const where = query
+    ? {
+        OR: [
+          { name: { contains: query, mode: "insensitive" as const } },
+          { email: { contains: query, mode: "insensitive" as const } },
+          { orderNumber: { contains: query, mode: "insensitive" as const } },
+          { kitRegistrationNumber: { contains: query, mode: "insensitive" as const } },
+        ],
+      }
+    : {};
+
+  const [items, total] = await Promise.all([
+    prisma.registration.findMany({
+      where,
+      orderBy: { createdAt: sort },
+      skip,
+      take: perPage,
+      include: { report: { select: { id: true, status: true } } },
+    }),
+    prisma.registration.count({ where }),
+  ]);
+
+  return { items, total, page, perPage, totalPages: Math.ceil(total / perPage) };
 }
