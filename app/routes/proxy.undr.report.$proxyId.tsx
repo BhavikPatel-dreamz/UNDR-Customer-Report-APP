@@ -31,7 +31,7 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
         </p>
         <p style="color:#6b7280;line-height:1.6;">
           Please
-          <a href="/apps/kit-register" style="color:#111827;font-weight:600;">register your kit</a>
+          <a href="/apps/undr/register" style="color:#111827;font-weight:600;">register your kit</a>
           first, and your report will appear here once it is ready.
         </p>
       </div>`,

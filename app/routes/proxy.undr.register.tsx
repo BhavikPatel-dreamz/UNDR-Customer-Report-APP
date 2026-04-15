@@ -191,7 +191,7 @@ export async function action({ request }: ActionFunctionArgs) {
       shopifyOrderId = order.id;
       shopifyCustomerId = order.customer?.id ?? null;
     } catch (err) {
-      console.error("[proxy.register] Admin API order lookup failed:", err);
+      console.error("[proxy.undr.register] Admin API order lookup failed:", err);
     }
   }
 

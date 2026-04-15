@@ -139,7 +139,7 @@ export default function RegistrationDetail() {
   const report = registration.report;
   const rows = report?.rows ?? [];
   const appUrl = (typeof process !== "undefined" ? process.env.SHOPIFY_APP_URL : "") || "";
-  const reportUrl = `${appUrl.replace(/\/$/, "")}/apps/report/${registration.kitRegistrationNumber}`;
+  const reportUrl = `${appUrl.replace(/\/$/, "")}/apps/undr/report/${registration.kitRegistrationNumber}`;
 
   return (
     <s-page
