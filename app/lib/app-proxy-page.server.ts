@@ -176,7 +176,7 @@ function buildLandingTemplate() {
     <p style="margin: 0 0 10px; font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase; opacity: 0.72;">UNDR App Proxy</p>
     <h1 style="margin: 0 0 12px; font-size: clamp(30px, 5vw, 48px); line-height: 1.05;">Simple HTML, CSS and JS widget</h1>
     <p style="margin: 0; font-size: 16px; line-height: 1.7; opacity: 0.84;">
-      Enter an ID, paste JSON, and preview the widget. This version does not fetch data from an API. It renders directly from the JSON you provide.
+       asdfasdf asdfON, and preview the widget. This version does not fetch data from an API. It renders directly from the JSON you provide.
     </p>
   </div>
 
@@ -289,7 +289,7 @@ function buildPageTemplate(input: {
       Open the storefront path <strong>/apps/my-app-proxy/${escapeHtml(input.proxyId)}</strong> and switch the widget between block, list, or slider using the same JSON.
     </p>
     <p style="margin: 0; font-size: 15px; line-height: 1.7; opacity: 0.8;">
-      There is no client-side API call here. The browser renders the JSON directly with simple JavaScript.
+      a sdfasdf asdfafThere is no client-side API call here. The browser renders the JSON directly with simple JavaScript.
     </p>
   </div>
 

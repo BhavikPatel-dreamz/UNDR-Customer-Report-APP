@@ -2,7 +2,7 @@
 
 client_id = "b6bca77be79e4fed3d17e63886c9c082"
 name = "UNDRCustomerReport"
-application_url = "https://undr-customer-report-app.vercel.app"
+application_url = "https://b2b.dynmicdreamz.com/"
 embedded = true
 
 [build]
@@ -24,10 +24,10 @@ api_version = "2026-07"
 scopes = "read_customers,read_orders,write_app_proxy"
 
 [auth]
-redirect_urls = [ "https://undr-customer-report-app.vercel.app/api/auth" ]
+redirect_urls = [ "https://b2b.dynmicdreamz.com/api/auth" ]
 
 [app_proxy]
-url = "https://undr-customer-report-app.vercel.app/proxy/undr"
+url = "https://b2b.dynmicdreamz.com/proxy/undr"
 subpath = "undr"
 prefix = "apps"
 
