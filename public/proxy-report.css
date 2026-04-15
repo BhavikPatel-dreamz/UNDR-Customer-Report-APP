@@ -868,6 +868,10 @@ body {
 
 /* Multi Level Chart Section CSS */
 
+.multi_level_chart_section * div:empty {
+    display: block;
+}
+
 .multi_level_chart_section {
     padding: 80px 0;
 }
@@ -1103,7 +1107,7 @@ body {
         height: 50px;
     }
 
-    .multi_level_chart_section .chart_group[data_max="450"] .scale_labels span:nth-child(even) {
+    .multi_level_chart_section .chart_group[data-max="450"] .scale_labels span:nth-child(even) {
         display: none;
     }
 
