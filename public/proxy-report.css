@@ -4,8 +4,18 @@
     box-sizing: border-box;
 }
 
-body {
+body,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p {
     font-family: Arial, sans-serif;
+    letter-spacing: 0;
+    line-height: 1;
+
 }
 
 .container {
@@ -1367,7 +1377,7 @@ body {
         display: none;
     }
 
-    .multi_level_chart_section .chart_group[data_max="1100"] .scale_labels span:nth-child(even) {
+    .multi_level_chart_section .chart_group[data-max="1100"] .scale_labels span:nth-child(even) {
         display: none;
     }
 
