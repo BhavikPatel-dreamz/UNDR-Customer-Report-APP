@@ -1,0 +1,2399 @@
+* {
+    margin: 0px;
+    padding: 0px;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+}
+
+.container {
+    width: 100%;
+    margin: 0 auto;
+    padding: 0 15px;
+}
+
+@media (min-width: 576px) {
+    .container {
+        max-width: 540px;
+    }
+}
+
+@media (min-width: 768px) {
+    .container {
+        max-width: 720px;
+    }
+}
+
+@media (min-width: 992px) {
+    .container {
+        max-width: 960px;
+    }
+}
+
+@media (min-width: 1200px) {
+    .container {
+        max-width: 1140px;
+    }
+}
+
+@media (min-width: 1400px) {
+    .container {
+        max-width: 1320px;
+    }
+}
+
+/* Main Banner Section CSS */
+
+.main_banner_section {
+    background-color: #9e2a1f;
+    padding: 70px 0px;
+    border-bottom-right-radius: 150px;
+}
+
+.main_banner_section .banner_title {
+    font-weight: 800;
+    font-size: 72px;
+    line-height: 80px;
+    color: #e5b567;
+    margin-bottom: 5px;
+}
+
+.main_banner_section .banner_subtitle {
+    font-weight: 300;
+    font-size: 38px;
+    line-height: 46px;
+    color: #ffffff;
+}
+
+@media (max-width: 1199px) {
+
+    .main_banner_section {
+        border-bottom-right-radius: 130px;
+        padding: 60px 0;
+    }
+
+    .main_banner_section .banner_title {
+        font-size: 60px;
+        line-height: 68px;
+    }
+
+    .main_banner_section .banner_subtitle {
+        font-size: 32px;
+        line-height: 40px;
+    }
+}
+
+@media (max-width: 991px) {
+    .main_banner_section {
+        border-bottom-right-radius: 100px;
+        padding: 50px 0px;
+    }
+
+    .main_banner_section .banner_title {
+        font-size: 50px;
+        line-height: 58px;
+    }
+
+    .main_banner_section .banner_subtitle {
+        font-size: 28px;
+        line-height: 36px;
+    }
+}
+
+@media (max-width: 767px) {
+    .main_banner_section {
+        border-bottom-right-radius: 70px;
+        padding: 40px 0px;
+    }
+
+    .main_banner_section .banner_title {
+        font-size: 40px;
+        line-height: 48px;
+    }
+
+    .main_banner_section .banner_subtitle {
+        font-size: 22px;
+        line-height: 28px;
+    }
+}
+
+/* Report Details Section CSS */
+
+.report_details_section {
+    padding: 80px 0;
+}
+
+.report_details_section .report_flex_row {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.report_details_section .report_left_col {
+    flex: 0 0 50%;
+    padding-right: 40px;
+    border-right: 2px solid #9e9090;
+}
+
+.report_details_section .report_right_col {
+    flex: 0 0 50%;
+    padding-left: 40px;
+}
+
+.report_details_section .report_main_heading {
+    color: #8b231a;
+    font-size: 24px;
+    font-weight: 800;
+    margin-bottom: 30px;
+    text-transform: capitalize;
+}
+
+.report_details_section .chart_wrapper {
+    height: 450px;
+    width: 100%;
+}
+
+.report_details_section .chart_legend {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin: 20px 0;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.report_details_section .legend_item {
+    display: flex;
+    align-items: center;
+}
+
+.report_details_section .box_below {
+    width: 25px;
+    height: 10px;
+    background: #d9dee4;
+    margin-right: 5px;
+}
+
+.report_details_section .box_ref {
+    width: 25px;
+    height: 10px;
+    background: #a6acb5;
+    margin-right: 5px;
+}
+
+.report_details_section .box_above {
+    width: 25px;
+    height: 10px;
+    background: #525961;
+    margin-right: 5px;
+}
+
+.report_details_section .chart_footer_divider {
+    height: 1px;
+    background: #eee;
+    margin-bottom: 10px;
+}
+
+.report_details_section .chart_footer_text {
+    font-size: 14px;
+    line-height: 20px;
+    color: #000;
+}
+
+.report_details_section .top_info_row {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    border-bottom: 2px solid #9e9090;
+    padding-bottom: 25px;
+}
+
+.report_details_section .heavy_metals_block {
+    flex: 1.2;
+}
+
+.report_details_section .oil_indicator_block {
+    flex: 1;
+}
+
+.report_details_section .vertical_divider {
+    width: 2px;
+    background-color: #9e9090;
+    align-self: stretch;
+    margin: 0 10px;
+}
+
+.report_details_section .metal_list_item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 12px;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.report_details_section .metal_list_item:last-child {
+    margin: 0;
+}
+
+.report_details_section .val_box {
+    width: 70px;
+    padding: 4px;
+    text-align: center;
+    color: #fff;
+    border-radius: 5px 0 0 0;
+    margin-right: 10px;
+}
+
+.report_details_section .bg_peach {
+    background: #d98670;
+}
+
+.report_details_section .bg_teal {
+    background: #8ba0a3;
+}
+
+.report_details_section .bg_yellow {
+    background: #e9cc8e;
+}
+
+.report_details_section .txt_red {
+    color: #d98670;
+}
+
+.report_details_section .txt_teal {
+    color: #8ba0a3;
+}
+
+.report_details_section .txt_yellow {
+    color: #e9cc8e;
+}
+
+.report_details_section .oil_btn {
+    padding: 10px 15px;
+    color: #fff;
+    font-weight: bold;
+    border-radius: 6px;
+    margin-bottom: 10px;
+    font-size: 13px;
+    text-align: center;
+}
+
+.report_details_section .btn_gray {
+    background: #6d7566;
+    border-radius: 0 0 0 10px;
+}
+
+.report_details_section .btn_red_curved {
+    background: #8b231a;
+    border-radius: 0 10px 0 0;
+}
+
+.report_details_section .info_block {
+    padding: 25px 0;
+    border-bottom: 2px solid #9e9090;
+}
+
+.report_details_section .no_border {
+    border-bottom: none;
+}
+
+.report_details_section .info_block.no_border {
+    padding-bottom: 0;
+}
+
+.report_details_section .circles_flex {
+    display: flex;
+    gap: 20px;
+}
+
+.report_details_section .metal_circle {
+    width: 95px;
+    height: 95px;
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    color: #fff;
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.report_details_section .metal_circle span {
+    font-weight: normal;
+    font-size: 13px;
+}
+
+.report_details_section .gold_bg {
+    background: #f1b434;
+}
+
+.report_details_section .silver_bg {
+    background: #93979b;
+}
+
+.report_details_section .iridium_bg {
+    background: #8b231a;
+}
+
+.report_details_section .cerium_bg {
+    background: #f1b434;
+}
+
+.report_details_section .scandium_bg {
+    background: #93979b;
+}
+
+.report_details_section .yttreium_bg {
+    background: #8b231a;
+}
+
+.report_details_section .dive_deeper_wrap {
+    text-align: center;
+    margin-top: 30px;
+}
+
+.report_details_section .dive_text {
+    color: #8b231a;
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+.report_details_section .dive_arrow {
+    color: #8b231a;
+    font-size: 28px;
+}
+
+.report_details_section .dive_arrow svg {
+    display: block;
+    width: 49px;
+    height: 28px;
+    margin: 0 auto;
+}
+
+@media (max-width: 1199px) {
+
+    .report_details_section {
+        padding: 60px 0;
+    }
+
+    .report_details_section .report_left_col {
+        padding-right: 30px;
+    }
+
+    .report_details_section .report_right_col {
+        padding-left: 30px;
+    }
+
+    .report_details_section .chart_wrapper {
+        height: 400px;
+    }
+
+    .report_details_section .top_info_row {
+        gap: 15px;
+        padding-bottom: 20px;
+    }
+
+    .report_details_section .metal_circle {
+        width: 85px;
+        height: 85px;
+        font-size: 14px;
+    }
+
+    .report_details_section .circles_flex {
+        gap: 15px;
+    }
+
+    .report_details_section .dive_deeper_wrap {
+        margin-top: 25px;
+    }
+
+    .report_details_section .dive_arrow svg {
+        width: 40px;
+    }
+}
+
+@media (max-width: 991px) {
+
+    .report_details_section {
+        padding: 50px 0;
+    }
+
+    .report_details_section .report_main_heading,
+    .report_details_section .chart_footer_text {
+        text-align: center;
+    }
+
+    .report_details_section .report_left_col,
+    .report_details_section .report_right_col {
+        flex: 0 0 100%;
+        max-width: 100%;
+        padding: 0;
+        border: none;
+    }
+
+    .report_details_section .report_left_col {
+        margin-bottom: 30px;
+        padding-bottom: 30px;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .report_details_section .top_info_row {
+        flex-direction: row;
+    }
+
+    .report_details_section .circles_flex {
+        justify-content: center;
+    }
+}
+
+@media (max-width: 767px) {
+    .report_details_section {
+        padding: 40px 0;
+    }
+
+    .report_details_section .report_main_heading {
+        font-size: 20px;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+
+    .report_details_section .chart_wrapper {
+        height: 350px;
+    }
+
+    .report_details_section .chart_legend {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .report_details_section .top_info_row {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .report_details_section .vertical_divider {
+        width: 100%;
+        height: 2px;
+        margin: 20px 0;
+    }
+
+    .report_details_section .heavy_metals_block,
+    .report_details_section .oil_indicator_block {
+        width: 100%;
+    }
+
+    .report_details_section .metal_list_item {
+        justify-content: center;
+    }
+
+    .report_details_section .circles_flex {
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+
+    .report_details_section .metal_circle {
+        width: 90px;
+        height: 90px;
+    }
+
+    .report_details_section .oil_btn {
+        width: 100%;
+        max-width: 280px;
+        margin: 0 auto 10px;
+    }
+
+}
+
+/* Elemental Breakdown Section CSS */
+
+.elemental_breakdown_section {
+    overflow-x: hidden;
+}
+
+.elemental_breakdown_section .element_breakdown_wrapper {
+    display: flex;
+    align-items: stretch;
+    width: 100%;
+}
+
+.elemental_breakdown_section .report_left_content {
+    width: 50%;
+    padding: 0 20px 40px 0px;
+    display: flex;
+    flex-direction: column;
+}
+
+.elemental_breakdown_section .report_title {
+    font-weight: 800;
+    font-size: 64px;
+    line-height: 68px;
+    color: #8B2323;
+}
+
+.elemental_breakdown_section .report_subtitle {
+    font-weight: 400;
+    font-size: 36px;
+    color: #E29578;
+    margin: 15px 0px 90px 0px;
+    max-width: 52%;
+}
+
+.elemental_breakdown_section .report_description {
+    font-size: 24px;
+    line-height: 34px;
+    color: #555555;
+    margin-bottom: 100px;
+    max-width: 56%;
+}
+
+.elemental_breakdown_section .footer_text {
+    font-size: 20px;
+    line-height: 30px;
+    color: #A0A0A0;
+    margin-bottom: 10px;
+    max-width: 40%;
+}
+
+.elemental_breakdown_section .detailed_summary_btn {
+    font-weight: 600;
+    font-size: 22px;
+    color: #555555;
+}
+
+.elemental_breakdown_section .arrow_down_icon {
+    margin-top: 20px;
+}
+
+.elemental_breakdown_section .arrow_down_icon svg {
+    display: block;
+    width: 51px;
+    height: 18px;
+}
+
+.elemental_breakdown_section .report_right_chart {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    border-top-left-radius: 15px;
+    border-bottom-left-radius: 15px;
+    overflow: hidden;
+    min-height: 550px;
+}
+
+.elemental_breakdown_section .element_bar {
+    font-weight: 600;
+    font-size: 18px;
+    line-height: 26px;
+    color: #ffffff;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    padding-left: 20px;
+}
+
+.other_trace_elements_section {
+    padding: 80px 0;
+}
+
+@media (min-width: 1400px) {
+
+    .elemental_breakdown_section .report_right_chart {
+        margin-right: calc(-100vw / 2 + 1290px / 2);
+    }
+}
+
+@media (max-width: 1399px) {
+
+    .elemental_breakdown_section .report_right_chart {
+        margin-right: calc(-100vw / 2 + 1110px / 2);
+    }
+}
+
+@media (max-width: 1199px) {
+
+    .elemental_breakdown_section .report_right_chart {
+        margin-right: calc(-100vw / 2 + 930px / 2);
+    }
+
+    .elemental_breakdown_section .report_title {
+        font-size: 52px;
+        line-height: 56px;
+    }
+
+    .elemental_breakdown_section .report_subtitle {
+        font-size: 30px;
+        max-width: 70%;
+        margin-bottom: 60px;
+    }
+
+    .elemental_breakdown_section .report_description {
+        font-size: 20px;
+        line-height: 28px;
+        max-width: 80%;
+        margin-bottom: 60px;
+    }
+
+    .elemental_breakdown_section .arrow_down_icon svg {
+        width: 40px;
+    }
+
+    .other_trace_elements_section {
+        padding: 60px 0;
+    }
+}
+
+@media (max-width: 991px) {
+
+    .elemental_breakdown_section .report_right_chart {
+        margin-right: calc(-100vw / 2 + 690px / 2);
+    }
+
+    .elemental_breakdown_section .report_left_content {
+        padding: 0 15px 30px 0px;
+    }
+
+    .elemental_breakdown_section .report_title {
+        font-size: 42px;
+        line-height: 46px;
+    }
+
+    .elemental_breakdown_section .report_subtitle {
+        font-size: 24px;
+        margin-bottom: 40px;
+        max-width: 90%;
+    }
+
+    .elemental_breakdown_section .report_description {
+        font-size: 18px;
+        line-height: 26px;
+        max-width: 100%;
+        margin-bottom: 40px;
+    }
+
+    .elemental_breakdown_section .report_right_chart {
+        min-height: 450px;
+    }
+
+    .elemental_breakdown_section .element_bar {
+        font-size: 16px;
+        padding-left: 15px;
+    }
+
+    .other_trace_elements_section {
+        padding: 50px 0;
+    }
+
+    .elemental_breakdown_section .arrow_down_icon svg {
+        width: 30px;
+    }
+}
+
+@media (max-width: 767px) {
+
+    .elemental_breakdown_section .report_right_chart {
+        margin-right: calc(-100vw / 2 + 510px / 2);
+    }
+
+    .elemental_breakdown_section .report_left_content {
+        width: 50%;
+        padding: 0 10px 20px 0px;
+    }
+
+    .elemental_breakdown_section .report_title {
+        font-size: 26px;
+        line-height: 30px;
+    }
+
+    .elemental_breakdown_section .report_subtitle {
+        font-size: 16px;
+        margin: 10px 0px 20px 0px;
+        max-width: 100%;
+    }
+
+    .elemental_breakdown_section .report_description {
+        font-size: 14px;
+        line-height: 20px;
+        margin-bottom: 30px;
+        max-width: 100%;
+    }
+
+    .elemental_breakdown_section .footer_text {
+        font-size: 12px;
+        line-height: 18px;
+        max-width: 100%;
+    }
+
+    .elemental_breakdown_section .detailed_summary_btn {
+        font-size: 16px;
+    }
+
+    .elemental_breakdown_section .arrow_down_icon svg {
+        width: 20px;
+    }
+
+    .elemental_breakdown_section .report_right_chart {
+        width: 50%;
+        min-height: 350px;
+        border-top-left-radius: 10px;
+        border-bottom-left-radius: 10px;
+    }
+
+    .elemental_breakdown_section .element_bar {
+        font-size: 12px;
+        line-height: 16px;
+        padding-left: 10px;
+    }
+
+    .other_trace_elements_section {
+        padding: 40px 0;
+    }
+}
+
+@media (max-width: 575px) {
+    .elemental_breakdown_section .report_right_chart {
+        margin-right: 0;
+    }
+
+    .elemental_breakdown_section .container {
+        padding-right: 0;
+    }
+}
+
+/* Heavy Metal Breakdown Section CSS */
+
+.heavy_metal_breakdown_section {
+    background-color: #727a67;
+    padding: 70px 0;
+    border-bottom-right-radius: 150px;
+}
+
+.heavy_metal_breakdown_section .heavy_metal_inner_wrapper {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.heavy_metal_breakdown_section .heavy_metal_content_left {
+    flex-basis: 50%;
+}
+
+.heavy_metal_breakdown_section .heavy_metal_content_right {
+    flex-basis: 50%;
+}
+
+.heavy_metal_breakdown_section .heavy_metal_title {
+    font-weight: 800;
+    font-size: 64px;
+    line-height: 70px;
+    color: #ffffff;
+}
+
+.heavy_metal_breakdown_section .heavy_metal_description {
+    font-size: 24px;
+    line-height: 34px;
+    color: #e5b567;
+    max-width: 60%;
+    margin-left: auto;
+}
+
+@media (max-width: 1199px) {
+
+    .heavy_metal_breakdown_section {
+        border-bottom-right-radius: 130px;
+        padding: 60px 0;
+    }
+
+    .heavy_metal_breakdown_section .heavy_metal_title {
+        font-size: 54px;
+        line-height: 60px;
+    }
+
+    .heavy_metal_breakdown_section .heavy_metal_description {
+        font-size: 20px;
+        line-height: 30px;
+        max-width: 70%;
+    }
+}
+
+@media (max-width: 991px) {
+    .heavy_metal_breakdown_section {
+        border-bottom-right-radius: 100px;
+        padding: 50px 0;
+    }
+
+    .heavy_metal_breakdown_section .heavy_metal_title {
+        font-size: 44px;
+        line-height: 50px;
+    }
+
+    .heavy_metal_breakdown_section .heavy_metal_description {
+        font-size: 18px;
+        line-height: 28px;
+        max-width: 85%;
+    }
+}
+
+@media (max-width: 767px) {
+    .heavy_metal_breakdown_section .heavy_metal_inner_wrapper {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .heavy_metal_breakdown_section .heavy_metal_content_left {
+        margin-bottom: 20px;
+    }
+
+    .heavy_metal_breakdown_section .heavy_metal_title {
+        font-size: 36px;
+        line-height: 42px;
+    }
+
+    .heavy_metal_breakdown_section .heavy_metal_description {
+        font-size: 16px;
+        line-height: 24px;
+        max-width: 100%;
+    }
+
+    .heavy_metal_breakdown_section {
+        border-bottom-right-radius: 70px;
+        padding: 40px 0;
+    }
+}
+
+/* Multi Level Chart Section CSS */
+
+.multi_level_chart_section {
+    padding: 80px 0;
+}
+
+.multi_level_chart_section .chart_row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.multi_level_chart_section .label_col {
+    font-weight: 600;
+    font-size: 20px;
+    color: #93979a;
+    width: 110px;
+}
+
+.multi_level_chart_section .bar_col {
+    flex-grow: 1;
+    padding: 0 10px;
+}
+
+.multi_level_chart_section .bar_wrapper {
+    position: relative;
+    display: flex;
+    height: 40px;
+    width: 100%;
+    border-radius: 8px 0 0 0;
+    overflow: hidden;
+}
+
+.multi_level_chart_section .segment {
+    height: 100%;
+}
+
+.multi_level_chart_section .safe_level {
+    background-color: #8a9681;
+}
+
+.multi_level_chart_section .marginal_level {
+    background-color: #fdb913;
+}
+
+.multi_level_chart_section .unsafe_level {
+    background-color: #a43a3e;
+}
+
+.multi_level_chart_section .user_marker {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 8px;
+    background-color: #3e3e3e;
+    z-index: 5;
+    border-radius: 1px;
+}
+
+.multi_level_chart_section .value_col {
+    font-weight: 600;
+    font-size: 18px;
+    color: #93979a;
+    width: 70px;
+    text-align: right;
+}
+
+.multi_level_chart_section .scale_container {
+    display: flex;
+    align-items: flex-start;
+}
+
+.multi_level_chart_section .scale_placeholder_left {
+    width: 110px;
+}
+
+.multi_level_chart_section .scale_placeholder_right {
+    width: 70px;
+}
+
+.multi_level_chart_section .scale_main {
+    flex-grow: 1;
+    padding: 0 10px;
+}
+
+.multi_level_chart_section .scale_tick_box {
+    width: 100%;
+    height: 10px;
+    border: 2px solid #d1d1d1;
+    border-top: none;
+    margin-bottom: 6px;
+}
+
+.multi_level_chart_section .scale_labels {
+    display: flex;
+    justify-content: space-between;
+}
+
+.multi_level_chart_section .scale_labels span {
+    font-size: 14px;
+    color: #93979a;
+    width: 20px;
+    text-align: center;
+}
+
+.multi_level_chart_section .spacer_div {
+    height: 80px;
+}
+
+.multi_level_chart_section .legend_box {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 40px;
+    margin-top: 60px;
+}
+
+.multi_level_chart_section .legend_item {
+    display: flex;
+    align-items: center;
+    font-weight: 500;
+    font-size: 15px;
+    color: #93979a;
+}
+
+.multi_level_chart_section .legend_item .color_box {
+    width: 40px;
+    min-width: 40px;
+    height: 40px;
+    margin-right: 10px;
+    border-radius: 7px;
+}
+
+.multi_level_chart_section .legend_item .user_level {
+    background-color: #3e3e3e;
+}
+
+.multi_level_chart_section .report_details_section {
+    padding: 0 !important;
+}
+
+@media (max-width: 1199px) {
+
+    .multi_level_chart_section {
+        padding: 60px 0;
+    }
+
+    .multi_level_chart_section .spacer_div {
+        height: 70px;
+    }
+
+    .multi_level_chart_section .legend_box {
+        margin-top: 50px;
+    }
+
+}
+
+@media (max-width: 991px) {
+
+    .multi_level_chart_section {
+        padding: 50px 0;
+    }
+
+    .multi_level_chart_section .label_col,
+    .multi_level_chart_section .scale_placeholder_left {
+        width: 100px;
+        font-size: 18px;
+    }
+
+    .multi_level_chart_section .spacer_div {
+        height: 60px;
+    }
+
+    .multi_level_chart_section .legend_box {
+        margin-top: 40px;
+        gap: 30px;
+    }
+
+    .multi_level_chart_section .legend_item .color_box {
+        width: 35px;
+        min-width: 35px;
+        height: 35px;
+        margin-right: 5px;
+    }
+}
+
+@media (max-width: 767px) {
+
+    .multi_level_chart_section {
+        padding: 40px 0;
+    }
+
+    .multi_level_chart_section .chart_row {
+        flex-wrap: wrap;
+        margin-bottom: 20px;
+    }
+
+    .multi_level_chart_section .label_col {
+        width: 100%;
+        margin-bottom: 3px;
+    }
+
+    .multi_level_chart_section .bar_col {
+        width: calc(100% - 60px);
+        padding-left: 0;
+    }
+
+    .multi_level_chart_section .bar_wrapper {
+        height: 35px;
+    }
+
+    .multi_level_chart_section .value_col {
+        width: 60px;
+        font-size: 16px;
+    }
+
+    .multi_level_chart_section .scale_placeholder_left {
+        display: none;
+    }
+
+    .multi_level_chart_section .scale_main {
+        padding-left: 0;
+    }
+
+    .multi_level_chart_section .scale_placeholder_right {
+        width: 60px;
+    }
+
+    .multi_level_chart_section .scale_labels span {
+        font-size: 11px;
+    }
+
+    .multi_level_chart_section .spacer_div {
+        height: 50px;
+    }
+
+    .multi_level_chart_section .chart_group[data_max="450"] .scale_labels span:nth-child(even) {
+        display: none;
+    }
+
+    .multi_level_chart_section .legend_box {
+        justify-content: flex-start;
+        gap: 15px;
+        margin-top: 30px;
+    }
+
+    .multi_level_chart_section .legend_item {
+        width: calc(50% - 15px);
+        font-size: 13px;
+    }
+
+    .multi_level_chart_section .legend_item .color_box {
+        width: 30px;
+        min-width: 30px;
+        height: 30px;
+    }
+}
+
+/* Oil Contaminants Section CSS */
+
+.oil_contaminants_section .oil_main_heading {
+    font-weight: 900;
+    font-size: 64px;
+    line-height: 1.2;
+    color: #a52a2a;
+    margin-bottom: 30px;
+}
+
+.oil_contaminants_section .oil_info_card {
+    display: inline-block;
+    background-color: #727b6f;
+    border-radius: 0 0 0 20px;
+    padding: 30px;
+    min-width: 450px;
+}
+
+.oil_contaminants_section .oil_label {
+    display: block;
+    font-weight: 400;
+    font-size: 36px;
+    color: #ffffff;
+    margin-bottom: 10px;
+}
+
+.oil_contaminants_section .oil_value_row {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+}
+
+.oil_contaminants_section .oil_found_text,
+.oil_contaminants_section .oil_ppm_value {
+    font-weight: 700;
+    font-size: 44px;
+    color: #ffffff;
+}
+
+@media (max-width: 1199px) {
+    .oil_contaminants_section .oil_main_heading {
+        font-size: 54px;
+        margin-bottom: 25px;
+    }
+
+    .oil_contaminants_section .oil_info_card {
+        min-width: 400px;
+        padding: 25px;
+    }
+
+    .oil_contaminants_section .oil_label {
+        font-size: 32px;
+    }
+
+    .oil_contaminants_section .oil_value_row {
+        gap: 25px;
+    }
+
+    .oil_contaminants_section .oil_found_text,
+    .oil_contaminants_section .oil_ppm_value {
+        font-size: 40px;
+    }
+}
+
+@media (max-width: 991px) {
+    .oil_contaminants_section .oil_main_heading {
+        font-size: 48px;
+        margin-bottom: 20px;
+    }
+
+    .oil_contaminants_section .oil_info_card {
+        min-width: 350px;
+        padding: 20px;
+    }
+
+    .oil_contaminants_section .oil_label {
+        font-size: 28px;
+    }
+
+    .oil_contaminants_section .oil_value_row {
+        gap: 20px;
+    }
+
+    .oil_contaminants_section .oil_found_text,
+    .oil_contaminants_section .oil_ppm_value {
+        font-size: 34px;
+    }
+}
+
+@media (max-width: 767px) {
+    .oil_contaminants_section .oil_main_heading {
+        font-size: 34px;
+        margin-bottom: 15px;
+    }
+
+    .oil_contaminants_section .oil_info_card {
+        min-width: 100%;
+        padding: 15px;
+    }
+
+    .oil_contaminants_section .oil_label {
+        font-size: 24px;
+    }
+
+    .oil_contaminants_section .oil_value_row {
+        gap: 15px;
+    }
+
+    .oil_contaminants_section .oil_found_text,
+    .oil_contaminants_section .oil_ppm_value {
+        font-size: 28px;
+    }
+}
+
+/* Petroleum Contaminants Section CSS */
+
+.petroleum_contaminants_section {
+    background-color: #8fbdbd;
+    margin-top: 80px;
+}
+
+@media (max-width: 1199px) {
+
+    .petroleum_contaminants_section {
+        margin-top: 60px;
+    }
+}
+
+@media (max-width: 991px) {
+
+    .petroleum_contaminants_section {
+        margin-top: 50px;
+    }
+
+}
+
+@media (max-width: 767px) {
+
+    .petroleum_contaminants_section {
+        margin-top: 40px;
+    }
+
+    .heavy_metal_breakdown_section.petroleum_contaminants_section .heavy_metal_content_left {
+        margin-bottom: 0;
+    }
+
+}
+
+/* Trace Found Section CSS */
+
+.traces_wrapper {
+    margin-bottom: 60px;
+}
+
+.traces_wrapper .traces_main_title {
+    font-weight: 600;
+    font-size: 40px;
+    line-height: 50px;
+    color: #d68a6d;
+    margin-bottom: 20px;
+}
+
+.traces_wrapper .traces_sub_text {
+    font-weight: 600;
+    font-size: 26px;
+    line-height: 36px;
+    color: #7a8691;
+}
+
+@media (max-width: 1199px) {
+
+    .traces_wrapper {
+        margin-bottom: 50px;
+    }
+
+    .traces_wrapper .traces_main_title {
+        font-size: 36px;
+        line-height: 46px;
+        margin-bottom: 18px;
+    }
+
+    .traces_wrapper .traces_sub_text {
+        font-size: 24px;
+        line-height: 34px;
+    }
+
+}
+
+@media (max-width: 991px) {
+
+    .traces_wrapper {
+        margin-bottom: 40px;
+    }
+
+    .traces_wrapper .traces_main_title {
+        font-size: 32px;
+        line-height: 42px;
+        margin-bottom: 15px;
+    }
+
+    .traces_wrapper .traces_sub_text {
+        font-size: 22px;
+        line-height: 32px;
+    }
+
+}
+
+@media (max-width: 767px) {
+
+    .traces_wrapper {
+        margin-bottom: 30px;
+    }
+
+    .traces_wrapper .traces_main_title {
+        font-size: 28px;
+        line-height: 38px;
+        margin-bottom: 10px;
+    }
+
+    .traces_wrapper .traces_main_title br {
+        display: none;
+    }
+
+    .traces_wrapper .traces_sub_text {
+        font-size: 20px;
+        line-height: 30px;
+    }
+
+    .traces_wrapper .traces_sub_text br {
+        display: none;
+    }
+
+    .multi_level_chart_section .chart_group[data_max="1100"] .scale_labels span:nth-child(even) {
+        display: none;
+    }
+
+}
+
+/* Precious Metals Breakdown Section CSS */
+
+.precious_metal_breakdown_section {
+    background-color: #d68a6d;
+}
+
+.heavy_metal_breakdown_section.precious_metal_breakdown_section .heavy_metal_content_left {
+    margin-bottom: 0;
+}
+
+/* Precious Metal Present Section CSS */
+
+.precious_metal_present_section {
+    padding: 80px 0px;
+}
+
+.precious_metal_present_section .header_content {
+    text-align: center;
+    margin-bottom: 50px;
+}
+
+.precious_metal_present_section .main_title {
+    font-weight: 900;
+    font-size: 48px;
+    color: #8B2323;
+    margin-bottom: 10px;
+}
+
+.precious_metal_present_section .sub_text {
+    font-weight: 600;
+    font-size: 24px;
+    line-height: 34px;
+    color: #E67E66;
+}
+
+.precious_metal_present_section .graph_container {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    height: 400px;
+    gap: 15px;
+}
+
+.precious_metal_present_section #master_bar_layout {
+    display: none;
+}
+
+.precious_metal_present_section .graph_bar_wrapper {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    justify-content: flex-end;
+    flex-direction: column;
+    height: 100%;
+}
+
+.precious_metal_present_section .bar_body {
+    width: 100%;
+    border-radius: 25px 0 0 0;
+    padding: 10px 2px;
+    display: flex;
+    justify-content: center;
+    transition: all 0.5s ease;
+}
+
+.precious_metal_present_section .ppm_value {
+    font-weight: 600;
+    font-size: 22px;
+    color: #ffffff;
+}
+
+.precious_metal_present_section .label_container {
+    text-align: center;
+    margin-top: 15px;
+    width: 100%;
+}
+
+.precious_metal_present_section .metal_full_name,
+.precious_metal_present_section .metal_short_symbol {
+    display: block;
+    font-weight: 600;
+    font-size: 16px;
+    color: #777777;
+}
+
+.precious_metal_present_section .report_details_section {
+    padding: 0 !important;
+}
+
+@media (max-width: 1199px) {
+
+    .precious_metal_present_section {
+        padding: 60px 0;
+    }
+
+    .precious_metal_present_section .header_content {
+        margin-bottom: 40px;
+    }
+
+    .precious_metal_present_section .main_title {
+        font-size: 40px;
+    }
+
+    .precious_metal_present_section .sub_text {
+        font-size: 22px;
+        line-height: 32px;
+    }
+
+    .precious_metal_present_section .graph_container {
+        height: 350px;
+    }
+
+    .precious_metal_present_section .bar_body {
+        border-radius: 20px 0 0 0;
+    }
+
+    .precious_metal_present_section .ppm_value {
+        font-size: 20px;
+    }
+
+    .precious_metal_present_section .label_container {
+        margin-top: 10px;
+    }
+
+    .precious_metal_present_section .metal_full_name,
+    .precious_metal_present_section .metal_short_symbol {
+        font-size: 15px;
+    }
+}
+
+@media (max-width: 991px) {
+
+    .precious_metal_present_section {
+        padding: 50px 0;
+    }
+
+    .precious_metal_present_section .header_content {
+        margin-bottom: 30px;
+    }
+
+
+    .precious_metal_present_section .main_title {
+        font-size: 32px;
+    }
+
+    .precious_metal_present_section .sub_text {
+        font-size: 20px;
+        line-height: 30px;
+    }
+
+    .precious_metal_present_section .graph_container {
+        height: 300px;
+        gap: 10px;
+    }
+
+    .precious_metal_present_section .bar_body {
+        border-radius: 15px 0 0 0;
+    }
+
+    .precious_metal_present_section .ppm_value {
+        font-size: 18px;
+    }
+
+    .precious_metal_present_section .label_container {
+        margin-top: 5px;
+    }
+
+    .precious_metal_present_section .metal_full_name,
+    .precious_metal_present_section .metal_short_symbol {
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 767px) {
+
+    .precious_metal_present_section {
+        padding: 40px 0;
+    }
+
+    .precious_metal_present_section .header_content {
+        margin-bottom: 20px;
+    }
+
+    .precious_metal_present_section .main_title {
+        font-size: 28px;
+    }
+
+    .precious_metal_present_section .main_title br {
+        display: none;
+    }
+
+    .precious_metal_present_section .sub_text {
+        font-size: 18px;
+        line-height: 26px;
+    }
+
+    .precious_metal_present_section .sub_text br {
+        display: none;
+    }
+
+    .precious_metal_present_section .graph_container {
+        height: 250px;
+        gap: 5px;
+    }
+
+    .precious_metal_present_section .bar_body {
+        border-radius: 10px 0 0 0;
+        min-height: 30px;
+        padding: 5px 2px;
+    }
+
+    .precious_metal_present_section .ppm_value {
+        font-size: 12px;
+    }
+
+    .precious_metal_present_section .metal_full_name {
+        display: none;
+    }
+
+    .precious_metal_present_section .metal_short_symbol {
+        font-size: 12px;
+    }
+
+}
+
+@media (max-width: 400px) {
+
+    .precious_metal_present_section .header_content {
+        margin-bottom: 15px;
+    }
+
+    .precious_metal_present_section .graph_container {
+        height: 200px;
+    }
+
+    .precious_metal_present_section .bar_body {
+        border-radius: 5px 0 0 0;
+    }
+
+    .precious_metal_present_section .ppm_value {
+        font-size: 10px;
+    }
+
+    .precious_metal_present_section .metal_short_symbol {
+        font-size: 11px;
+    }
+
+}
+
+/* Earth Elements Breakdown Section CSS */
+
+.earth_element_breakdown_section .text_center_header {
+    text-align: center;
+}
+
+.earth_element_breakdown_section .main_title {
+    font-weight: 900;
+    font-size: 48px;
+    color: #8B2323;
+    margin-bottom: 10px;
+}
+
+.earth_element_breakdown_section .sub_title {
+    font-weight: 600;
+    font-size: 24px;
+    line-height: 34px;
+    color: #E67E66;
+}
+
+.earth_element_breakdown_section .chart_wrapper {
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.earth_element_breakdown_section svg {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+@media (max-width: 1199px) {
+
+    .earth_element_breakdown_section .main_title {
+        font-size: 40px;
+    }
+
+    .earth_element_breakdown_section .sub_title {
+        font-size: 22px;
+        line-height: 32px;
+    }
+
+}
+
+@media (max-width: 991px) {
+
+    .earth_element_breakdown_section .main_title {
+        font-size: 32px;
+    }
+
+    .earth_element_breakdown_section .sub_title {
+        font-size: 20px;
+        line-height: 30px;
+    }
+
+}
+
+@media (max-width: 767px) {
+
+    .earth_element_breakdown_section .main_title {
+        font-size: 28px;
+    }
+
+    .earth_element_breakdown_section .sub_title {
+        font-size: 18px;
+        line-height: 26px;
+    }
+
+    .earth_element_breakdown_section .chart_wrapper {
+        max-width: 100%;
+    }
+
+}
+
+/* Unique Soil Section CSS */
+
+.unique_soil_section {
+    background-color: #9e2a1f;
+    margin-top: 80px;
+    padding: 70px 0px;
+    border-bottom-right-radius: 150px;
+}
+
+.unique_soil_section .soil_main_heading {
+    font-weight: 800;
+    font-size: 72px;
+    line-height: 80px;
+    color: #ffffff;
+    margin-bottom: 15px;
+}
+
+.unique_soil_section .soil_sub_heading {
+    font-weight: 300;
+    font-size: 38px;
+    line-height: 46px;
+    color: #e5b567;
+}
+
+@media (max-width: 1199px) {
+
+    .unique_soil_section {
+        border-bottom-right-radius: 130px;
+        margin-top: 60px;
+        padding: 60px 0;
+    }
+
+    .unique_soil_section .soil_main_heading {
+        font-size: 60px;
+        line-height: 68px;
+        margin-bottom: 12px;
+    }
+
+    .unique_soil_section .soil_sub_heading {
+        font-size: 32px;
+        line-height: 40px;
+    }
+
+}
+
+@media (max-width: 991px) {
+
+    .unique_soil_section {
+        border-bottom-right-radius: 100px;
+        margin-top: 50px;
+        padding: 50px 0px;
+    }
+
+    .unique_soil_section .soil_main_heading {
+        font-size: 46px;
+        line-height: 56px;
+        margin-bottom: 10px;
+    }
+
+    .unique_soil_section .soil_sub_heading {
+        font-size: 28px;
+        line-height: 36px;
+    }
+
+}
+
+@media (max-width: 767px) {
+
+    .unique_soil_section {
+        border-bottom-right-radius: 70px;
+        margin-top: 40px;
+        padding: 40px 0px;
+    }
+
+    .unique_soil_section .soil_main_heading {
+        font-size: 40px;
+        line-height: 48px;
+    }
+
+    .unique_soil_section .soil_sub_heading {
+        font-size: 22px;
+        line-height: 28px;
+    }
+
+}
+
+/* Soil Feature Section CSS */
+
+.soil_feature_section {
+    padding: 80px 0px;
+}
+
+.soil_feature_section .soil_wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+}
+
+.soil_feature_section .soil_card {
+    padding: 30px;
+    border-radius: 0 0 0 15px;
+    flex: 1 1 calc(33.33% - 20px);
+}
+
+.soil_feature_section .iron_card {
+    background-color: #e4a78d;
+}
+
+.soil_feature_section .potas_card {
+    background-color: #899381;
+}
+
+.soil_feature_section .sodium_card {
+    background-color: #b16c68;
+}
+
+.soil_feature_section .soil_title {
+    font-weight: 600;
+    font-size: 28px;
+    line-height: 38px;
+    color: #FFFFFF;
+    margin-bottom: 5px;
+}
+
+.soil_feature_section .soil_desc {
+    font-weight: 400;
+    font-size: 22px;
+    line-height: 32px;
+    color: #FFFFFF;
+}
+
+@media (max-width: 1199px) {
+
+    .soil_feature_section {
+        padding: 60px 0;
+    }
+
+    .soil_feature_section .soil_card {
+        padding: 25px;
+    }
+
+    .soil_feature_section .soil_title {
+        font-size: 24px;
+        line-height: 34px;
+    }
+
+    .soil_feature_section .soil_desc {
+        font-size: 20px;
+        line-height: 30px;
+    }
+}
+
+@media (max-width: 991px) {
+
+    .soil_feature_section {
+        padding: 50px 0;
+    }
+
+    .soil_feature_section .soil_card {
+        flex: 1 1 calc(50% - 20px);
+        padding: 20px;
+    }
+
+    .soil_feature_section .soil_title {
+        font-size: 22px;
+        line-height: 32px;
+    }
+
+    .soil_feature_section .soil_desc {
+        font-size: 18px;
+        line-height: 26px;
+    }
+
+}
+
+@media (max-width: 767px) {
+
+    .soil_feature_section {
+        padding: 40px 0;
+    }
+
+    .soil_feature_section .soil_wrapper {
+        gap: 15px;
+    }
+
+    .soil_feature_section .soil_card {
+        flex: 1 1 100%;
+        padding: 15px;
+    }
+
+    .soil_feature_section .soil_title {
+        font-size: 20px;
+        line-height: 30px;
+    }
+
+    .soil_feature_section .soil_desc {
+        font-size: 16px;
+        line-height: 24px;
+    }
+
+}
+
+/* Found Elements List Section CSS */
+
+.found_elements_list_section .section_main_title {
+    font-weight: 900;
+    font-size: 48px;
+    color: #8B2323;
+    margin-bottom: 25px;
+}
+
+.found_elements_list_section .section_sub_title {
+    font-weight: 600;
+    font-size: 24px;
+    line-height: 34px;
+    color: #E67E66;
+    margin-bottom: 25px;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.found_elements_list_section .elements_table_wrapper {
+    max-width: 800px;
+}
+
+.found_elements_list_section .element_item_row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 15px;
+}
+
+.found_elements_list_section .element_item_row:last-child {
+    margin-bottom: 0;
+}
+
+.found_elements_list_section .element_col_info {
+    display: flex;
+    align-items: center;
+    width: 35%;
+}
+
+.found_elements_list_section .element_symbol_box {
+    width: 60px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 16px;
+    color: #ffffff;
+    border-radius: 5px 0 0 0;
+    margin-right: 15px;
+}
+
+.found_elements_list_section .element_name_text {
+    font-weight: 600;
+    font-size: 20px;
+}
+
+.found_elements_list_section .element_col_data {
+    display: flex;
+    align-items: center;
+    width: 55%;
+}
+
+.found_elements_list_section .ppm_value {
+    width: 120px;
+    font-size: 20px;
+    color: #7d8e95;
+}
+
+.found_elements_list_section .margin_value {
+    font-size: 20px;
+    color: #7d8e95;
+}
+
+.found_elements_list_section .element_col_arrow {
+    width: 10%;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.found_elements_list_section .dropdown_icon {
+    display: inline-block;
+    width: 19px;
+    height: 8px;
+    background-image: url("data:image/svg+xml,%3Csvg width='19' height='8' viewBox='0 0 14 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L7 7L13 1' stroke='%237D8E95' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: contain;
+}
+
+.found_elements_list_section .bg_grey_blue {
+    background-color: #7d8e95;
+}
+
+.found_elements_list_section .color_grey_blue {
+    color: #7d8e95;
+}
+
+.found_elements_list_section .bg_dark_grey {
+    background-color: #616161;
+}
+
+.found_elements_list_section .bg_maroon {
+    background-color: #8b2323;
+}
+
+.found_elements_list_section .color_red {
+    color: #8b2323;
+}
+
+.found_elements_list_section .bg_light_blue {
+    background-color: #b0c4de;
+}
+
+.found_elements_list_section .color_light_blue {
+    color: #b0c4de;
+}
+
+.found_elements_list_section .bg_peach {
+    background-color: #e69a8d;
+}
+
+.found_elements_list_section .color_peach {
+    color: #e69a8d;
+}
+
+.found_elements_list_section .bg_yellow {
+    background-color: #f0e68c;
+}
+
+.found_elements_list_section .color_yellow {
+    color: #daa520;
+}
+
+.found_elements_list_section .bg_dark_green {
+    background-color: #556b2f;
+}
+
+.found_elements_list_section .color_dark_green {
+    color: #556b2f;
+}
+
+.found_elements_list_section .bg_orange {
+    background-color: #e67e5b;
+}
+
+.found_elements_list_section .color_orange {
+    color: #e67e5b;
+}
+
+.found_elements_list_section .bg_deep_red {
+    background-color: #800000;
+}
+
+.found_elements_list_section .color_deep_red {
+    color: #800000;
+}
+
+.found_elements_list_section .bg_medium_grey {
+    background-color: #9e9e9e;
+}
+
+.found_elements_list_section .color_medium_grey {
+    color: #9e9e9e;
+}
+
+.found_elements_list_section .bg_bright_yellow {
+    background-color: #ffc107;
+}
+
+.found_elements_list_section .color_bright_yellow {
+    color: #ffc107;
+}
+
+.found_elements_list_section .bg_charcoal {
+    background-color: #4a4a4a;
+}
+
+.found_elements_list_section .color_charcoal {
+    color: #4a4a4a;
+}
+
+.found_elements_list_section .bg_blood_red {
+    background-color: #a52a2a;
+}
+
+.found_elements_list_section .color_blood_red {
+    color: #a52a2a;
+}
+
+.found_elements_list_section .bg_soft_blue {
+    background-color: #cbdce6;
+}
+
+.found_elements_list_section .color_soft_blue {
+    color: #cbdce6;
+}
+
+.found_elements_list_section .bg_skin_tone {
+    background-color: #e6b3a3;
+}
+
+.found_elements_list_section .color_skin_tone {
+    color: #e6b3a3;
+}
+
+@media (max-width: 1199px) {
+
+    .found_elements_list_section .section_main_title {
+        font-size: 40px;
+        margin-bottom: 20px;
+    }
+
+    .found_elements_list_section .section_sub_title {
+        font-size: 22px;
+        line-height: 32px;
+        margin-bottom: 20px;
+    }
+
+    .found_elements_list_section .element_symbol_box {
+        width: 55px;
+        height: 35px;
+        margin-right: 10px;
+    }
+
+}
+
+@media (max-width: 991px) {
+
+    .found_elements_list_section .section_main_title {
+        font-size: 32px;
+        margin-bottom: 15px;
+    }
+
+    .found_elements_list_section .section_sub_title {
+        font-size: 20px;
+        line-height: 30px;
+        margin-bottom: 15px;
+    }
+
+    .found_elements_list_section .elements_table_wrapper {
+        max-width: 100%;
+    }
+
+    .found_elements_list_section .element_name_text,
+    .found_elements_list_section .ppm_value,
+    .found_elements_list_section .margin_value {
+        font-size: 18px;
+    }
+}
+
+@media (max-width: 767px) {
+
+    .found_elements_list_section .section_main_title {
+        font-size: 28px;
+    }
+
+    .found_elements_list_section .section_sub_title {
+        font-size: 18px;
+        line-height: 26px;
+    }
+
+    .found_elements_list_section .section_main_title br {
+        display: none;
+    }
+
+    .found_elements_list_section .element_item_row {
+        flex-wrap: wrap;
+        border-bottom: 1px solid #d0d0d0;
+        margin-bottom: 10px;
+        padding-bottom: 10px;
+    }
+
+    .found_elements_list_section .element_item_row:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+
+    .found_elements_list_section .element_col_info {
+        width: 100%;
+        margin-bottom: 7px;
+    }
+
+    .found_elements_list_section .element_symbol_box {
+        width: 50px;
+        height: 30px;
+        margin-right: 7px;
+        font-size: 15px;
+    }
+
+    .found_elements_list_section .element_col_data {
+        width: 90%;
+    }
+
+    .found_elements_list_section .ppm_value {
+        font-size: 16px;
+        width: 100px;
+    }
+
+    .found_elements_list_section .margin_value {
+        font-size: 16px;
+    }
+}
+
+/* Not Found Elements List Section CSS */
+
+.not_found_elements_list_section {
+    padding: 80px 0px;
+}
+
+.not_found_elements_list_section .section_title {
+    font-weight: 600;
+    font-size: 24px;
+    line-height: 34px;
+    color: #E67E66;
+    margin-bottom: 25px;
+}
+
+.not_found_elements_list_section .elements_grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 40px;
+}
+
+.not_found_elements_list_section .element_column {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    flex: 1;
+}
+
+.not_found_elements_list_section .element_row {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.not_found_elements_list_section .element_badge {
+    width: 60px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 16px;
+    color: #ffffff;
+    border-radius: 5px 0 0 0;
+}
+
+.not_found_elements_list_section .element_label {
+    font-weight: 600;
+    font-size: 20px;
+}
+
+.not_found_elements_list_section .gold_bg {
+    background-color: #ffb400;
+}
+
+.not_found_elements_list_section .gold_text {
+    color: #ffb400;
+}
+
+.not_found_elements_list_section .platinum_bg {
+    background-color: #7a7a7a;
+}
+
+.not_found_elements_list_section .platinum_text {
+    color: #7a7a7a;
+}
+
+.not_found_elements_list_section .copper_bg {
+    background-color: #a53f3f;
+}
+
+.not_found_elements_list_section .copper_text {
+    color: #a53f3f;
+}
+
+.not_found_elements_list_section .silver_bg {
+    background-color: #b0c4de;
+}
+
+.not_found_elements_list_section .silver_text {
+    color: #b0c4de;
+}
+
+.not_found_elements_list_section .other_bg {
+    background-color: #d8a493;
+}
+
+.not_found_elements_list_section .other_text {
+    color: #d8a493;
+}
+
+@media (max-width: 1199px) {
+
+    .not_found_elements_list_section {
+        padding: 60px 0;
+    }
+
+    .not_found_elements_list_section .section_title {
+        font-size: 22px;
+        line-height: 32px;
+        margin-bottom: 20px;
+    }
+
+    .not_found_elements_list_section .elements_grid {
+        gap: 30px;
+    }
+
+    .not_found_elements_list_section .element_column {
+        flex: 0 0 22%;
+    }
+
+    .not_found_elements_list_section .element_row {
+        gap: 10px;
+    }
+
+    .not_found_elements_list_section .element_badge {
+        width: 55px;
+        height: 35px;
+    }
+
+}
+
+@media (max-width: 991px) {
+
+    .not_found_elements_list_section {
+        padding: 50px 0;
+    }
+
+    .not_found_elements_list_section .section_title {
+        font-size: 20px;
+        line-height: 30px;
+        margin-bottom: 15px;
+    }
+
+    .not_found_elements_list_section .elements_grid {
+        gap: 15px;
+    }
+
+    .not_found_elements_list_section .element_column {
+        flex: 0 0 48%;
+    }
+
+    .not_found_elements_list_section .element_label {
+        font-size: 18px;
+    }
+
+}
+
+@media (max-width: 767px) {
+
+    .not_found_elements_list_section {
+        padding: 40px 0;
+    }
+
+    .not_found_elements_list_section .section_title {
+        font-size: 18px;
+        line-height: 26px;
+    }
+
+    .not_found_elements_list_section .element_row {
+        gap: 7px;
+    }
+
+    .not_found_elements_list_section .element_badge {
+        width: 50px;
+        height: 30px;
+        font-size: 15px;
+    }
+
+}
