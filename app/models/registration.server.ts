@@ -1,5 +1,15 @@
 import prisma from "../db.server";
 
+function normalizeNumericShopifyId(value?: string | null) {
+  if (!value) return null;
+  const match = value.match(/(\d+)$/);
+  return match?.[1] ?? null;
+}
+
+function buildShopifyCustomerGid(customerId: string) {
+  return `gid://shopify/Customer/${customerId}`;
+}
+
 export type RegistrationInput = {
   shop: string;
   name: string;
@@ -88,6 +98,19 @@ export async function getRegistrationByKitNumber(kitRegistrationNumber: string) 
   });
 }
 
+export async function getRegistrationByKitRegistrationNumber(
+  kitRegistrationNumber: string,
+) {
+  return prisma.registration.findFirst({
+    where: {
+      kitRegistrationNumber: {
+        equals: kitRegistrationNumber.trim(),
+        mode: "insensitive",
+      },
+    },
+  });
+}
+
 export async function getRegistrationById(id: string) {
   return prisma.registration.findUnique({
     where: { id },
@@ -122,4 +145,56 @@ export async function listRegistrations(options: ListRegistrationsOptions = {}) 
   ]);
 
   return { items, total, page, perPage, totalPages: Math.ceil(total / perPage) };
+}
+
+export async function listRegistrationsByCustomerId(shopifyCustomerId: string) {
+  const normalizedCustomerId = normalizeNumericShopifyId(shopifyCustomerId) ?? shopifyCustomerId.trim();
+  return prisma.registration.findMany({
+    where: {
+      shopifyCustomerId: {
+        in: [normalizedCustomerId, buildShopifyCustomerGid(normalizedCustomerId)],
+      },
+    },
+    orderBy: { createdAt: "desc" },
+    include: { report: { select: { id: true, status: true } } },
+  });
+}
+
+export async function findRegistrationForGuestLookup(input: {
+  email: string;
+  orderNumber?: string;
+  kitRegistrationNumber?: string;
+  date?: string;
+}) {
+  const date = input.date?.trim();
+  const createdAtFilter = date
+    ? {
+        gte: new Date(`${date}T00:00:00.000Z`),
+        lt: new Date(`${date}T23:59:59.999Z`),
+      }
+    : undefined;
+
+  return prisma.registration.findFirst({
+    where: {
+      email: { equals: input.email.trim(), mode: "insensitive" },
+      ...(input.orderNumber?.trim()
+        ? {
+            orderNumber: {
+              equals: input.orderNumber.trim(),
+              mode: "insensitive",
+            },
+          }
+        : {}),
+      ...(input.kitRegistrationNumber?.trim()
+        ? {
+            kitRegistrationNumber: {
+              equals: input.kitRegistrationNumber.trim(),
+              mode: "insensitive",
+            },
+          }
+        : {}),
+      ...(createdAtFilter ? { createdAt: createdAtFilter } : {}),
+    },
+    include: { report: { select: { id: true, status: true } } },
+  });
 }
