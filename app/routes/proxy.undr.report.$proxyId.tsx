@@ -4,6 +4,7 @@ import type { LoaderFunctionArgs } from "react-router";
 import { getRegistrationByKitNumber } from "../models/registration.server";
 import { buildReportDataFromRows } from "../models/report.server";
 import { getProxyReportData } from "../lib/proxy-report-data.server";
+import type { ProxyReportData } from "../lib/proxy-report-data";
 import IndexPage from "../pages/Index";
 import { authenticate } from "../shopify.server";
 
@@ -20,59 +21,31 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
   const appUrl = (process.env.SHOPIFY_APP_URL || "").replace(/\/$/, "");
 
   const registration = await getRegistrationByKitNumber(proxyId);
+  const customerName = registration?.name || proxyId;
 
-  if (!registration) {
-    return liquid(
-      `<div style="max-width:640px;margin:60px auto;padding:0 20px;text-align:center;font-family:sans-serif;">
-        <h2 style="font-size:24px;font-weight:700;margin-bottom:12px;">Kit not registered</h2>
-        <p style="color:#6b7280;line-height:1.6;">
-          We couldn&apos;t find a registration for kit number
-          <strong>${proxyId.replace(/[<>"'&]/g, "")}</strong>.
-        </p>
-        <p style="color:#6b7280;line-height:1.6;">
-          Please
-          <a href="/apps/undr/register" style="color:#111827;font-weight:600;">register your kit</a>
-          first, and your report will appear here once it is ready.
-        </p>
-      </div>`,
-      { layout: !embed },
-    );
-  }
+  let report: ProxyReportData | null = null;
 
-  if (!registration.report || registration.report.status !== "uploaded") {
-    return liquid(
-      `<div style="max-width:640px;margin:60px auto;padding:0 20px;text-align:center;font-family:sans-serif;">
-        <h2 style="font-size:24px;font-weight:700;margin-bottom:12px;">Report being prepared</h2>
-        <p style="color:#6b7280;line-height:1.6;">
-          Hi <strong>${registration.name.replace(/[<>"'&]/g, "")}</strong>,
-          your kit is registered! Your analysis report will appear here once it has been processed.
-        </p>
-        <p style="color:#6b7280;line-height:1.6;">Expected within 5–7 business days of lab receipt.</p>
-      </div>`,
-      { layout: !embed },
-    );
-  }
+  if (registration?.report?.status === "uploaded") {
+    if (registration.report.reportData) {
+      try {
+        report = JSON.parse(registration.report.reportData) as ProxyReportData;
+      } catch {
+        // Fall through to row-based reconstruction or static fallback.
+      }
+    }
 
-  let report;
-
-  if (registration.report.reportData) {
-    try {
-      report = JSON.parse(registration.report.reportData);
-    } catch {
-      // fall through to row-based reconstruction
+    if (!report && registration.report.rows && registration.report.rows.length > 0) {
+      report = buildReportDataFromRows(
+        registration.report.rows as Parameters<typeof buildReportDataFromRows>[0],
+        customerName,
+        proxyId,
+      );
     }
   }
 
   if (!report) {
-    if (registration.report.rows && registration.report.rows.length > 0) {
-      report = buildReportDataFromRows(
-        registration.report.rows as Parameters<typeof buildReportDataFromRows>[0],
-        registration.name,
-        proxyId,
-      );
-    } else {
-      report = await getProxyReportData(proxyId, request);
-    }
+    report = await getProxyReportData(proxyId, request);
+    report.banner.name = customerName || report.banner.name;
   }
 
   const pageHtml = renderToStaticMarkup(<IndexPage report={report} />);
