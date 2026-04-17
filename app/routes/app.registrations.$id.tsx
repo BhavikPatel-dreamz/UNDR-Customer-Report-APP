@@ -4,6 +4,7 @@ import { authenticate } from "../shopify.server";
 import { getRegistrationById } from "../models/registration.server";
 import {
   parseCsv,
+  parseSpreadsheet,
   extractReportRows,
   buildReportDataFromRows,
   upsertReport,
@@ -47,22 +48,33 @@ export const action = async ({ params, request }: ActionFunctionArgs) => {
 
   const MAX_CSV_BYTES = 5 * 1024 * 1024; // 5 MB
   if (file.size > MAX_CSV_BYTES) {
-    return { error: "CSV file is too large (max 5 MB)." };
+    return { error: "File is too large (max 5 MB)." };
   }
 
-  let text: string;
+  let inputRows: Record<string, string>[];
+  const lowerFileName = file.name.toLowerCase();
+  const isExcel = lowerFileName.endsWith(".xlsx") || lowerFileName.endsWith(".xls");
+
   try {
-    text = await file.text();
+    if (isExcel) {
+      const buffer = await file.arrayBuffer();
+      inputRows = parseSpreadsheet(buffer);
+    } else {
+      const text = await file.text();
+      inputRows = parseCsv(text);
+    }
   } catch {
     return { error: "Could not read the uploaded file." };
   }
 
-  const csvRows = parseCsv(text);
-  if (csvRows.length === 0) {
-    return { error: "The CSV file appears to be empty or has no parseable rows." };
+  if (inputRows.length === 0) {
+    return {
+      error:
+        "The uploaded file appears to be empty or has no parseable rows.",
+    };
   }
 
-  const rows = extractReportRows(csvRows);
+  const rows = extractReportRows(inputRows);
   if (rows.length === 0) {
     return {
       error:
@@ -233,7 +245,7 @@ export default function RegistrationDetail() {
             <input
               type="file"
               name="csv"
-              accept=".csv,text/csv"
+                accept=".csv,.xlsx,.xls,text/csv,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
               required
               style={{ fontSize: "14px" }}
             />

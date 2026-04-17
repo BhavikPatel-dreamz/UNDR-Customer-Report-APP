@@ -1,5 +1,6 @@
 import type { HeadersFunction, LoaderFunctionArgs } from "react-router";
 import { useLoaderData, useNavigate, useSearchParams, Form } from "react-router";
+import { Link } from "react-router";
 import { authenticate } from "../shopify.server";
 import { listRegistrations } from "../models/registration.server";
 import { boundary } from "@shopify/shopify-app-react-router/server";
@@ -170,13 +171,25 @@ export default function RegistrationsIndex() {
                       {new Date(reg.createdAt).toLocaleDateString()}
                     </td>
                     <td style={{ padding: "12px" }}>
-                      <a
-                        href={`/app/registrations/${reg.id}`}
+                      <Link
+                        to={`/app/registrations/${reg.id}`}
                         onClick={(e) => e.stopPropagation()}
-                        style={{ color: "#111827", fontWeight: 600, textDecoration: "none" }}
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          minHeight: "30px",
+                          padding: "0 10px",
+                          borderRadius: "8px",
+                          border: "1px solid rgba(15,23,42,0.14)",
+                          color: "#111827",
+                          fontWeight: 600,
+                          textDecoration: "none",
+                          fontSize: "13px",
+                        }}
                       >
-                        View →
-                      </a>
+                        View
+                      </Link>
                     </td>
                   </tr>
                 ))

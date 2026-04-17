@@ -1,4 +1,5 @@
 import prisma from "../db.server";
+import * as XLSX from "xlsx";
 import { sampleProxyReportData } from "../lib/proxy-report-data";
 import type {
   ProxyReportData,
@@ -67,6 +68,31 @@ export function parseCsv(text: string): Record<string, string>[] {
         },
         {} as Record<string, string>,
       );
+    })
+    .filter((row) => Object.values(row).some((v) => v !== ""));
+}
+
+export function parseSpreadsheet(buffer: ArrayBuffer): Record<string, string>[] {
+  const workbook = XLSX.read(buffer, { type: "array" });
+  const firstSheetName = workbook.SheetNames[0];
+  if (!firstSheetName) return [];
+
+  const firstSheet = workbook.Sheets[firstSheetName];
+  if (!firstSheet) return [];
+
+  const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(firstSheet, {
+    defval: "",
+    raw: false,
+  });
+
+  return rows
+    .map((row) => {
+      const normalized: Record<string, string> = {};
+      for (const [key, value] of Object.entries(row)) {
+        const header = key.toLowerCase().replace(/[^a-z0-9_]/g, "_");
+        normalized[header] = String(value ?? "").trim();
+      }
+      return normalized;
     })
     .filter((row) => Object.values(row).some((v) => v !== ""));
 }
