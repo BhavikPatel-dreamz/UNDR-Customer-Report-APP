@@ -239,7 +239,7 @@ export default function RegistrationDetail() {
             <span style={{ fontSize: "14px", fontWeight: 600 }}>
               CSV file{" "}
               <span style={{ fontWeight: 400, color: "#9ca3af" }}>
-                (headers: element, raw_value, unit, category)
+                (supports element/raw_value or component/result exports)
               </span>
             </span>
             <input
@@ -273,7 +273,7 @@ export default function RegistrationDetail() {
 
         <details style={{ marginTop: "20px" }}>
           <summary style={{ fontSize: "13px", color: "#6b7280", cursor: "pointer" }}>
-            Expected CSV format
+            Accepted file formats
           </summary>
           <pre
             style={{
@@ -291,6 +291,22 @@ Lead,0.0023,ppm,heavy_metal
 Gold,0.000001,ppm,precious_metal
 Iron,1.5400,ppm,trace_element
 Uranium,0.0000,ppm,heavy_metal`}
+          </pre>
+          <pre
+            style={{
+              marginTop: "10px",
+              padding: "14px",
+              background: "#f9fafb",
+              borderRadius: "10px",
+              fontSize: "12px",
+              color: "#374151",
+              overflowX: "auto",
+            }}
+          >
+{`Component,Result,Unit
+Fe,63.1272,mass%
+Cr,15.8755,mass%
+Ni,6.7106,mass%`}
           </pre>
           <p style={{ margin: "8px 0 0", fontSize: "12px", color: "#9ca3af" }}>
             ppm_value = raw_value × 10,000. Category is optional but helps organise the report.

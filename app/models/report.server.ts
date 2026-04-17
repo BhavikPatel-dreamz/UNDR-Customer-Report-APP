@@ -45,6 +45,73 @@ function parseCsvRow(line: string): string[] {
   return values;
 }
 
+function normalizeHeader(value: string): string {
+  return value.toLowerCase().trim().replace(/[^a-z0-9_]/g, "_");
+}
+
+function normalizeRows(
+  rows: string[][],
+  preferredHeaders: string[] = [],
+): Record<string, string>[] {
+  if (rows.length === 0) return [];
+
+  const preferred = new Set(preferredHeaders.map((h) => normalizeHeader(h)));
+  const elementCandidates = new Set([
+    "element",
+    "component",
+    "name",
+    "element_name",
+    "analyte",
+  ]);
+  const valueCandidates = new Set([
+    "raw_value",
+    "value",
+    "result",
+    "concentration",
+    "ppm",
+    "mg_l",
+    "mg_kg",
+  ]);
+
+  let headerIndex = 0;
+  let bestScore = -1;
+
+  for (let i = 0; i < rows.length; i++) {
+    const rowHeaders = rows[i].map(normalizeHeader).filter(Boolean);
+    if (rowHeaders.length === 0) continue;
+
+    let score = 0;
+    for (const header of rowHeaders) {
+      if (preferred.has(header)) score += 2;
+      if (elementCandidates.has(header)) score += 3;
+      if (valueCandidates.has(header)) score += 3;
+      if (header === "unit" || header === "units") score += 1;
+      if (header === "category" || header === "type" || header === "group") score += 1;
+    }
+
+    if (score > bestScore) {
+      bestScore = score;
+      headerIndex = i;
+    }
+  }
+
+  const headers = rows[headerIndex].map(normalizeHeader);
+
+  return rows
+    .slice(headerIndex + 1)
+    .map((row) => {
+      return headers.reduce(
+        (obj, header, i) => {
+          if (!header) return obj;
+          obj[header] = String(row[i] ?? "").trim();
+          return obj;
+        },
+        {} as Record<string, string>,
+      );
+    })
+    .filter((row) => Object.values(row).some((v) => v !== ""));
+}
+
 export function parseCsv(text: string): Record<string, string>[] {
   const lines = text
     .trim()
@@ -53,23 +120,8 @@ export function parseCsv(text: string): Record<string, string>[] {
 
   if (lines.length < 2) return [];
 
-  const headers = parseCsvRow(lines[0]).map((h) =>
-    h.toLowerCase().replace(/[^a-z0-9_]/g, "_"),
-  );
-
-  return lines
-    .slice(1)
-    .map((line) => {
-      const values = parseCsvRow(line);
-      return headers.reduce(
-        (obj, header, i) => {
-          obj[header] = values[i] ?? "";
-          return obj;
-        },
-        {} as Record<string, string>,
-      );
-    })
-    .filter((row) => Object.values(row).some((v) => v !== ""));
+  const parsedRows = lines.map((line) => parseCsvRow(line));
+  return normalizeRows(parsedRows, ["element", "component", "result", "raw_value", "value"]);
 }
 
 export function parseSpreadsheet(buffer: ArrayBuffer): Record<string, string>[] {
@@ -80,21 +132,114 @@ export function parseSpreadsheet(buffer: ArrayBuffer): Record<string, string>[] 
   const firstSheet = workbook.Sheets[firstSheetName];
   if (!firstSheet) return [];
 
-  const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(firstSheet, {
+  const rows = XLSX.utils.sheet_to_json<unknown[]>(firstSheet, {
+    header: 1,
     defval: "",
     raw: false,
-  });
+    blankrows: false,
+  }) as unknown[][];
 
-  return rows
-    .map((row) => {
-      const normalized: Record<string, string> = {};
-      for (const [key, value] of Object.entries(row)) {
-        const header = key.toLowerCase().replace(/[^a-z0-9_]/g, "_");
-        normalized[header] = String(value ?? "").trim();
-      }
-      return normalized;
-    })
-    .filter((row) => Object.values(row).some((v) => v !== ""));
+  const asStrings = rows.map((row) => row.map((cell) => String(cell ?? "").trim()));
+  return normalizeRows(asStrings, ["element", "component", "result", "raw_value", "value"]);
+}
+
+function inferCategoryFromElement(elementName: string): string {
+  const normalized = elementName.trim().toLowerCase();
+  if (!normalized) return "";
+
+  const heavyMetals = new Set([
+    "lead",
+    "pb",
+    "cadmium",
+    "cd",
+    "mercury",
+    "hg",
+    "arsenic",
+    "as",
+    "chromium",
+    "cr",
+    "nickel",
+    "ni",
+    "cobalt",
+    "co",
+    "uranium",
+    "u",
+    "thorium",
+    "th",
+    "manganese",
+    "mn",
+    "vanadium",
+    "v",
+    "antimony",
+    "sb",
+    "barium",
+    "ba",
+  ]);
+
+  const preciousMetals = new Set([
+    "gold",
+    "au",
+    "silver",
+    "ag",
+    "platinum",
+    "pt",
+    "palladium",
+    "pd",
+    "rhodium",
+    "rh",
+    "iridium",
+    "ir",
+    "ruthenium",
+    "ru",
+    "osmium",
+    "os",
+    "re",
+    "rhenium",
+  ]);
+
+  const rareEarth = new Set([
+    "scandium",
+    "sc",
+    "yttrium",
+    "y",
+    "lanthanum",
+    "la",
+    "cerium",
+    "ce",
+    "praseodymium",
+    "pr",
+    "neodymium",
+    "nd",
+    "samarium",
+    "sm",
+    "europium",
+    "eu",
+    "gadolinium",
+    "gd",
+    "terbium",
+    "tb",
+    "dysprosium",
+    "dy",
+    "holmium",
+    "ho",
+    "erbium",
+    "er",
+    "thulium",
+    "tm",
+    "ytterbium",
+    "yb",
+    "lutetium",
+    "lu",
+  ]);
+
+  if (heavyMetals.has(normalized)) return "heavy_metal";
+  if (preciousMetals.has(normalized)) return "precious_metal";
+  if (rareEarth.has(normalized)) return "rare_earth";
+  if (normalized.includes("oil") || normalized.includes("petroleum") || normalized.includes("hydrocarbon")) {
+    return "oil_contaminant";
+  }
+
+  return "trace_element";
 }
 
 export function extractReportRows(
@@ -111,7 +256,7 @@ export function extractReportRows(
   return csvRows
     .map((row) => {
       const element =
-        findCol(row, "element", "name", "element_name", "analyte") ??
+        findCol(row, "element", "component", "name", "element_name", "analyte") ??
         Object.values(row)[0] ??
         "";
 
@@ -128,11 +273,12 @@ export function extractReportRows(
           "mg_kg",
         ) ?? Object.values(row)[1] ?? "0";
 
-      const rawValue = parseFloat(rawStr) || 0;
-      const ppmValue = rawValue * 10000;
+      const rawValue = Number.parseFloat(rawStr);
+      const ppmValue = Number.isFinite(rawValue) ? rawValue * 10000 : Number.NaN;
       const unit = findCol(row, "unit", "units") ?? "ppm";
-      const category =
+      const detectedCategory =
         findCol(row, "category", "type", "group", "class_") ?? "";
+      const category = detectedCategory || inferCategoryFromElement(String(element));
 
       return {
         element: String(element).trim(),
