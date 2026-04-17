@@ -40,7 +40,7 @@ function buildLoginRedirect(url: URL): string {
 	if (!shop) return "https://accounts.shopify.com/store-login";
 
 	const pathPrefix = url.searchParams.get("path_prefix")?.trim() || "/apps/report";
-	const returnPath = `${pathPrefix.replace(/\/$/, "")}/register`;
+	const returnPath = `${pathPrefix.replace(/\/$/, "")}/submit`;
 	return `https://${shop}/account/login?return_url=${encodeURIComponent(returnPath)}`;
 }
 

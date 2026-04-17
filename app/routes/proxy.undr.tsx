@@ -120,7 +120,7 @@ function renderLoggedInSection(state: DashboardState) {
 								<div><strong style="color:#111827;">Registered:</strong> ${escapeHtml(new Date(registration.createdAt).toLocaleDateString())}</div>
 							</div>
 							<div style="display:flex;gap:12px;flex-wrap:wrap;">
-								<a href="/apps/undr/register" style="display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 18px;border-radius:999px;border:1px solid rgba(15,23,42,0.14);color:#111827;font-size:14px;font-weight:600;text-decoration:none;">Register new kit</a>
+								<a href="/apps/undr/submit" style="display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 18px;border-radius:999px;border:1px solid rgba(15,23,42,0.14);color:#111827;font-size:14px;font-weight:600;text-decoration:none;">Register new kit</a>
 								<a href="${actionHref}" style="display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 18px;border-radius:999px;background:${reportReady ? "#111827" : "#e5e7eb"};color:${reportReady ? "#fff" : "#6b7280"};font-size:14px;font-weight:600;text-decoration:none;pointer-events:${reportReady ? "auto" : "none"};">
 									${actionLabel}
 								</a>
@@ -133,7 +133,7 @@ function renderLoggedInSection(state: DashboardState) {
 			<div style="padding:24px;border:1px dashed rgba(15,23,42,0.18);border-radius:18px;background:rgba(255,255,255,0.72);">
 				<h3 style="margin:0 0 8px;font-size:22px;">No kits registered yet</h3>
 				<p style="margin:0 0 16px;color:#4b5563;line-height:1.6;">We could not find any kits linked to your customer account yet.</p>
-				<a href="/apps/undr/register" style="display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 20px;border-radius:999px;background:#111827;color:#fff;font-size:14px;font-weight:600;text-decoration:none;">Register New Kit</a>
+				<a href="/apps/undr/submit" style="display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 20px;border-radius:999px;background:#111827;color:#fff;font-size:14px;font-weight:600;text-decoration:none;">Register New Kit</a>
 			</div>
 		`;
 
@@ -145,7 +145,7 @@ function renderLoggedInSection(state: DashboardState) {
 					<h1 style="margin:0 0 10px;font-size:clamp(32px,5vw,48px);line-height:1.05;">Your registered kits</h1>
 					<p style="margin:0;color:#4b5563;font-size:16px;line-height:1.7;max-width:620px;">Review kits linked to your customer account and open any report that is ready.</p>
 				</div>
-				<a href="/apps/undr/register" style="display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 22px;border-radius:999px;background:#111827;color:#fff;font-size:15px;font-weight:700;text-decoration:none;">Register New Kit</a>
+				<a href="/apps/undr/submit" style="display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 22px;border-radius:999px;background:#111827;color:#fff;font-size:15px;font-weight:700;text-decoration:none;">Register New Kit</a>
 			</div>
 			<div style="display:grid;gap:16px;">${registrationsMarkup}</div>
 		</section>
@@ -206,7 +206,7 @@ function renderGuestSection(state: DashboardState) {
 				</div>
 				<div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
 					<button type="submit" style="min-height:46px;padding:0 22px;border:0;border-radius:999px;background:#111827;color:#fff;font-size:15px;font-weight:700;cursor:pointer;">Validate and Fetch Report</button>
-					<a href="/apps/undr/register" style="display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:0 22px;border:1px solid rgba(15,23,42,0.14);border-radius:999px;color:#111827;font-size:15px;font-weight:600;text-decoration:none;">Need to register a kit?</a>
+					<a href="/apps/undr/submit" style="display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:0 22px;border:1px solid rgba(15,23,42,0.14);border-radius:999px;color:#111827;font-size:15px;font-weight:600;text-decoration:none;">Need to register a kit?</a>
 				</div>
 				${resultMarkup}
 			</form>
