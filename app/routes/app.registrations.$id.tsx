@@ -14,13 +14,13 @@ import { boundary } from "@shopify/shopify-app-react-router/server";
 // ── Loader ────────────────────────────────────────────────────────────────────
 
 export const loader = async ({ params, request }: LoaderFunctionArgs) => {
-  await authenticate.admin(request);
+  const { session } = await authenticate.admin(request);
   const id = params.id as string;
   const registration = await getRegistrationById(id);
   if (!registration) {
     throw new Response("Not found", { status: 404 });
   }
-  return { registration };
+  return { registration, shopDomain: session.shop };
 };
 
 // ── Action ────────────────────────────────────────────────────────────────────
@@ -143,7 +143,7 @@ function InfoRow({ label, value }: { label: string; value: string }) {
 }
 
 export default function RegistrationDetail() {
-  const { registration } = useLoaderData<LoaderData>();
+  const { registration, shopDomain } = useLoaderData<LoaderData>();
   const actionData = useActionData<ActionData>();
   const nav = useNavigation();
   const isUploading = nav.state === "submitting";
@@ -151,7 +151,14 @@ export default function RegistrationDetail() {
   const report = registration.report;
   const rows = report?.rows ?? [];
   const appUrl = (typeof process !== "undefined" ? process.env.SHOPIFY_APP_URL : "") || "";
-  const reportUrl = `${appUrl.replace(/\/$/, "")}/apps/undr/report/${registration.kitRegistrationNumber}`;
+  const normalizedShopDomain = String(shopDomain || "")
+    .replace(/^https?:\/\//, "")
+    .replace(/\/$/, "");
+  const reportPath = `/apps/undr/report/${encodeURIComponent(registration.kitRegistrationNumber)}`;
+  const reportBaseUrl = normalizedShopDomain
+    ? `https://${normalizedShopDomain}`
+    : appUrl.replace(/\/$/, "");
+  const reportUrl = `${reportBaseUrl}${reportPath}`;
 
   return (
     <s-page
