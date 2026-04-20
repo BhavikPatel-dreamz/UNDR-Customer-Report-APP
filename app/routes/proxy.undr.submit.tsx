@@ -19,6 +19,7 @@ type ActionData = {
 	message?: string;
 	errors?: RegistrationFormErrors;
 	form: RegistrationFormState;
+	requireV2?: boolean;
 };
 
 const RECAPTCHA_ACTION = "submit_kit_registration";
@@ -62,6 +63,14 @@ function getRecaptchaMinScore() {
 	return RECAPTCHA_MIN_SCORE_DEFAULT;
 }
 
+function getRecaptchaV2SiteKey() {
+	return process.env.RECAPTCHA_V2_SITE_KEY?.trim() || "";
+}
+
+function getRecaptchaV2SecretKey() {
+	return process.env.RECAPTCHA_V2_SECRET_KEY?.trim() || "";
+}
+
 function escapeJsString(value: string) {
 	return value
 		.replaceAll("\\", "\\\\")
@@ -70,10 +79,64 @@ function escapeJsString(value: string) {
 		.replaceAll("\r", "\\r");
 }
 
-async function verifyRecaptchaToken(params: {
+async function verifyRecaptchaV2Token(params: {
 	token: string;
 	remoteIp?: string;
 }): Promise<{ ok: true } | { ok: false; message: string }> {
+	const secret = getRecaptchaV2SecretKey();
+	if (!secret) {
+		return {
+			ok: false,
+			message: "Security check is not configured. Please contact support.",
+		};
+	}
+
+	if (!params.token.trim()) {
+		return { ok: false, message: "Please complete the security check." };
+	}
+
+	try {
+		const body = new URLSearchParams();
+		body.set("secret", secret);
+		body.set("response", params.token);
+		if (params.remoteIp) body.set("remoteip", params.remoteIp);
+
+		const response = await fetch("https://www.google.com/recaptcha/api/siteverify", {
+			method: "POST",
+			headers: { "Content-Type": "application/x-www-form-urlencoded" },
+			body: body.toString(),
+		});
+
+		if (!response.ok) {
+			return {
+				ok: false,
+				message: "Could not verify security check right now. Please try again.",
+			};
+		}
+
+		const result = (await response.json()) as {
+			success?: boolean;
+			["error-codes"]?: string[];
+		};
+
+		if (!result.success) {
+			return { ok: false, message: "Security check failed. Please try again." };
+		}
+
+		return { ok: true };
+	} catch (error) {
+		console.error("[proxy.undr.submit] reCAPTCHA v2 verification failed", error);
+		return {
+			ok: false,
+			message: "Could not verify security check right now. Please try again.",
+		};
+	}
+}
+
+async function verifyRecaptchaToken(params: {
+	token: string;
+	remoteIp?: string;
+}): Promise<{ ok: true } | { ok: false; requireV2?: boolean; message: string }> {
 	const secret = getRecaptchaSecretKey();
 	if (!secret) {
 		if (process.env.NODE_ENV !== "production") {
@@ -141,6 +204,13 @@ async function verifyRecaptchaToken(params: {
 			typeof result.score === "number" &&
 			result.score < getRecaptchaMinScore()
 		) {
+			if (getRecaptchaV2SecretKey()) {
+				return {
+					ok: false,
+					requireV2: true,
+					message: "Please complete the security check below to continue.",
+				};
+			}
 			return {
 				ok: false,
 				message: "Submission looked suspicious. Please try again.",
@@ -236,12 +306,20 @@ function renderRegistrationPage(state: ActionData | LoaderData) {
 	const errors = "errors" in state ? state.errors : undefined;
 	const message = "message" in state ? state.message : undefined;
 	const ok = "ok" in state ? state.ok : false;
+	const requireV2 = "requireV2" in state ? Boolean(state.requireV2) : false;
 	const recaptchaSiteKey = getRecaptchaSiteKey();
+	const recaptchaV2SiteKey = getRecaptchaV2SiteKey();
 	const recaptchaSiteKeyHtml = escapeHtml(recaptchaSiteKey);
+	const recaptchaV2SiteKeyHtml = escapeHtml(recaptchaV2SiteKey);
 	const recaptchaSiteKeyJs = escapeJsString(recaptchaSiteKey);
 	const recaptchaActionJs = escapeJsString(RECAPTCHA_ACTION);
-	const recaptchaScript = recaptchaSiteKey
-		? `<script src="https://www.google.com/recaptcha/api.js?render=${recaptchaSiteKeyHtml}"></script>
+
+	let recaptchaScript = "";
+	if (requireV2 && recaptchaV2SiteKey) {
+		// v2 checkbox widget — api.js auto-renders divs with class g-recaptcha
+		recaptchaScript = `<script src="https://www.google.com/recaptcha/api.js" async defer></script>`;
+	} else if (recaptchaSiteKey) {
+		recaptchaScript = `<script src="https://www.google.com/recaptcha/api.js?render=${recaptchaSiteKeyHtml}"></script>
 <script>
 (function () {
 	var form = document.getElementById("undr-registration-form");
@@ -266,8 +344,8 @@ function renderRegistrationPage(state: ActionData | LoaderData) {
 		});
 	});
 })();
-</script>`
-		: "";
+</script>`;
+	}
 
 	return `
 <div style="max-width:760px;margin:0 auto;padding:48px 20px 72px;color:#111827;font-family:system-ui,sans-serif;">
@@ -285,6 +363,7 @@ function renderRegistrationPage(state: ActionData | LoaderData) {
 
 	<form id="undr-registration-form" method="post" style="display:grid;gap:16px;max-width:600px;padding:28px;border:1px solid rgba(15,23,42,0.12);border-radius:20px;background:#fffdf8;">
 		<input type="hidden" name="recaptchaToken" value="" />
+		${requireV2 ? `<input type="hidden" name="requireV2" value="1" />` : ""}
 		<label style="display:grid;gap:5px;">
 			<span style="font-size:14px;font-weight:600;">Name</span>
 			<input name="name" value="${escapeHtml(form.name)}" autocomplete="name" style="min-height:44px;padding:10px 14px;border-radius:10px;border:1px solid rgba(15,23,42,0.2);font-size:15px;box-sizing:border-box;width:100%;" />
@@ -315,6 +394,7 @@ function renderRegistrationPage(state: ActionData | LoaderData) {
 			${renderError(errors?.kitRegistrationNumber)}
 		</label>
 
+		${requireV2 && recaptchaV2SiteKey ? `<div class="g-recaptcha" data-sitekey="${recaptchaV2SiteKeyHtml}" style="margin-top:4px;"></div>` : ""}
 		<button type="submit" style="min-height:44px;padding:0 24px;border:none;border-radius:999px;background:#111827;color:#fff;font-size:15px;font-weight:600;cursor:pointer;">Register Kit</button>
 	</form>
 	${recaptchaScript}
@@ -358,16 +438,18 @@ export async function action({ request }: ActionFunctionArgs) {
 		orderNumber: String(formData.get("orderNumber") || ""),
 		kitRegistrationNumber: String(formData.get("kitRegistrationNumber") || ""),
 	};
+	const requireV2 = formData.get("requireV2") === "1";
 	const recaptchaToken = String(formData.get("recaptchaToken") || "");
+	const recaptchaV2Token = String(formData.get("g-recaptcha-response") || "");
 	const remoteIp = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
-	const recaptchaVerification = await verifyRecaptchaToken({
-		token: recaptchaToken,
-		remoteIp,
-	});
-	if (!recaptchaVerification.ok) {
+	const captchaResult = requireV2
+		? await verifyRecaptchaV2Token({ token: recaptchaV2Token, remoteIp })
+		: await verifyRecaptchaToken({ token: recaptchaToken, remoteIp });
+	if (!captchaResult.ok) {
 		const data: ActionData = {
 			ok: false,
-			message: recaptchaVerification.message,
+			message: captchaResult.message,
+			requireV2: requireV2 || ("requireV2" in captchaResult ? Boolean(captchaResult.requireV2) : false),
 			form,
 		};
 		return proxyPageResponse(request, liquid, data);
