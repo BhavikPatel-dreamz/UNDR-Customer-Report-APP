@@ -21,6 +21,9 @@ type ActionData = {
 	form: RegistrationFormState;
 };
 
+const RECAPTCHA_ACTION = "submit_kit_registration";
+const RECAPTCHA_MIN_SCORE_DEFAULT = 0.5;
+
 function getLoggedInCustomerId(url: URL): string | null {
 	return (
 		url.searchParams.get("logged_in_customer_id")?.trim() ||
@@ -35,13 +38,183 @@ function normalizeCustomerId(value?: string | null): string | null {
 	return match?.[1] ?? null;
 }
 
-function buildLoginRedirect(url: URL): string {
-	const shop = url.searchParams.get("shop")?.trim();
-	if (!shop) return "https://accounts.shopify.com/store-login";
+function getRecaptchaSiteKey() {
+	return (
+		process.env.RECAPTCHA_V3_SITE_KEY?.trim() ||
+		process.env.RECAPTCHA_SITE_KEY?.trim() ||
+		""
+	);
+}
 
-	const pathPrefix = url.searchParams.get("path_prefix")?.trim() || "/apps/report";
-	const returnPath = `${pathPrefix.replace(/\/$/, "")}/submit`;
-	return `https://${shop}/account/login?return_url=${encodeURIComponent(returnPath)}`;
+function getRecaptchaSecretKey() {
+	return (
+		process.env.RECAPTCHA_V3_SECRET_KEY?.trim() ||
+		process.env.RECAPTCHA_SECRET_KEY?.trim() ||
+		""
+	);
+}
+
+function getRecaptchaMinScore() {
+	const configured = Number(process.env.RECAPTCHA_V3_MIN_SCORE);
+	if (Number.isFinite(configured) && configured >= 0 && configured <= 1) {
+		return configured;
+	}
+	return RECAPTCHA_MIN_SCORE_DEFAULT;
+}
+
+function escapeJsString(value: string) {
+	return value
+		.replaceAll("\\", "\\\\")
+		.replaceAll("'", "\\'")
+		.replaceAll("\n", "\\n")
+		.replaceAll("\r", "\\r");
+}
+
+async function verifyRecaptchaToken(params: {
+	token: string;
+	remoteIp?: string;
+}): Promise<{ ok: true } | { ok: false; message: string }> {
+	const secret = getRecaptchaSecretKey();
+	if (!secret) {
+		if (process.env.NODE_ENV !== "production") {
+			return { ok: true };
+		}
+		return {
+			ok: false,
+			message:
+				"Spam protection is not configured yet. Please contact support.",
+		};
+	}
+
+	if (!params.token.trim()) {
+		return {
+			ok: false,
+			message: "Please complete the reCAPTCHA check and try again.",
+		};
+	}
+
+	try {
+		const body = new URLSearchParams();
+		body.set("secret", secret);
+		body.set("response", params.token);
+		if (params.remoteIp) {
+			body.set("remoteip", params.remoteIp);
+		}
+
+		const response = await fetch("https://www.google.com/recaptcha/api/siteverify", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/x-www-form-urlencoded",
+			},
+			body: body.toString(),
+		});
+
+		if (!response.ok) {
+			return {
+				ok: false,
+				message: "Could not verify reCAPTCHA right now. Please try again.",
+			};
+		}
+
+		const result = (await response.json()) as {
+			success?: boolean;
+			score?: number;
+			action?: string;
+			["error-codes"]?: string[];
+		};
+
+		if (!result.success) {
+			return {
+				ok: false,
+				message: "reCAPTCHA verification failed. Please try again.",
+			};
+		}
+
+		if (result.action && result.action !== RECAPTCHA_ACTION) {
+			return {
+				ok: false,
+				message: "Security check failed. Please refresh and submit again.",
+			};
+		}
+
+		if (
+			typeof result.score === "number" &&
+			result.score < getRecaptchaMinScore()
+		) {
+			return {
+				ok: false,
+				message: "Submission looked suspicious. Please try again.",
+			};
+		}
+
+		return { ok: true };
+	} catch (error) {
+		console.error("[proxy.undr.submit] reCAPTCHA verification failed", error);
+		return {
+			ok: false,
+			message: "Could not verify reCAPTCHA right now. Please try again.",
+		};
+	}
+}
+
+async function findCustomerIdByEmail(params: {
+	admin: Awaited<ReturnType<typeof authenticate.public.appProxy>>["admin"];
+	email: string;
+}): Promise<string | null> {
+	const { admin, email } = params;
+	if (!admin || !email.trim()) return null;
+
+	try {
+		const response = await admin.graphql(
+			`#graphql
+				query getCustomerByEmail($query: String!) {
+					customers(first: 5, query: $query) {
+						nodes {
+							id
+							defaultEmailAddress {
+								emailAddress
+							}
+						}
+					}
+				}
+			`,
+			{ variables: { query: `email:${email.trim()}` } },
+		);
+
+		const json = (await response.json()) as {
+			errors?: Array<{ message?: string }>;
+			data?: {
+				customers?: {
+					nodes?: Array<{
+						id: string;
+						defaultEmailAddress?: { emailAddress?: string | null } | null;
+					}>;
+				};
+			};
+		};
+
+		if (json.errors?.length) {
+			console.error("[proxy.undr.submit] Shopify customer query errors", {
+				errors: json.errors,
+				email,
+			});
+			return null;
+		}
+
+		const nodes = json.data?.customers?.nodes ?? [];
+		const match = nodes.find((node) =>
+			(node.defaultEmailAddress?.emailAddress || "").trim().toLowerCase() ===
+			email.trim().toLowerCase(),
+		);
+
+		return normalizeCustomerId(match?.id ?? null);
+	} catch (error) {
+		console.error("[proxy.undr.submit] Shopify customer lookup failed", {
+			error,
+			email,
+		});
+		return null;
+	}
 }
 
 function escapeHtml(value: string) {
@@ -63,6 +236,38 @@ function renderRegistrationPage(state: ActionData | LoaderData) {
 	const errors = "errors" in state ? state.errors : undefined;
 	const message = "message" in state ? state.message : undefined;
 	const ok = "ok" in state ? state.ok : false;
+	const recaptchaSiteKey = getRecaptchaSiteKey();
+	const recaptchaSiteKeyHtml = escapeHtml(recaptchaSiteKey);
+	const recaptchaSiteKeyJs = escapeJsString(recaptchaSiteKey);
+	const recaptchaActionJs = escapeJsString(RECAPTCHA_ACTION);
+	const recaptchaScript = recaptchaSiteKey
+		? `<script src="https://www.google.com/recaptcha/api.js?render=${recaptchaSiteKeyHtml}"></script>
+<script>
+(function () {
+	var form = document.getElementById("undr-registration-form");
+	if (!form || typeof window.grecaptcha === "undefined") {
+		return;
+	}
+
+	form.addEventListener("submit", function (event) {
+		var tokenInput = form.querySelector('input[name="recaptchaToken"]');
+		if (!tokenInput || tokenInput.value) {
+			return;
+		}
+
+		event.preventDefault();
+		window.grecaptcha.ready(function () {
+			window.grecaptcha
+				.execute('${recaptchaSiteKeyJs}', { action: '${recaptchaActionJs}' })
+				.then(function (token) {
+					tokenInput.value = token;
+					form.submit();
+				});
+		});
+	});
+})();
+</script>`
+		: "";
 
 	return `
 <div style="max-width:760px;margin:0 auto;padding:48px 20px 72px;color:#111827;font-family:system-ui,sans-serif;">
@@ -78,7 +283,8 @@ function renderRegistrationPage(state: ActionData | LoaderData) {
 			: ""
 	}
 
-	<form method="post" style="display:grid;gap:16px;max-width:600px;padding:28px;border:1px solid rgba(15,23,42,0.12);border-radius:20px;background:#fffdf8;">
+	<form id="undr-registration-form" method="post" style="display:grid;gap:16px;max-width:600px;padding:28px;border:1px solid rgba(15,23,42,0.12);border-radius:20px;background:#fffdf8;">
+		<input type="hidden" name="recaptchaToken" value="" />
 		<label style="display:grid;gap:5px;">
 			<span style="font-size:14px;font-weight:600;">Name</span>
 			<input name="name" value="${escapeHtml(form.name)}" autocomplete="name" style="min-height:44px;padding:10px 14px;border-radius:10px;border:1px solid rgba(15,23,42,0.2);font-size:15px;box-sizing:border-box;width:100%;" />
@@ -111,6 +317,7 @@ function renderRegistrationPage(state: ActionData | LoaderData) {
 
 		<button type="submit" style="min-height:44px;padding:0 24px;border:none;border-radius:999px;background:#111827;color:#fff;font-size:15px;font-weight:600;cursor:pointer;">Register Kit</button>
 	</form>
+	${recaptchaScript}
 </div>
 `;
 }
@@ -118,12 +325,6 @@ function renderRegistrationPage(state: ActionData | LoaderData) {
 function isEmbedMode(url: URL) {
 	const embed = url.searchParams.get("embed")?.trim().toLowerCase();
 	return embed === "1" || embed === "true";
-}
-
-function shouldBypassOrderValidation(url: URL) {
-	void url;
-	const isDev = process.env.NODE_ENV !== "production";
-	return isDev;
 }
 
 async function proxyPageResponse(
@@ -138,12 +339,6 @@ async function proxyPageResponse(
 export async function loader({ request }: LoaderFunctionArgs) {
 	const { liquid } = await authenticate.public.appProxy(request);
 
-	const url = new URL(request.url);
-	const customerId = getLoggedInCustomerId(url);
-	if (!customerId) {
-		return Response.redirect(buildLoginRedirect(url), 302);
-	}
-
 	const data: LoaderData = {
 		form: getRegistrationDefaults(),
 	};
@@ -155,11 +350,6 @@ export async function action({ request }: ActionFunctionArgs) {
 	const url = new URL(request.url);
 	const { admin, session, liquid } = await authenticate.public.appProxy(request);
 
-	const customerId = getLoggedInCustomerId(url);
-	if (!customerId) {
-		return Response.redirect(buildLoginRedirect(url), 302);
-	}
-
 	const formData = await request.formData();
 	const form: RegistrationFormState = {
 		name: String(formData.get("name") || ""),
@@ -168,6 +358,20 @@ export async function action({ request }: ActionFunctionArgs) {
 		orderNumber: String(formData.get("orderNumber") || ""),
 		kitRegistrationNumber: String(formData.get("kitRegistrationNumber") || ""),
 	};
+	const recaptchaToken = String(formData.get("recaptchaToken") || "");
+	const remoteIp = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
+	const recaptchaVerification = await verifyRecaptchaToken({
+		token: recaptchaToken,
+		remoteIp,
+	});
+	if (!recaptchaVerification.ok) {
+		const data: ActionData = {
+			ok: false,
+			message: recaptchaVerification.message,
+			form,
+		};
+		return proxyPageResponse(request, liquid, data);
+	}
 
 	const validationErrors = validateRegistration(form);
 	if (validationErrors) {
@@ -195,145 +399,14 @@ export async function action({ request }: ActionFunctionArgs) {
 		return proxyPageResponse(request, liquid, data);
 	}
 
-	let shopifyOrderId: string | null = null;
-	let shopifyCustomerId: string | null = normalizeCustomerId(customerId);
-	const bypassOrderValidation = shouldBypassOrderValidation(url);
-
-	if (bypassOrderValidation) {
-		shopifyOrderId = form.orderNumber.trim();
-		shopifyCustomerId = normalizeCustomerId(customerId) ?? customerId;
-	} else {
-		if (!admin) {
-			const data: ActionData = {
-				ok: false,
-				message: "Could not validate order right now. Please try again.",
-				errors: {
-					orderNumber: "Order validation is temporarily unavailable.",
-				},
-				form,
-			};
-			return proxyPageResponse(request, liquid, data);
-		}
-
-		try {
-			const rawOrderNumber = form.orderNumber.trim();
-			const normalizedInput = rawOrderNumber.replace(/^#/, "").trim();
-			const orderNameCandidates = Array.from(
-				new Set([
-					rawOrderNumber,
-					rawOrderNumber.startsWith("#") ? rawOrderNumber.slice(1) : `#${rawOrderNumber}`,
-				]),
-			);
-			const orderQueryCandidates = Array.from(
-				new Set(
-					orderNameCandidates.flatMap((candidate) => [
-						`name:${candidate}`,
-						`name:"${candidate}"`,
-					]),
-				),
-			);
-
-			let order:
-				| {
-						id: string;
-						name: string;
-						customer?: { id: string } | null;
-					}
-				| undefined;
-
-			for (const orderQuery of orderQueryCandidates) {
-				const resp = await admin.graphql(
-					`#graphql
-						query getOrderByName($query: String!) {
-							orders(first: 10, query: $query) {
-								nodes {
-									id
-									name
-									customer { id }
-								}
-							}
-						}
-					`,
-					{ variables: { query: orderQuery } },
-				);
-
-				const json = (await resp.json()) as {
-					errors?: Array<{ message?: string }>;
-					data?: {
-						orders?: {
-							nodes?: Array<{
-								id: string;
-								name: string;
-								customer?: { id: string } | null;
-							}>;
-						};
-					};
-				};
-
-				if (json.errors?.length) {
-					console.error("[proxy.undr.submit] Shopify order query errors", {
-						orderQuery,
-						errors: json.errors,
-					});
-					continue;
-				}
-
-				const nodes = json.data?.orders?.nodes ?? [];
-				const exactMatch = nodes.find((node) => {
-					const normalizedNodeName = node.name.replace(/^#/, "").trim();
-					return normalizedNodeName === normalizedInput;
-				});
-
-				if (exactMatch) {
-					order = exactMatch;
-					break;
-				}
-			}
-
-			if (!order) {
-				const data: ActionData = {
-					ok: false,
-					message: "Order number could not be found.",
-					errors: {
-						orderNumber: "We could not find that order number. Please check and try again.",
-					},
-					form,
-				};
-				return proxyPageResponse(request, liquid, data);
-			}
-
-			const normalizedOrderCustomerId = normalizeCustomerId(order.customer?.id);
-			const normalizedLoggedInCustomerId = normalizeCustomerId(customerId);
-
-			if (
-				!normalizedOrderCustomerId ||
-				normalizedOrderCustomerId !== normalizedLoggedInCustomerId
-			) {
-				const data: ActionData = {
-					ok: false,
-					message: "Order does not belong to this customer.",
-					errors: {
-						orderNumber: "That order does not belong to your account.",
-					},
-					form,
-				};
-				return proxyPageResponse(request, liquid, data);
-			}
-
-			shopifyOrderId = order.id;
-			shopifyCustomerId = normalizedOrderCustomerId;
-		} catch (error) {
-			console.error("[proxy.undr.submit] Shopify order validation failed", error);
-			const data: ActionData = {
-				ok: false,
-				message: "Could not validate order right now. Please try again.",
-				errors: {
-					orderNumber: "Order validation failed. Please try again.",
-				},
-				form,
-			};
-			return proxyPageResponse(request, liquid, data);
-		}
+	let shopifyCustomerId: string | null = normalizeCustomerId(
+		getLoggedInCustomerId(url),
+	);
+	if (!shopifyCustomerId) {
+		shopifyCustomerId = await findCustomerIdByEmail({
+			admin,
+			email: form.email,
+		});
 	}
 
 	try {
@@ -346,7 +419,7 @@ export async function action({ request }: ActionFunctionArgs) {
 			phone: form.phone,
 			orderNumber: form.orderNumber,
 			kitRegistrationNumber: form.kitRegistrationNumber,
-			shopifyOrderId,
+			shopifyOrderId: null,
 			shopifyCustomerId,
 		});
 	} catch (error) {
