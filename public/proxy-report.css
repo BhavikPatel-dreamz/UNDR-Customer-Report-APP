@@ -2443,6 +2443,7 @@ p {
     width: 100%;
     height: 140px;
     border-top-left-radius: 30px;
+    display: block;
 }
 
 .precious_metals_section .text_content {
@@ -2466,6 +2467,7 @@ p {
 }
 
 .precious_metals_section .bar_item {
+    display: block;
     width: 100%;
     height: 180px;
     margin-bottom: 15px;
