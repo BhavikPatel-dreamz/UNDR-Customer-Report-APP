@@ -35,6 +35,7 @@ const ReportDetailsSection = ({
   preciousMetals,
   rareEarthElements,
 }: ReportDetailsSectionProps) => {
+  console.log(heavyMetals);
   return (
     <section className="report_details_section">
       <div className="container">

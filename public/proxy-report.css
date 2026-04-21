@@ -2415,3 +2415,202 @@ p {
     }
 
 }
+
+/* Newly Added CSS */
+
+/* Precious Metals Section CSS */
+
+.precious_metals_section {
+    padding: 60px 0;
+    text-align: center;
+}
+
+.precious_metals_section .top_shapes_wrapper,
+.precious_metals_section .bottom_bars_wrapper {
+    display: flex;
+    width: 100%;
+    gap: 12px;
+}
+
+.precious_metals_section .shape_column,
+.precious_metals_section .bar_column {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.precious_metals_section .shape_item {
+    width: 100%;
+    height: 140px;
+    border-top-left-radius: 30px;
+}
+
+.precious_metals_section .text_content {
+    text-align: center;
+    padding: 50px 0px;
+}
+
+.precious_metals_section .main_title {
+    font-weight: 800;
+    font-size: 64px;
+    line-height: 70px;
+    color: #8b231e;
+}
+
+.precious_metals_section .sub_title {
+    font-weight: 600;
+    font-size: 24px;
+    line-height: 34px;
+    color: #E67E66;
+    margin-top: 10px;
+}
+
+.precious_metals_section .bar_item {
+    width: 100%;
+    height: 180px;
+    margin-bottom: 15px;
+}
+
+.precious_metals_section .bar_label {
+    font-weight: 600;
+    font-size: 16px;
+    color: #666666;
+    text-align: center;
+}
+
+.precious_metals_section .bar_label span {
+    display: block;
+    font-weight: 400;
+}
+
+.precious_metals_section .shape_gold,
+.precious_metals_section .bar_gold {
+    background-color: #ffb400;
+}
+
+.precious_metals_section .shape_platinum,
+.precious_metals_section .bar_platinum {
+    background-color: #828282;
+}
+
+.precious_metals_section .shape_rhodium,
+.precious_metals_section .bar_rhodium {
+    background-color: #a63e3a;
+}
+
+.precious_metals_section .shape_silver,
+.precious_metals_section .bar_silver {
+    background-color: #b9cada;
+}
+
+.precious_metals_section .shape_palladium,
+.precious_metals_section .bar_palladium {
+    background-color: #f7ca9a;
+}
+
+.precious_metals_section .shape_osmium,
+.precious_metals_section .bar_osmium {
+    background-color: #6d7667;
+}
+
+.precious_metals_section .shape_ruthenium,
+.precious_metals_section .bar_ruthenium {
+    background-color: #d6a192;
+}
+
+.precious_metals_section .shape_iridium,
+.precious_metals_section .bar_iridium {
+    background-color: #ad6b68;
+}
+
+@media (max-width: 1199px) {
+    .precious_metals_section .main_title {
+        font-size: 52px;
+        line-height: 58px;
+    }
+
+    .precious_metals_section .shape_item {
+        height: 110px;
+    }
+
+    .precious_metals_section .bar_item {
+        height: 150px;
+    }
+}
+
+@media (max-width: 991px) {
+    .precious_metals_section {
+        padding: 40px 0;
+    }
+
+    .precious_metals_section .main_title {
+        font-size: 40px;
+        line-height: 46px;
+    }
+
+    .precious_metals_section .sub_title {
+        font-size: 20px;
+        line-height: 28px;
+    }
+
+    .precious_metals_section .top_shapes_wrapper,
+    .precious_metals_section .bottom_bars_wrapper {
+        gap: 8px;
+    }
+
+    .precious_metals_section .shape_item {
+        height: 80px;
+        border-top-left-radius: 20px;
+    }
+
+    .precious_metals_section .bar_item {
+        height: 120px;
+    }
+
+    .precious_metals_section .bar_label {
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 767px) {
+    .precious_metals_section {
+        padding: 30px 0;
+    }
+
+    .precious_metals_section .text_content {
+        padding: 30px 0;
+    }
+
+    .precious_metals_section .main_title {
+        font-size: 24px;
+        line-height: 30px;
+    }
+
+    .precious_metals_section .sub_title {
+        font-size: 16px;
+        line-height: 22px;
+    }
+
+    .precious_metals_section .top_shapes_wrapper,
+    .precious_metals_section .bottom_bars_wrapper {
+        gap: 4px;
+    }
+
+    .precious_metals_section .shape_item {
+        height: 50px;
+        border-top-left-radius: 12px;
+    }
+
+    .precious_metals_section .bar_item {
+        height: 80px;
+        margin-bottom: 8px;
+    }
+
+    .precious_metals_section .bar_label {
+        font-size: 0;
+    }
+
+    .precious_metals_section .bar_label span {
+        font-size: 12px;
+    }
+}

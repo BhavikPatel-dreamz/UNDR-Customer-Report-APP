@@ -3,7 +3,7 @@
   "private": true,
   "scripts": {
     "build": "prisma generate && react-router build",
-    "dev": "cloudflared tunnel run bhavik & shopify app dev --tunnel-url=https://b2b.dynamicdreamz.com:3000",
+    "dev": "cloudflared tunnel run dd-64 & shopify app dev --tunnel-url=https://dd-64.dynamicdreamz.com:3000",
     "config:link": "shopify app config link",
     "generate": "shopify app generate",
     "deploy": "shopify app deploy",

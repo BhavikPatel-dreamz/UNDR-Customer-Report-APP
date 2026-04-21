@@ -389,8 +389,8 @@ export function buildReportDataFromRows(
       .map((r): HeavyMetalItem => ({
         name: r.element,
         value: r.ppmValue.toFixed(4),
-        valueClassName: r.ppmValue > 100 ? "text-red-600" : "text-green-600",
-        textClassName: "text-gray-700",
+        valueClassName: `bg_${r.element}` /* r.ppmValue > 100 ? `text-red-600` : "text-green-600" */,
+        textClassName: "text-gray-700"
       }));
   }
 

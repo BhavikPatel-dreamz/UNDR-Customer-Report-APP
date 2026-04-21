@@ -14,6 +14,10 @@ import UniqueSoilSection from '../components/sections/UniqueSoilSection';
 import SoilFeatureSection from '../components/sections/SoilFeatureSection';
 import FoundElementsListSection from '../components/sections/FoundElementsListSection';
 import NotFoundElementsListSection from '../components/sections/NotFoundElementsListSection';
+import PreciousMetalsBreakdownHeading from '../components/sections/PreciousMetalsBreakdownHeading';
+import PreciousMetalsSection from '../components/sections/PreciousMetalsSection';
+import PreciousMetalsBreakdownHeadingAlt from '../components/sections/PreciousMetalsBreakdownHeadingAlt';
+import PreciousMetalsNotPresent from '../components/sections/PreciousMetalsNotPresent';
 import type { ProxyReportData } from '../lib/proxy-report-data';
 
 type IndexProps = {
@@ -73,6 +77,14 @@ const Index = ({ report }: IndexProps) => {
       <FoundElementsListSection elements={report.foundElements} />
       {/* 16. Not Found Elements List */}
       <NotFoundElementsListSection elements={report.notFoundElements} />
+      {/* 17. Precious Metals Breakdown Heading */}
+      <PreciousMetalsBreakdownHeading />
+      {/* 18. Precious Metals */}
+      <PreciousMetalsSection />
+      {/* 19. Precious Metals Breakdown Heading Alt */}
+      <PreciousMetalsBreakdownHeadingAlt />
+      {/* 20. Precious Metals Not Present */}
+      <PreciousMetalsNotPresent />
     </div>
   );
 };

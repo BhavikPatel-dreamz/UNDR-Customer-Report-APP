@@ -21,6 +21,7 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
   const appUrl = (process.env.SHOPIFY_APP_URL || "").replace(/\/$/, "");
 
   const registration = await getRegistrationByKitNumber(proxyId);
+  
   const customerName = registration?.name || proxyId;
 
   let report: ProxyReportData | null = null;
