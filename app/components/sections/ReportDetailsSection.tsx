@@ -8,7 +8,10 @@ type HeavyMetalItem = {
   name: string;
   value: string;
   valueClassName: string;
+   valueStyle?: React.CSSProperties; // ✅ add this
+  textStyle?: React.CSSProperties;  // optional
   textClassName: string;
+
 };
 
 type MetalCardItem = {
@@ -35,7 +38,7 @@ const ReportDetailsSection = ({
   preciousMetals,
   rareEarthElements,
 }: ReportDetailsSectionProps) => {
-  console.log(heavyMetals);
+  console.log("heavyMetals=========",heavyMetals);
   return (
     <section className="report_details_section">
       <div className="container">
@@ -63,8 +66,8 @@ const ReportDetailsSection = ({
                 <h2 className="report_main_heading">Heavy Metals</h2>
                 {heavyMetals.map((item) => (
                   <div className="metal_list_item" key={item.name}>
-                    <span className={`val_box ${item.valueClassName}`}>{item.value}</span>{" "}
-                    <span className={`metal_txt ${item.textClassName}`}>{item.name}</span>
+                    <span className={`val_box ${item.valueClassName}`}  style={{ backgroundColor: item.valueStyle?.backgroundColor }}>{item.value}</span>{" "}
+                    <span className={`metal_txt ${item.textClassName}`} style={{ color: item.valueStyle?.color }} >{item.name}</span>
                   </div>
                 ))}
               </div>

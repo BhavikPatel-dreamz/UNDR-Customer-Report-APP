@@ -11,9 +11,11 @@ function mergeReportData(base: ProxyReportData, incoming: Partial<ProxyReportDat
     ...incoming,
     banner: { ...base.banner, ...incoming.banner },
     reportDetails: {
+      
       ...base.reportDetails,
       ...incoming.reportDetails,
       heavyMetals: incoming.reportDetails?.heavyMetals || base.reportDetails.heavyMetals,
+      
       oilIndicator: { ...base.reportDetails.oilIndicator, ...incoming.reportDetails?.oilIndicator },
       preciousMetals: incoming.reportDetails?.preciousMetals || base.reportDetails.preciousMetals,
       rareEarthElements: incoming.reportDetails?.rareEarthElements || base.reportDetails.rareEarthElements,

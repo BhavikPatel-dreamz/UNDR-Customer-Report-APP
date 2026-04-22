@@ -1,4 +1,5 @@
 interface ElementItem {
+  valueStyle: any;
   symbol: string;
   name: string;
   ppm: string;
@@ -22,8 +23,9 @@ const FoundElementsListSection = ({ elements }: FoundElementsListSectionProps) =
           {elements.map((el, i) => (
             <div className="element_item_row" key={i}>
               <div className="element_col_info">
-                <span className={`element_symbol_box ${el.bgClass}`}>{el.symbol}</span>
-                <h4 className={`element_name_text ${el.colorClass}`}>{el.name}</h4>
+                <span className={`element_symbol_box ${el.bgClass}`}  style={{ backgroundColor: el.valueStyle?.backgroundColor }}
+>{el.symbol}</span>
+                <h4 className={`element_name_text ${el.colorClass}`}  style={{ color: el.valueStyle?.color }}>{el.name}</h4>
               </div>
               <div className="element_col_data">
                 <p className="ppm_value">{el.ppm}</p>

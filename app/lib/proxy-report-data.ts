@@ -15,6 +15,12 @@ export type HeavyMetalItem = {
   value: string;
   valueClassName: string;
   textClassName: string;
+
+  // ✅ add this
+  valueStyle?: {
+    backgroundColor: string;
+    color: string;
+  };
 };
 
 export type PreciousMetalGraphItem = {
@@ -45,13 +51,23 @@ export type FoundElementItem = {
   margin: string;
   bgClass: string;
   colorClass: string;
+  valueStyle?: {
+    backgroundColor: string;
+    color: string;
+  };
 };
+
+
 
 export type NotFoundElementItem = {
   symbol: string;
   name: string;
   bgClass: string;
   textClass: string;
+   valueStyle?: {
+    backgroundColor: string;
+    color: string;
+  };
 };
 
 export type SoilFeatureItem = {
@@ -64,6 +80,7 @@ export type ProxyReportData = {
   banner: {
     name: string;
     subtitle: string;
+    
   };
   reportDetails: {
     heavyMetals: HeavyMetalItem[];

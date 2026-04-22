@@ -20,6 +20,7 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
   const proxyId = params.proxyId || "";
   const appUrl = (process.env.SHOPIFY_APP_URL || "").replace(/\/$/, "");
 
+  console.log('288');
   const registration = await getRegistrationByKitNumber(proxyId);
   
   const customerName = registration?.name || proxyId;
@@ -27,7 +28,10 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
   let report: ProxyReportData | null = null;
 
   if (registration?.report?.status === "uploaded") {
+
+    console.log('registration.report.reportData',registration.report.rows);
     if (registration.report.reportData) {
+      console.log('registration.report.reportDataregistration.report.reportData',registration.report.reportData);
       try {
         report = JSON.parse(registration.report.reportData) as ProxyReportData;
       } catch {
@@ -44,6 +48,8 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
     }
   }
 
+
+  console.log('repott',report?.banner);
   if (!report) {
     report = await getProxyReportData(proxyId, request);
     report.banner.name = customerName || report.banner.name;

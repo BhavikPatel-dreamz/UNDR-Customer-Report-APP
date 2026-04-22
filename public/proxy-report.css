@@ -245,7 +245,7 @@ p {
 }
 
 .report_details_section .val_box {
-    width: 70px;
+    width: 110px;
     padding: 4px;
     text-align: center;
     color: #fff;
@@ -334,27 +334,33 @@ p {
     font-size: 13px;
 }
 
-.report_details_section .gold_bg {
+.report_details_section .gold_bg,
+.report_details_section .bg_Ru {
     background: #f1b434;
 }
 
-.report_details_section .silver_bg {
+.report_details_section .silver_bg,
+.report_details_section .bg_Rh {
     background: #93979b;
 }
 
-.report_details_section .iridium_bg {
+.report_details_section .iridium_bg,
+.report_details_section .bg_Pd {
     background: #8b231a;
 }
 
-.report_details_section .cerium_bg {
+.report_details_section .cerium_bg,
+.report_details_section .bg_Sc {
     background: #f1b434;
 }
 
-.report_details_section .scandium_bg {
+.report_details_section .scandium_bg,
+.report_details_section .bg_Y {
     background: #93979b;
 }
 
-.report_details_section .yttreium_bg {
+.report_details_section .yttreium_bg,
+.report_details_section .bg_La {
     background: #8b231a;
 }
 
