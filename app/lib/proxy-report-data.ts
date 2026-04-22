@@ -8,6 +8,10 @@ export type MetalCardItem = {
   name: string;
   ppm: string;
   className: string;
+  valueStyle?: {
+    backgroundColor: string;
+    color: string;
+  };
 };
 
 export type HeavyMetalItem = {
@@ -124,6 +128,17 @@ export type ProxyReportData = {
     status: string;
     value: string;
   };
+  petroleum_contaminant?: {
+    type: string;
+    ppm: number;
+    rawValue?: number;
+    level?: "Green" | "Yellow" | "Red";
+  };
+  petroleum_contaminants?: Array<{
+    type: string;
+    ppm: number;
+    rawValue?: number;
+  }>;
   preciousMetalPresent: {
     items: PreciousMetalGraphItem[];
   };

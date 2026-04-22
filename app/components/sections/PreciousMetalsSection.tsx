@@ -1,11 +1,11 @@
 const metals = [
-  { key: "gold", name: "Gold", symbol: "Ag" },
+  { key: "gold", name: "Gold", symbol: "Au" },
+  { key: "silver", name: "Silver", symbol: "Ag" },
   { key: "platinum", name: "Platinum", symbol: "Pt" },
+  { key: "ruthenium", name: "Ruthenium", symbol: "Ru" },
   { key: "rhodium", name: "Rhodium", symbol: "Rh" },
-  { key: "silver", name: "Silver", symbol: "Au" },
   { key: "palladium", name: "Palladium", symbol: "Pd" },
   { key: "osmium", name: "Osmium", symbol: "Os" },
-  { key: "ruthenium", name: "Ruthenium", symbol: "Ru" },
   { key: "iridium", name: "Iridium", symbol: "Ir" },
 ];
 
@@ -21,12 +21,12 @@ const PreciousMetalsSection = () => {
           ))}
         </div>
 
-        <div className="text_content">
+        {/* <div className="text_content">
           <h3 className="main_title">
             Precious Metals <br />NOT Present!
           </h3>
           <p className="sub_title">That's unfortunate</p>
-        </div>
+        </div> */}
 
         <div className="bottom_bars_wrapper">
           {metals.map((m) => (

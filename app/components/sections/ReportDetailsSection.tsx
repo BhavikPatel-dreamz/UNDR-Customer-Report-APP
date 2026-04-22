@@ -18,6 +18,7 @@ type MetalCardItem = {
   name: string;
   ppm: string;
   className: string;
+  valueStyle?: React.CSSProperties;
 };
 
 type ReportDetailsSectionProps = {
@@ -83,7 +84,15 @@ const ReportDetailsSection = ({
               <h2 className="report_main_heading">Precious Metals</h2>
               <div className="circles_flex">
                 {preciousMetals.map((item) => (
-                  <div className={`metal_circle ${item.className}`} key={item.name}>{item.name}<br /><span>{item.ppm}</span></div>
+                  <div
+                    className={`metal_circle ${item.className}`}
+                    style={{ backgroundColor: item.valueStyle?.backgroundColor }}
+                    key={item.name}
+                  >
+                    {item.name}
+                    <br />
+                    <span>{item.ppm}</span>
+                  </div>
                 ))}
               </div>
             </div>
@@ -92,7 +101,15 @@ const ReportDetailsSection = ({
               <h2 className="report_main_heading">Rare Earth Elements</h2>
               <div className="circles_flex">
                 {rareEarthElements.map((item) => (
-                  <div className={`metal_circle ${item.className}`} key={item.name}>{item.name}<br /><span>{item.ppm}</span></div>
+                  <div
+                    className={`metal_circle ${item.className}`}
+                    style={{ backgroundColor: item.valueStyle?.backgroundColor }}
+                    key={item.name}
+                  >
+                    {item.name}
+                    <br />
+                    <span>{item.ppm}</span>
+                  </div>
                 ))}
               </div>
             </div>

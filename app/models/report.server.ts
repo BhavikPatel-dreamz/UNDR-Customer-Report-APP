@@ -758,3 +758,67 @@ export async function upsertReport(
     include: { rows: true },
   });
 }
+
+export async function updateReportDataByRegistrationId(
+  registrationId: string,
+  reportData: ProxyReportData,
+) {
+  const existing = await prisma.report.findUnique({ where: { registrationId } });
+  if (!existing) return null;
+
+  return prisma.report.update({
+    where: { id: existing.id },
+    data: {
+      reportData: JSON.stringify(reportData),
+      updatedAt: new Date(),
+    },
+    include: { rows: true },
+  });
+}
+
+export async function upsertManualPetroleumRowByRegistrationId(input: {
+  registrationId: string;
+  element: string;
+  rawValue: number;
+  ppmValue: number;
+}) {
+  const report = await prisma.report.findUnique({
+    where: { registrationId: input.registrationId },
+  });
+  if (!report) return null;
+
+  const normalizedElement = input.element.trim().toLowerCase();
+  const existingRows = await prisma.reportRow.findMany({
+    where: {
+      reportId: report.id,
+      category: "petroleum_contaminant",
+    },
+    orderBy: { id: "asc" },
+  });
+  const existing = existingRows.find(
+    (row) => row.element.trim().toLowerCase() === normalizedElement,
+  );
+
+  if (existing) {
+    return prisma.reportRow.update({
+      where: { id: existing.id },
+      data: {
+        element: input.element.trim(),
+        rawValue: input.rawValue,
+        ppmValue: input.ppmValue,
+        unit: "mass%",
+      },
+    });
+  }
+
+  return prisma.reportRow.create({
+    data: {
+      reportId: report.id,
+      element: input.element.trim(),
+      rawValue: input.rawValue,
+      ppmValue: input.ppmValue,
+      unit: "mass%",
+      category: "petroleum_contaminant",
+    },
+  });
+}

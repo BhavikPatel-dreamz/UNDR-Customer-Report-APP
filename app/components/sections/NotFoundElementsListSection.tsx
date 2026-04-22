@@ -11,7 +11,7 @@ const ElementColumn = ({ data }: { data: ElementRow[] }) => (
     {data.map((el, i) => (
       <div className="element_row" key={i}>
         <span className={`element_badge ${el.bgClass}`} style={{ backgroundColor: el.valueStyle?.backgroundColor }}>{el.symbol}</span>
-        <span className={`element_label ${el.textClass}`} style={{ color: el.valueStyle?.backgroundColor }}>{el.name}</span>
+        <span className={`element_label ${el.textClass}`} style={{ color: el.valueStyle?.color }}>{el.name}</span>
       </div>
     ))}
   </div>

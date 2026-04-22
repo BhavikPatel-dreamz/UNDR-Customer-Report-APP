@@ -8,8 +8,11 @@ import {
   extractReportRows,
   buildReportDataFromRows,
   upsertReport,
+  updateReportDataByRegistrationId,
+  upsertManualPetroleumRowByRegistrationId,
 } from "../models/report.server";
 import { boundary } from "@shopify/shopify-app-react-router/server";
+import type { ProxyReportData } from "../lib/proxy-report-data";
 
 // ── Loader ────────────────────────────────────────────────────────────────────
 
@@ -34,12 +37,78 @@ export const action = async ({ params, request }: ActionFunctionArgs) => {
     return { error: "Registration not found." };
   }
 
-  const intent = request.headers.get("content-type") || "";
-  if (!intent.includes("multipart/form-data")) {
-    return { error: "Expected a multipart form submission." };
+  const formData = await request.formData();
+  const intent = String(formData.get("intent") || "upload_csv");
+
+  if (intent === "manual_config") {
+    const existingReportData = registration.report?.reportData;
+    let reportData: ProxyReportData;
+
+    try {
+      reportData = existingReportData
+        ? (JSON.parse(existingReportData) as ProxyReportData)
+        : buildReportDataFromRows(
+            (registration.report?.rows || []) as Parameters<typeof buildReportDataFromRows>[0],
+            registration.name,
+            registration.kitRegistrationNumber,
+          );
+    } catch {
+      reportData = buildReportDataFromRows(
+        (registration.report?.rows || []) as Parameters<typeof buildReportDataFromRows>[0],
+        registration.name,
+        registration.kitRegistrationNumber,
+      );
+    }
+
+    const petroleumType = String(formData.get("petroleumType") || "").trim();
+    const petroleumPpmRaw = String(formData.get("petroleumPpm") || "").trim();
+    const petroleumPpm = petroleumPpmRaw ? Number(petroleumPpmRaw) : NaN;
+    const petroleumRawValueInput = String(formData.get("petroleumRawValue") || "").trim();
+    const petroleumRawValue = petroleumRawValueInput ? Number(petroleumRawValueInput) : NaN;
+    const derivedPpmFromRaw = Number.isFinite(petroleumRawValue) ? petroleumRawValue * 10000 : NaN;
+    const finalPpm =
+      Number.isFinite(petroleumPpm) && petroleumPpm >= 0
+        ? petroleumPpm
+        : Number.isFinite(derivedPpmFromRaw) && derivedPpmFromRaw >= 0
+          ? derivedPpmFromRaw
+          : NaN;
+
+    if (petroleumType && Number.isFinite(finalPpm) && finalPpm >= 0) {
+      const level = finalPpm <= 75 ? "Green" : finalPpm <= 1000 ? "Yellow" : "Red";
+      reportData.oilContaminants.status = `${petroleumType} (${level})`;
+      reportData.oilContaminants.value = `${Math.round(finalPpm)}ppm`;
+      reportData.reportDetails.oilIndicator.petroleum = Number.isFinite(petroleumRawValue)
+        ? `${petroleumType}: raw ${petroleumRawValue} (${Math.round(finalPpm)}ppm)`
+        : `${petroleumType}: ${Math.round(finalPpm)}ppm`;
+      reportData.petroleum_contaminant = {
+        type: petroleumType,
+        ppm: Math.round(finalPpm),
+        rawValue: Number.isFinite(petroleumRawValue) ? petroleumRawValue : undefined,
+        level,
+      };
+    }
+
+    const updated = await updateReportDataByRegistrationId(registration.id, reportData);
+    if (!updated) {
+      return { error: "No report found. Upload CSV first, then apply manual config." };
+    }
+
+    if (petroleumType && Number.isFinite(finalPpm) && finalPpm >= 0) {
+      const rawForDb =
+        Number.isFinite(petroleumRawValue) && petroleumRawValue >= 0
+          ? petroleumRawValue
+          : finalPpm / 10000;
+      await upsertManualPetroleumRowByRegistrationId({
+        registrationId: registration.id,
+        element: petroleumType,
+        rawValue: rawForDb,
+        ppmValue: finalPpm,
+      });
+    }
+
+    return { success: true, message: "Manual petroleum config saved." };
   }
 
-  const formData = await request.formData();
   const file = formData.get("csv");
 
   if (!(file instanceof File) || file.size === 0) {
@@ -96,7 +165,7 @@ export const action = async ({ params, request }: ActionFunctionArgs) => {
 
   await upsertReport(registration.id, file.name, rows, reportData);
 
-  return { success: true, rowCount: rows.length };
+  return { success: true, rowCount: rows.length, message: "CSV uploaded and report saved." };
 };
 
 export const headers: HeadersFunction = (args) => boundary.headers(args);
@@ -105,9 +174,24 @@ export const headers: HeadersFunction = (args) => boundary.headers(args);
 
 type LoaderData = Awaited<ReturnType<typeof loader>>;
 type ActionData =
-  | { success: true; rowCount: number }
+  | { success: true; message: string; rowCount?: number }
   | { error: string }
   | undefined;
+
+  const PETROLEUM_CONTAMINANTS = [
+    "Gasoline",
+    "Diesel",
+    "Jet Fuel",
+    "Heating Oil",
+    "Heavy Fuel Oil",
+    "Arochlor",
+    "Aromatic compounds",
+    "Waste Oil",
+    "Motor Oil",
+    "DDT Insecticide",
+    "Lubricating Oil",
+    "Benzene",
+  ];
 
 function Badge({
   label,
@@ -233,7 +317,8 @@ export default function RegistrationDetail() {
               fontWeight: 600,
             }}
           >
-            ✓ {actionData.rowCount} element rows processed and report saved.
+            ✓ {actionData.message}
+            {typeof actionData.rowCount === "number" ? ` (${actionData.rowCount} rows)` : ""}
           </div>
         )}
 
@@ -242,6 +327,7 @@ export default function RegistrationDetail() {
           encType="multipart/form-data"
           style={{ display: "grid", gap: "16px", maxWidth: "480px" }}
         >
+          <input type="hidden" name="intent" value="upload_csv" />
           <label style={{ display: "grid", gap: "8px" }}>
             <span style={{ fontSize: "14px", fontWeight: 600 }}>
               CSV file{" "}
@@ -277,6 +363,66 @@ export default function RegistrationDetail() {
             </button>
           </div>
         </form>
+
+        <div
+          style={{
+            marginTop: "18px",
+            paddingTop: "14px",
+            borderTop: "1px solid #e5e7eb",
+            display: "grid",
+            gap: "12px",
+            maxWidth: "760px",
+          }}
+        >
+          <h4 style={{ margin: 0, fontSize: "14px", fontWeight: 700 }}>Manual petroleum controls</h4>
+          <p style={{ margin: 0, fontSize: "12px", color: "#6b7280" }}>
+            Select contaminant and enter PPM or Raw value. Data will be saved in report JSON and report rows.
+          </p>
+
+          <form method="post" style={{ display: "grid", gap: "12px" }}>
+            <input type="hidden" name="intent" value="manual_config" />
+            <div style={{ display: "grid", gap: "8px", gridTemplateColumns: "1fr 180px 180px", alignItems: "end" }}>
+              <label style={{ display: "grid", gap: "6px" }}>
+                <span style={{ fontSize: "13px", fontWeight: 600 }}>Petroleum contaminant type</span>
+                <select name="petroleumType" style={{ minHeight: "36px", padding: "0 10px" }}>
+                  <option value="">Select type</option>
+                  {PETROLEUM_CONTAMINANTS.map((item) => (
+                    <option key={item} value={item}>
+                      {item}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label style={{ display: "grid", gap: "6px" }}>
+                <span style={{ fontSize: "13px", fontWeight: 600 }}>PPM value</span>
+                <input type="number" min="0" step="0.01" name="petroleumPpm" placeholder=" e.g. 125"  style={{ height: "36px" }}/>
+              </label>
+              <label style={{ display: "grid", gap: "6px" }}>
+                <span style={{ fontSize: "13px", fontWeight: 600 }}>Raw value</span>
+                <input type="number" min="0" step="0.0001" name="petroleumRawValue" placeholder=" e.g. 0.0125" style={{ height: "36px" }} />
+              </label>
+            </div>
+            <div>
+              <button
+                type="submit"
+                disabled={isUploading}
+                style={{
+                  minHeight: "40px",
+                  padding: "0 20px",
+                  border: 0,
+                  borderRadius: "999px",
+                  background: isUploading ? "#9ca3af" : "#0f766e",
+                  color: "#fff",
+                  fontSize: "14px",
+                  fontWeight: 600,
+                  cursor: isUploading ? "default" : "pointer",
+                }}
+              >
+                {isUploading ? "Saving…" : "Save petroleum config"}
+              </button>
+            </div>
+          </form>
+        </div>
 
         <details style={{ marginTop: "20px" }}>
           <summary style={{ fontSize: "13px", color: "#6b7280", cursor: "pointer" }}>
