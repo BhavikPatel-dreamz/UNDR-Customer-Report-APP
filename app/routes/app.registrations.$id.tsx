@@ -2,10 +2,9 @@ import type { ActionFunctionArgs, HeadersFunction, LoaderFunctionArgs } from "re
 import { useActionData, useLoaderData, useNavigation } from "react-router";
 import { useEffect, useState } from "react";
 import { authenticate } from "../shopify.server";
+import { REPORT_PACKAGES, type ReportPackage, isReportPackage } from "../lib/report-packages";
 import {
   getRegistrationById,
-  REPORT_PACKAGES,
-  type ReportPackage,
   updateRegistrationReportPackageById,
 } from "../models/registration.server";
 import {
@@ -51,7 +50,7 @@ export const action = async ({ params, request }: ActionFunctionArgs) => {
 
   if (intent === "package_config") {
     const selectedPackage = String(formData.get("reportPackage") || "").trim().toLowerCase();
-    if (!REPORT_PACKAGES.includes(selectedPackage as ReportPackage)) {
+    if (!isReportPackage(selectedPackage)) {
       return { error: "Select a valid report package.", intent: "package_config" as const };
     }
 
@@ -250,7 +249,7 @@ export default function RegistrationDetail() {
     )
       .trim()
       .toLowerCase();
-    return REPORT_PACKAGES.includes(rawValue as ReportPackage) ? (rawValue as ReportPackage) : "premium";
+    return isReportPackage(rawValue) ? rawValue : "premium";
   })();
 
   const report = registration.report;

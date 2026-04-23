@@ -1,4 +1,5 @@
 import prisma from "../db.server";
+import { REPORT_PACKAGES, type ReportPackage, isReportPackage } from "../lib/report-packages";
 
 function normalizeNumericShopifyId(value?: string | null) {
   if (!value) return null;
@@ -38,16 +39,6 @@ export interface ListRegistrationsOptions {
   sort?: "asc" | "desc";
   shop?: string;
 }
-
-export const REPORT_PACKAGES = [
-  "treasure_base",
-  "treasure_plus",
-  "hs_base",
-  "hs_plus",
-  "premium",
-] as const;
-
-export type ReportPackage = (typeof REPORT_PACKAGES)[number];
 
 export function getRegistrationDefaults(): RegistrationFormState {
   return {
@@ -219,7 +210,7 @@ export async function updateRegistrationReportPackageById(input: {
   reportPackage: string;
 }) {
   const normalizedPackage = input.reportPackage.trim().toLowerCase();
-  if (!REPORT_PACKAGES.includes(normalizedPackage as ReportPackage)) {
+  if (!isReportPackage(normalizedPackage)) {
     return null;
   }
 
