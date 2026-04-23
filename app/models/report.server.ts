@@ -482,12 +482,44 @@ base.foundElements = found.slice(0, 60)
   const totalPpm = top8.reduce((s, r) => s + r.ppmValue, 0);
 
   if (top8.length > 0) {
-    base.elementBreakdown.items = top8.map(
+    const breakdownItems = top8.map(
       (r, i): BreakdownBarItem => ({
         name: r.element,
         percentage: totalPpm > 0 ? Math.round((r.ppmValue / totalPpm) * 100) : 0,
         color: BAR_COLORS[i % BAR_COLORS.length],
       }),
+    );
+
+    base.elementBreakdown.items = breakdownItems;
+
+    // Populate layered chart arrays used by the report details polar chart.
+    base.reportDetails.reportChart = breakdownItems.reduce(
+      (acc, item) => {
+        const value = Number(item.percentage) || 0;
+        acc.elementNames.push(item.name);
+
+        if (value <= 10) {
+          acc.belowData.push(value);
+          acc.refData.push(0);
+          acc.aboveData.push(0);
+        } else if (value <= 25) {
+          acc.belowData.push(0);
+          acc.refData.push(value);
+          acc.aboveData.push(0);
+        } else {
+          acc.belowData.push(0);
+          acc.refData.push(0);
+          acc.aboveData.push(value);
+        }
+
+        return acc;
+      },
+      {
+        elementNames: [] as string[],
+        belowData: [] as number[],
+        refData: [] as number[],
+        aboveData: [] as number[],
+      },
     );
   }
 

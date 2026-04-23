@@ -133,7 +133,7 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
   if (registration?.report?.status === "uploaded") {
     
     if (registration.report.rows && registration.report.rows.length > 0) {
-      report = buildReportDataFromRows(
+      report = buildReportDataFromRows(                                                                                                       
         registration.report.rows as Parameters<typeof buildReportDataFromRows>[0],
         customerName,
         proxyId,

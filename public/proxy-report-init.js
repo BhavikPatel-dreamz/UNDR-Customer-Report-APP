@@ -109,14 +109,89 @@
     var ctx = canvas.getContext("2d");
     if (!ctx) return;
 
+    function hasLayeredChartData(chart) {
+      if (!chart || !Array.isArray(chart.elementNames) || chart.elementNames.length === 0) return false;
+      var hasBelow = Array.isArray(chart.belowData) && chart.belowData.some(function (v) { return Number(v) > 0; });
+      var hasRef = Array.isArray(chart.refData) && chart.refData.some(function (v) { return Number(v) > 0; });
+      var hasAbove = Array.isArray(chart.aboveData) && chart.aboveData.some(function (v) { return Number(v) > 0; });
+      return hasBelow || hasRef || hasAbove;
+    }
+
+    function normalizeNumber(value) {
+      if (typeof value === "number" && isFinite(value)) return value;
+      if (typeof value === "string") {
+        var parsed = Number(value.replace(/,/g, "").trim());
+        if (isFinite(parsed)) return parsed;
+      }
+      return 0;
+    }
+
+    function buildLayeredChartFallback() {
+      var source = (reportData.elementBreakdown && Array.isArray(reportData.elementBreakdown.items))
+        ? reportData.elementBreakdown.items
+        : [];
+      var top = source.slice(0, 8);
+
+      if (top.length === 0) {
+        return {
+          labels: [],
+          belowData: [],
+          refData: [],
+          aboveData: []
+        };
+      }
+
+      var labels = [];
+      var belowData = [];
+      var refData = [];
+      var aboveData = [];
+
+      top.forEach(function (item) {
+        var name = String(item && item.name ? item.name : "").trim();
+        var value = normalizeNumber(item && item.percentage);
+        labels.push(name);
+
+        if (value <= 10) {
+          belowData.push(value);
+          refData.push(0);
+          aboveData.push(0);
+        } else if (value <= 25) {
+          belowData.push(0);
+          refData.push(value);
+          aboveData.push(0);
+        } else {
+          belowData.push(0);
+          refData.push(0);
+          aboveData.push(value);
+        }
+      });
+
+      return {
+        labels: labels,
+        belowData: belowData,
+        refData: refData,
+        aboveData: aboveData
+      };
+    }
+
+    var reportChartData = (reportData.reportDetails && reportData.reportDetails.reportChart) || null;
+    var chartInput = hasLayeredChartData(reportChartData)
+      ? {
+          labels: reportChartData.elementNames || [],
+          belowData: reportChartData.belowData || [],
+          refData: reportChartData.refData || [],
+          aboveData: reportChartData.aboveData || []
+        }
+      : buildLayeredChartFallback();
+
     reportChart = new window.Chart(ctx, {
       type: "polarArea",
       data: {
-        labels: reportData.reportDetails.reportChart.elementNames || [],
+        labels: chartInput.labels,
         datasets: [
-          { label: "Above Range", data: reportData.reportDetails.reportChart.aboveData || [], backgroundColor: "#525961", borderWidth: 1, borderColor: "#ffffff", order: 1 },
-          { label: "Reference Range", data: reportData.reportDetails.reportChart.refData || [], backgroundColor: "#a6acb5", borderWidth: 1, borderColor: "#ffffff", order: 2 },
-          { label: "Below Range", data: reportData.reportDetails.reportChart.belowData || [], backgroundColor: "#d9dee4", borderWidth: 1, borderColor: "#ffffff", order: 3 }
+          { label: "Above Range", data: chartInput.aboveData, backgroundColor: "#525961", borderWidth: 1, borderColor: "#ffffff", order: 1 },
+          { label: "Reference Range", data: chartInput.refData, backgroundColor: "#a6acb5", borderWidth: 1, borderColor: "#ffffff", order: 2 },
+          { label: "Below Range", data: chartInput.belowData, backgroundColor: "#d9dee4", borderWidth: 1, borderColor: "#ffffff", order: 3 }
         ]
       },
       options: {
