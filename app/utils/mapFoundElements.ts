@@ -53,11 +53,6 @@ export function mapFoundElements(rows: unknown): FoundElementItem[] {
 
   mapped.sort((a, b) => a.name.localeCompare(b.name));
 
-  console.log("[mapFoundElements] mapped", {
-    inputCount: rows.length,
-    mappedCount: mapped.length,
-    first: mapped[0] ?? null,
-  });
 
   return mapped;
 }

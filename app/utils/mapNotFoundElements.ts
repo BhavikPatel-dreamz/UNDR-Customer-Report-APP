@@ -33,11 +33,7 @@ export function mapNotFoundElements(rows: unknown): NotFoundElementItem[] {
 
   mapped.sort((a, b) => a.name.localeCompare(b.name));
 
-  console.log("[mapNotFoundElements] mapped", {
-    inputCount: rows.length,
-    mappedCount: mapped.length,
-    first: mapped[0] ?? null,
-  });
+
 
   return mapped;
 }

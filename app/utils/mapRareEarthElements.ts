@@ -67,11 +67,7 @@ export function mapRareEarthElements(rows: unknown): MetalCardItem[] {
     .slice(0, 3)
     .map((m) => m.item);
 
-  console.log("[mapRareEarthElements] mapped", {
-    inputCount: rows.length,
-    mappedCount: mapped.length,
-    top3,
-  });
+
 
   return top3;
 }

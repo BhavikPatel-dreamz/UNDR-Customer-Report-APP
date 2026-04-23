@@ -87,11 +87,6 @@ export function mapHeavyMetals(rows: unknown): HeavyMetalItem[] {
     .slice(0, 3)
     .map((m) => m.item);
 
-  console.log("[mapHeavyMetals] mapped", {
-    inputCount: rows.length,
-    mappedCount: mapped.length,
-    top3,
-  });
 
   return top3;
 }

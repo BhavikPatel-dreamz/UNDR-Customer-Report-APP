@@ -125,7 +125,7 @@ async function verifyRecaptchaV2Token(params: {
 
 		return { ok: true };
 	} catch (error) {
-		console.error("[proxy.undr.submit] reCAPTCHA v2 verification failed", error);
+		
 		return {
 			ok: false,
 			message: "Could not verify security check right now. Please try again.",
@@ -219,7 +219,7 @@ async function verifyRecaptchaToken(params: {
 
 		return { ok: true };
 	} catch (error) {
-		console.error("[proxy.undr.submit] reCAPTCHA verification failed", error);
+		
 		return {
 			ok: false,
 			message: "Could not verify reCAPTCHA right now. Please try again.",
@@ -264,7 +264,7 @@ async function findCustomerIdByEmail(params: {
 		};
 
 		if (json.errors?.length) {
-			console.error("[proxy.undr.submit] Shopify customer query errors", {
+			
 				errors: json.errors,
 				email,
 			});
@@ -279,10 +279,7 @@ async function findCustomerIdByEmail(params: {
 
 		return normalizeCustomerId(match?.id ?? null);
 	} catch (error) {
-		console.error("[proxy.undr.submit] Shopify customer lookup failed", {
-			error,
-			email,
-		});
+		
 		return null;
 	}
 }
@@ -505,7 +502,7 @@ export async function action({ request }: ActionFunctionArgs) {
 			shopifyCustomerId,
 		});
 	} catch (error) {
-		console.error("[proxy.undr.submit] Save registration failed", error);
+		
 		const data: ActionData = {
 			ok: false,
 			message: "Could not save registration right now. Please try again.",

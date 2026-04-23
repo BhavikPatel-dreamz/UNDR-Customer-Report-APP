@@ -27,14 +27,3 @@ const prisma = global.prismaGlobal ?? new PrismaClient({ adapter });
 
 export default prisma;
 
-// Updated test function to use the existing PrismaClient instance
-// async function testSessionTable() {
-//   try {
-//     const sessions = await prisma.session.findMany();
-//     console.log('Session table data:', sessions);
-//   } catch (error) {
-//     console.error('Error accessing Session table:', error);
-//   }
-// }
-
-// //testSessionTable();

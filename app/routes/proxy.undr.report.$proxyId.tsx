@@ -126,7 +126,7 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
   let report: ProxyReportData | null = null;
 
   if (registration?.report?.status === "uploaded") {
-    console.log("[proxy-report] using report rows", registration.report.rows?.length || 0);
+    
     if (registration.report.rows && registration.report.rows.length > 0) {
       report = buildReportDataFromRows(
         registration.report.rows as Parameters<typeof buildReportDataFromRows>[0],
@@ -138,7 +138,7 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
   }
 
 
-  console.log('repott',report?.banner);
+  
   if (!report) {
     report = createEmptyReport(customerName, proxyId, selectedReportPackage);
   }
@@ -149,56 +149,32 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
   if (report?.reportDetails?.heavyMetals) {
     const beforeCount = Array.isArray(report.reportDetails.heavyMetals) ? report.reportDetails.heavyMetals.length : 0;
     report.reportDetails.heavyMetals = mapHeavyMetals(report.reportDetails.heavyMetals);
-    console.log("[proxy-report] heavyMetals mapped", {
-      beforeCount,
-      afterCount: report.reportDetails.heavyMetals.length,
-      first: report.reportDetails.heavyMetals[0] ?? null,
-    });
+ 
   }
   if (report?.reportDetails?.preciousMetals) {
     const beforeCount = Array.isArray(report.reportDetails.preciousMetals) ? report.reportDetails.preciousMetals.length : 0;
     report.reportDetails.preciousMetals = mapPreciousMetals(report.reportDetails.preciousMetals);
-    console.log("[proxy-report] preciousMetals mapped", {
-      beforeCount,
-      afterCount: report.reportDetails.preciousMetals.length,
-      first: report.reportDetails.preciousMetals[0] ?? null,
-    });
+
   }
   if (report?.reportDetails?.rareEarthElements) {
     const beforeCount = Array.isArray(report.reportDetails.rareEarthElements) ? report.reportDetails.rareEarthElements.length : 0;
     report.reportDetails.rareEarthElements = mapRareEarthElements(report.reportDetails.rareEarthElements);
-    console.log("[proxy-report] rareEarthElements mapped", {
-      beforeCount,
-      afterCount: report.reportDetails.rareEarthElements.length,
-      first: report.reportDetails.rareEarthElements[0] ?? null,
-    });
+
   }
   if (report?.foundElements) {
     const beforeCount = Array.isArray(report.foundElements) ? report.foundElements.length : 0;
     report.foundElements = mapFoundElements(report.foundElements);
-    console.log("[proxy-report] foundElements mapped", {
-      beforeCount,
-      afterCount: report.foundElements.length,
-      first: report.foundElements[0] ?? null,
-    });
+
   }
   if (report?.notFoundElements) {
     const beforeCount = Array.isArray(report.notFoundElements) ? report.notFoundElements.length : 0;
     report.notFoundElements = mapNotFoundElements(report.notFoundElements);
-    console.log("[proxy-report] notFoundElements mapped", {
-      beforeCount,
-      afterCount: report.notFoundElements.length,
-      first: report.notFoundElements[0] ?? null,
-    });
+
   }
   if (report?.earthElementsBreakdown?.items) {
     const beforeCount = Array.isArray(report.earthElementsBreakdown.items) ? report.earthElementsBreakdown.items.length : 0;
     report.earthElementsBreakdown.items = mapEarthElementsBreakdown(report.earthElementsBreakdown.items);
-    console.log("[proxy-report] earthElementsBreakdown mapped", {
-      beforeCount,
-      afterCount: report.earthElementsBreakdown.items.length,
-      first: report.earthElementsBreakdown.items[0] ?? null,
-    });
+
   }
   ensurePetroleumContaminant(report);
 
@@ -220,11 +196,7 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
   if (petroleumContaminants.length > 0) {
     report.petroleum_contaminants = petroleumContaminants;
     report.petroleum_contaminant = petroleumContaminants[0];
-    console.log("[proxy-report] petroleum data from rows attached", {
-      rowsCount: petroleumRows.length,
-      arrayCount: petroleumContaminants.length,
-      first: petroleumContaminants[0],
-    });
+    
   }
 
   const pageHtml = renderToStaticMarkup(<IndexPage report={report} />);

@@ -39,7 +39,7 @@ const ReportDetailsSection = ({
   preciousMetals,
   rareEarthElements,
 }: ReportDetailsSectionProps) => {
-  console.log("heavyMetals=========",heavyMetals);
+  
   return (
     <section className="report_details_section">
       <div className="container">

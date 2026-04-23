@@ -69,11 +69,7 @@ export function mapPreciousMetals(rows: unknown): MetalCardItem[] {
     .slice(0, 3)
     .map((m) => m.item);
 
-  console.log("[mapPreciousMetals] mapped", {
-    inputCount: rows.length,
-    mappedCount: mapped.length,
-    top3,
-  });
+
 
   return top3;
 }

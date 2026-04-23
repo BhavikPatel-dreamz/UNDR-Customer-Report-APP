@@ -421,7 +421,7 @@ base.foundElements = found.slice(0, 60)
 .sort((a, b) => a.element.localeCompare(b.element)) // alphabetical sort
 .map(
   (r): FoundElementItem => {
-    console.log("Raw input:", r);
+    
     const key = r.element.toLowerCase();
     const colors = ELEMENT_COLOR_MAP[key] ?? ELEMENT_COLOR_MAP.default;
 
@@ -439,7 +439,6 @@ base.foundElements = found.slice(0, 60)
       colorClass: "text-green-700",
     };
 
-    console.log("Mapped output:", mapped);
 
     return mapped;
   },
@@ -460,7 +459,7 @@ base.foundElements = found.slice(0, 60)
   (r): NotFoundElementItem => {
     const key = r.element.toLowerCase();
     const colors = ELEMENT_COLOR_MAP[key] ?? ELEMENT_COLOR_MAP.default;
-    console.log("Mapped output1111111:", colors);
+    
 
     return {
       symbol: r.element.substring(0, 2).toUpperCase(),

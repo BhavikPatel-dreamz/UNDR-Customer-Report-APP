@@ -22,18 +22,7 @@ const ChartRow = ({ row, maxVal }: { row: ChartRowData; maxVal: number }) => {
   if (userPos > 100) userPos = 100;
   if (userPos < 0) userPos = 0;
 
-  console.log("[TraceFoundSection][ChartRow] calc", {
-    label: row.label,
-    maxVal,
-    userVal: row.userVal,
-    safeVal: row.safeVal,
-    marginalVal: row.marginalVal,
-    safeW,
-    margW,
-    unsafeW,
-    userPos,
-  });
-
+  
   return (
     <div className="chart_row">
       <div className="label_col">{row.label}</div>
@@ -51,13 +40,7 @@ const ChartRow = ({ row, maxVal }: { row: ChartRowData; maxVal: number }) => {
 };
 
 const TraceFoundSection = ({ title, subtitle, max, rows, scaleLabels }: TraceFoundSectionProps) => {
-  console.log("[TraceFoundSection] render", {
-    title,
-    max,
-    rowsCount: rows.length,
-    firstRow: rows[0] ?? null,
-    scaleLabelsCount: scaleLabels.length,
-  });
+
 
   return (
     <section className="multi_level_chart_section">
