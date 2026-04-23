@@ -80,7 +80,15 @@ export type SoilFeatureItem = {
   cardClassName: string;
 };
 
+export type ReportPackage =
+  | "treasure_base"
+  | "treasure_plus"
+  | "hs_base"
+  | "hs_plus"
+  | "premium";
+
 export type ProxyReportData = {
+  reportPackage?: ReportPackage;
   banner: {
     name: string;
     subtitle: string;

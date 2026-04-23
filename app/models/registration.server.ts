@@ -39,6 +39,16 @@ export interface ListRegistrationsOptions {
   shop?: string;
 }
 
+export const REPORT_PACKAGES = [
+  "treasure_base",
+  "treasure_plus",
+  "hs_base",
+  "hs_plus",
+  "premium",
+] as const;
+
+export type ReportPackage = (typeof REPORT_PACKAGES)[number];
+
 export function getRegistrationDefaults(): RegistrationFormState {
   return {
     name: "",
@@ -200,5 +210,21 @@ export async function findRegistrationForGuestLookup(input: {
       ...(createdAtFilter ? { createdAt: createdAtFilter } : {}),
     },
     include: { report: { select: { id: true, status: true } } },
+  });
+}
+
+export async function updateRegistrationReportPackageById(input: {
+  registrationId: string;
+  shop: string;
+  reportPackage: string;
+}) {
+  const normalizedPackage = input.reportPackage.trim().toLowerCase();
+  if (!REPORT_PACKAGES.includes(normalizedPackage as ReportPackage)) {
+    return null;
+  }
+
+  return prisma.registration.updateMany({
+    where: { id: input.registrationId, shop: input.shop },
+    data: { reportPackage: normalizedPackage },
   });
 }

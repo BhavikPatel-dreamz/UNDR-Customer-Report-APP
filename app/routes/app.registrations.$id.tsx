@@ -2,7 +2,12 @@ import type { ActionFunctionArgs, HeadersFunction, LoaderFunctionArgs } from "re
 import { useActionData, useLoaderData, useNavigation } from "react-router";
 import { useEffect, useState } from "react";
 import { authenticate } from "../shopify.server";
-import { getRegistrationById } from "../models/registration.server";
+import {
+  getRegistrationById,
+  REPORT_PACKAGES,
+  type ReportPackage,
+  updateRegistrationReportPackageById,
+} from "../models/registration.server";
 import {
   parseCsv,
   parseSpreadsheet,
@@ -21,22 +26,47 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
   if (!registration) {
     throw new Response("Not found", { status: 404 });
   }
+  if (registration.shop !== session.shop) {
+    throw new Response("Forbidden", { status: 403 });
+  }
   return { registration, shopDomain: session.shop };
 };
 
 // ── Action ────────────────────────────────────────────────────────────────────
 
 export const action = async ({ params, request }: ActionFunctionArgs) => {
-  await authenticate.admin(request);
+  const { session } = await authenticate.admin(request);
   const id = params.id as string;
 
   const registration = await getRegistrationById(id);
   if (!registration) {
     return { error: "Registration not found.", intent: "upload_csv" as const };
   }
+  if (registration.shop !== session.shop) {
+    return { error: "You are not allowed to update this registration.", intent: "upload_csv" as const };
+  }
 
   const formData = await request.formData();
   const intent = String(formData.get("intent") || "upload_csv");
+
+  if (intent === "package_config") {
+    const selectedPackage = String(formData.get("reportPackage") || "").trim().toLowerCase();
+    if (!REPORT_PACKAGES.includes(selectedPackage as ReportPackage)) {
+      return { error: "Select a valid report package.", intent: "package_config" as const };
+    }
+
+    const result = await updateRegistrationReportPackageById({
+      registrationId: registration.id,
+      shop: session.shop,
+      reportPackage: selectedPackage,
+    });
+
+    if (!result || result.count === 0) {
+      return { error: "Could not update report package.", intent: "package_config" as const };
+    }
+
+    return { success: true, message: "Report package updated.", intent: "package_config" as const };
+  }
 
   if (intent === "manual_config") {
     const petroleumType = String(formData.get("petroleumType") || "").trim();
@@ -149,8 +179,8 @@ export const headers: HeadersFunction = (args) => boundary.headers(args);
 
 type LoaderData = Awaited<ReturnType<typeof loader>>;
 type ActionData =
-  | { success: true; message: string; rowCount?: number; intent?: "upload_csv" | "manual_config" }
-  | { error: string; intent?: "upload_csv" | "manual_config" }
+  | { success: true; message: string; rowCount?: number; intent?: "upload_csv" | "manual_config" | "package_config" }
+  | { error: string; intent?: "upload_csv" | "manual_config" | "package_config" }
   | undefined;
 
   const PETROLEUM_CONTAMINANTS = [
@@ -214,6 +244,14 @@ export default function RegistrationDetail() {
   const actionData = useActionData<ActionData>();
   const nav = useNavigation();
   const isUploading = nav.state === "submitting";
+  const currentReportPackage = (() => {
+    const rawValue = String(
+      (registration as unknown as { reportPackage?: string }).reportPackage || "premium",
+    )
+      .trim()
+      .toLowerCase();
+    return REPORT_PACKAGES.includes(rawValue as ReportPackage) ? (rawValue as ReportPackage) : "premium";
+  })();
 
   const report = registration.report;
   const rows = report?.rows ?? [];
@@ -258,6 +296,20 @@ export default function RegistrationDetail() {
         <InfoRow label="Phone" value={registration.phone} />
         <InfoRow label="Order number" value={registration.orderNumber} />
         <InfoRow label="Kit number" value={registration.kitRegistrationNumber} />
+        <InfoRow
+          label="Report package"
+          value={
+            currentReportPackage === "treasure_base"
+              ? "Treasure Base"
+              : currentReportPackage === "treasure_plus"
+                ? "Treasure Plus"
+                : currentReportPackage === "hs_base"
+                  ? "H&S Base"
+                  : currentReportPackage === "hs_plus"
+                    ? "H&S Plus"
+                    : "Premium"
+          }
+        />
         {registration.shopifyOrderId && (
           <InfoRow label="Shopify order ID" value={registration.shopifyOrderId} />
         )}
@@ -271,6 +323,76 @@ export default function RegistrationDetail() {
             variant={report?.status === "uploaded" ? "success" : "neutral"}
           />
         </div>
+      </s-section>
+
+      <s-section heading="Report package setup">
+        {actionData && actionData.intent === "package_config" && "error" in actionData && (
+          <div
+            style={{
+              marginBottom: "16px",
+              padding: "12px 16px",
+              borderRadius: "10px",
+              background: "#fef2f2",
+              color: "#b91c1c",
+              fontSize: "14px",
+            }}
+          >
+            {actionData.error}
+          </div>
+        )}
+        {actionData && actionData.intent === "package_config" && "success" in actionData && (
+          <div
+            style={{
+              marginBottom: "16px",
+              padding: "12px 16px",
+              borderRadius: "10px",
+              background: "#ecfdf3",
+              color: "#065f46",
+              fontSize: "14px",
+              fontWeight: 600,
+            }}
+          >
+            ✓ {actionData.message}
+          </div>
+        )}
+
+        <form method="post" style={{ display: "grid", gap: "10px", maxWidth: "400px" }}>
+          <input type="hidden" name="intent" value="package_config" />
+          <label style={{ display: "grid", gap: "6px" }}>
+            <span style={{ fontSize: "13px", fontWeight: 600 }}>Select package for this registration</span>
+            <select
+              name="reportPackage"
+              defaultValue={currentReportPackage}
+              disabled={isUploading}
+              style={{ minHeight: "36px", borderRadius: "8px", border: "1px solid #d1d5db", padding: "0 10px" }}
+            >
+              <option value="treasure_base">Treasure Base</option>
+              <option value="treasure_plus">Treasure Plus</option>
+              <option value="hs_base">H&S Base</option>
+              <option value="hs_plus">H&S Plus</option>
+              <option value="premium">Premium</option>
+            </select>
+          </label>
+          <div>
+            <button
+              type="submit"
+              disabled={isUploading}
+              style={{
+                minHeight: "38px",
+                padding: "0 16px",
+                border: 0,
+                borderRadius: "999px",
+                background: isUploading ? "#9ca3af" : "#1f2937",
+                color: "#fff",
+                fontSize: "13px",
+                fontWeight: 600,
+                cursor: isUploading ? "default" : "pointer",
+              }}
+            >
+              {isUploading ? "Saving..." : "Save package"}
+            </button>
+          </div>
+        </form>
       </s-section>
 
       {/* ── Report link ── */}

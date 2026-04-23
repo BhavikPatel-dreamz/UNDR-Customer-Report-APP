@@ -36,6 +36,7 @@ model Session {
 model Registration {
   id                    String   @id @default(cuid())
   shop                  String   @default("")
+  reportPackage         String   @default("premium")
   name                  String
   email                 String
   phone                 String

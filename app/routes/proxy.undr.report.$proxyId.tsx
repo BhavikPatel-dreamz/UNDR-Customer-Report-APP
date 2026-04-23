@@ -13,6 +13,15 @@ import { mapEarthElementsBreakdown } from "../utils/mapEarthElementsBreakdown";
 import IndexPage from "../pages/Index";
 import { authenticate } from "../shopify.server";
 
+const REPORT_PACKAGES = ["treasure_base", "treasure_plus", "hs_base", "hs_plus", "premium"] as const;
+
+function normalizeReportPackage(input: unknown): ProxyReportData["reportPackage"] {
+  const value = String(input || "").trim().toLowerCase();
+  return REPORT_PACKAGES.includes(value as (typeof REPORT_PACKAGES)[number])
+    ? (value as (typeof REPORT_PACKAGES)[number])
+    : "premium";
+}
+
 function isEmbedMode(url: URL) {
   const embed = url.searchParams.get("embed")?.trim().toLowerCase();
   return embed === "1" || embed === "true";
@@ -42,8 +51,13 @@ function ensurePetroleumContaminant(report: ProxyReportData) {
   };
 }
 
-function createEmptyReport(customerName: string, proxyId: string): ProxyReportData {
+function createEmptyReport(
+  customerName: string,
+  proxyId: string,
+  reportPackage: ProxyReportData["reportPackage"],
+): ProxyReportData {
   return {
+    reportPackage,
     banner: {
       name: customerName,
       subtitle: `Kit Registration: ${proxyId}`,
@@ -101,10 +115,13 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
   const proxyId = params.proxyId || "";
   const appUrl = (process.env.SHOPIFY_APP_URL || "").replace(/\/$/, "");
 
-  console.log('288');
+  
   const registration = await getRegistrationByKitNumber(proxyId);
   
   const customerName = registration?.name || proxyId;
+  const selectedReportPackage = normalizeReportPackage(
+    (registration as unknown as { reportPackage?: string } | null)?.reportPackage,
+  );
 
   let report: ProxyReportData | null = null;
 
@@ -116,14 +133,17 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
         customerName,
         proxyId,
       );
+      report.reportPackage = selectedReportPackage;
     }
   }
 
 
   console.log('repott',report?.banner);
   if (!report) {
-    report = createEmptyReport(customerName, proxyId);
+    report = createEmptyReport(customerName, proxyId, selectedReportPackage);
   }
+
+  report.reportPackage = selectedReportPackage;
 
   // Ensure heavyMetals are always normalized for both page HTML and injected JSON.
   if (report?.reportDetails?.heavyMetals) {

@@ -1,0 +1,106 @@
+﻿
+
+Precious Metals & Oil
+Rare Earth Elements
+Toxic Heavy Metals
+Petroleum Contaminants
+Standard Elements
+Gold (Au)
+Silver (Ag)
+Platinum (Pt)
+Ruthenium (Ru)
+Rhodium (Rh)
+Palladium (Pd)
+Osmium (Os)
+Iridium (Ir)
+
+Oil
+
+Scandium (Sc)
+Yttrium (Y)
+Lanthanum (La)
+Cerium (Ce)
+Praseodymium (Pr)
+Neodymium (Nd)
+Promethium (Pm)
+Samarium (Sm)
+Europium (Eu)
+Gadolinium (Gd)
+Terbium (Tb)
+Dysprosium (Dy)
+Holmium (Ho)
+Erbium (Er)
+Thulium (Tm)
+Ytterbium (Yb)
+Lutetium (Lu)
+Lead (Pb)
+Arsenic (As)
+Mercury (Hg)
+Uranium (U)
+Chromium (Cr)
+Cadmium (Cd)
+Antimony (Sb)
+Tellurium (Te)
+Thallium (Tl)
+Thorium (Th)
+
+Gasoline
+Diesel
+Jet Fuel
+Heating Oil
+Heavy Fuel Oil
+Arochlor
+Aromatic compounds
+Waste Oil
+Motor Oil
+DDT Insecticide
+Lubricating Oil
+Benzene
+
+Oxygen (O)
+Fluorine (F)
+ Sodium (Na) 
+Magnesium (Mg)
+Aluminum (Al)
+Silicon (Si)
+Phosphorus (P)
+ Sulfur (S)
+Chlorine (Cl)
+Potassium (K)
+Calcium (Ca)
+Titanium (Ti)
+Vanadium (V)
+Manganese (Mn)
+Iron (Fe)
+Cobalt (Co)
+Nickel (Ni)
+Copper (Cu)
+Zinc (Zn)
+Gallium (Ga)
+Germanium (Ge)
+Selenium (Se)
+Bromine (Br)
+Rubidium (Rb)
+Strontium (Sr)
+Zirconium (Zr)
+Niobium (Nb)
+Molybdenum (Mo)
+Technetium (Tc), Indium (In)
+Tin (Sn)
+Iodine (I)
+Cesium (Cs)
+Barium (Ba)
+Hafnium (Hf)
+Tantalum (Ta)
+Tungsten (W)
+Rhenium (Re)
+Bismuth (Bi)
+Polonium (Po)
+Astatine (At)
+Francium (Fr)
+Radium (Ra)
+Actinium (Ac)
+Protactinium (Pa)
+
+
+
