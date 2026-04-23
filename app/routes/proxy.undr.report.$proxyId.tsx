@@ -3,7 +3,6 @@ import type { LoaderFunctionArgs } from "react-router";
 
 import { getRegistrationByKitNumber } from "../models/registration.server";
 import { buildReportDataFromRows } from "../models/report.server";
-import { getProxyReportData } from "../lib/proxy-report-data.server";
 import type { ProxyReportData } from "../lib/proxy-report-data";
 import { mapHeavyMetals } from "../utils/mapHeavyMetals";
 import { mapPreciousMetals } from "../utils/mapPreciousMetals";
@@ -43,6 +42,58 @@ function ensurePetroleumContaminant(report: ProxyReportData) {
   };
 }
 
+function createEmptyReport(customerName: string, proxyId: string): ProxyReportData {
+  return {
+    banner: {
+      name: customerName,
+      subtitle: `Kit Registration: ${proxyId}`,
+    },
+    reportDetails: {
+      heavyMetals: [],
+      oilIndicator: {
+        crudeOil: "Crude oil: None",
+        petroleum: "Petroleum: None",
+        crudeOilClassName: "btn_gray",
+        petroleumClassName: "btn_gray",
+      },
+      preciousMetals: [],
+      rareEarthElements: [],
+      reportChart: {
+        elementNames: [],
+        belowData: [],
+        refData: [],
+        aboveData: [],
+      },
+    },
+    elementBreakdown: { items: [] },
+    otherTraceElements: { items: [] },
+    traceFound: {
+      title: "Traces found in your land sample",
+      subtitle: "No report rows are available yet.",
+      max: 1000,
+      rows: [],
+      scaleLabels: ["0", "200", "400", "600", "800", "1000"],
+    },
+    multiLevelCharts: {
+      group1Max: 100,
+      group1Rows: [],
+      group1ScaleLabels: ["0", "25", "50", "75", "100"],
+      group2Max: 100,
+      group2Rows: [],
+      group2ScaleLabels: ["0", "25", "50", "75", "100"],
+    },
+    oilContaminants: {
+      status: "Not Detected",
+      value: "0ppm",
+    },
+    preciousMetalPresent: { items: [] },
+    earthElementsBreakdown: { items: [] },
+    soilFeatures: [],
+    foundElements: [],
+    notFoundElements: [],
+  };
+}
+
 export const loader = async ({ params, request }: LoaderFunctionArgs) => {
   const { liquid } = await authenticate.public.appProxy(request);
   const url = new URL(request.url);
@@ -58,18 +109,8 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
   let report: ProxyReportData | null = null;
 
   if (registration?.report?.status === "uploaded") {
-
-    console.log('registration.report.reportData',registration.report.rows);
-    if (registration.report.reportData) {
-      console.log('registration.report.reportDataregistration.report.reportData',registration.report.reportData);
-      try {
-        report = JSON.parse(registration.report.reportData) as ProxyReportData;
-      } catch {
-        // Fall through to row-based reconstruction or static fallback.
-      }
-    }
-
-    if (!report && registration.report.rows && registration.report.rows.length > 0) {
+    console.log("[proxy-report] using report rows", registration.report.rows?.length || 0);
+    if (registration.report.rows && registration.report.rows.length > 0) {
       report = buildReportDataFromRows(
         registration.report.rows as Parameters<typeof buildReportDataFromRows>[0],
         customerName,
@@ -81,14 +122,13 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
 
   console.log('repott',report?.banner);
   if (!report) {
-    report = await getProxyReportData(proxyId, request);
-    report.banner.name = customerName || report.banner.name;
+    report = createEmptyReport(customerName, proxyId);
   }
 
   // Ensure heavyMetals are always normalized for both page HTML and injected JSON.
   if (report?.reportDetails?.heavyMetals) {
     const beforeCount = Array.isArray(report.reportDetails.heavyMetals) ? report.reportDetails.heavyMetals.length : 0;
-    report.reportDetails.heavyMetals = mapHeavyMetals(report.reportDetails.heavyMetals as any);
+    report.reportDetails.heavyMetals = mapHeavyMetals(report.reportDetails.heavyMetals);
     console.log("[proxy-report] heavyMetals mapped", {
       beforeCount,
       afterCount: report.reportDetails.heavyMetals.length,
@@ -97,7 +137,7 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
   }
   if (report?.reportDetails?.preciousMetals) {
     const beforeCount = Array.isArray(report.reportDetails.preciousMetals) ? report.reportDetails.preciousMetals.length : 0;
-    report.reportDetails.preciousMetals = mapPreciousMetals(report.reportDetails.preciousMetals as any);
+    report.reportDetails.preciousMetals = mapPreciousMetals(report.reportDetails.preciousMetals);
     console.log("[proxy-report] preciousMetals mapped", {
       beforeCount,
       afterCount: report.reportDetails.preciousMetals.length,
@@ -106,7 +146,7 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
   }
   if (report?.reportDetails?.rareEarthElements) {
     const beforeCount = Array.isArray(report.reportDetails.rareEarthElements) ? report.reportDetails.rareEarthElements.length : 0;
-    report.reportDetails.rareEarthElements = mapRareEarthElements(report.reportDetails.rareEarthElements as any);
+    report.reportDetails.rareEarthElements = mapRareEarthElements(report.reportDetails.rareEarthElements);
     console.log("[proxy-report] rareEarthElements mapped", {
       beforeCount,
       afterCount: report.reportDetails.rareEarthElements.length,
@@ -115,7 +155,7 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
   }
   if (report?.foundElements) {
     const beforeCount = Array.isArray(report.foundElements) ? report.foundElements.length : 0;
-    report.foundElements = mapFoundElements(report.foundElements as any);
+    report.foundElements = mapFoundElements(report.foundElements);
     console.log("[proxy-report] foundElements mapped", {
       beforeCount,
       afterCount: report.foundElements.length,
@@ -124,7 +164,7 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
   }
   if (report?.notFoundElements) {
     const beforeCount = Array.isArray(report.notFoundElements) ? report.notFoundElements.length : 0;
-    report.notFoundElements = mapNotFoundElements(report.notFoundElements as any);
+    report.notFoundElements = mapNotFoundElements(report.notFoundElements);
     console.log("[proxy-report] notFoundElements mapped", {
       beforeCount,
       afterCount: report.notFoundElements.length,
@@ -133,7 +173,7 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
   }
   if (report?.earthElementsBreakdown?.items) {
     const beforeCount = Array.isArray(report.earthElementsBreakdown.items) ? report.earthElementsBreakdown.items.length : 0;
-    report.earthElementsBreakdown.items = mapEarthElementsBreakdown(report.earthElementsBreakdown.items as any);
+    report.earthElementsBreakdown.items = mapEarthElementsBreakdown(report.earthElementsBreakdown.items);
     console.log("[proxy-report] earthElementsBreakdown mapped", {
       beforeCount,
       afterCount: report.earthElementsBreakdown.items.length,
@@ -142,11 +182,11 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
   }
   ensurePetroleumContaminant(report);
 
-  const petroleumRows = (registration?.report?.rows || []).filter(
-    (row: any) => String(row?.category || "").toLowerCase() === "petroleum_contaminant",
+  const petroleumRows = (registration?.report?.rows || []).filter((row) =>
+    String(row?.category || "").toLowerCase() === "petroleum_contaminant",
   );
   const petroleumContaminants = petroleumRows
-    .map((row: any) => {
+    .map((row) => {
       const ppm = Number(row?.ppmValue);
       const rawValue = Number(row?.rawValue);
       return {

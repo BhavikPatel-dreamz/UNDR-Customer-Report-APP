@@ -7,13 +7,10 @@ import {
   parseCsv,
   parseSpreadsheet,
   extractReportRows,
-  buildReportDataFromRows,
   upsertReport,
-  updateReportDataByRegistrationId,
   upsertManualPetroleumRowByRegistrationId,
 } from "../models/report.server";
 import { boundary } from "@shopify/shopify-app-react-router/server";
-import type { ProxyReportData } from "../lib/proxy-report-data";
 
 // ── Loader ────────────────────────────────────────────────────────────────────
 
@@ -42,25 +39,6 @@ export const action = async ({ params, request }: ActionFunctionArgs) => {
   const intent = String(formData.get("intent") || "upload_csv");
 
   if (intent === "manual_config") {
-    const existingReportData = registration.report?.reportData;
-    let reportData: ProxyReportData;
-
-    try {
-      reportData = existingReportData
-        ? (JSON.parse(existingReportData) as ProxyReportData)
-        : buildReportDataFromRows(
-            (registration.report?.rows || []) as Parameters<typeof buildReportDataFromRows>[0],
-            registration.name,
-            registration.kitRegistrationNumber,
-          );
-    } catch {
-      reportData = buildReportDataFromRows(
-        (registration.report?.rows || []) as Parameters<typeof buildReportDataFromRows>[0],
-        registration.name,
-        registration.kitRegistrationNumber,
-      );
-    }
-
     const petroleumType = String(formData.get("petroleumType") || "").trim();
     const petroleumPpmRaw = String(formData.get("petroleumPpm") || "").trim();
     const petroleumPpm = petroleumPpmRaw ? Number(petroleumPpmRaw) : NaN;
@@ -81,21 +59,7 @@ export const action = async ({ params, request }: ActionFunctionArgs) => {
       };
     }
 
-    const level = finalPpm <= 75 ? "Green" : finalPpm <= 1000 ? "Yellow" : "Red";
-    reportData.oilContaminants.status = `${petroleumType} (${level})`;
-    reportData.oilContaminants.value = `${Math.round(finalPpm)}ppm`;
-    reportData.reportDetails.oilIndicator.petroleum = Number.isFinite(petroleumRawValue)
-      ? `${petroleumType}: raw ${petroleumRawValue} (${Math.round(finalPpm)}ppm)`
-      : `${petroleumType}: ${Math.round(finalPpm)}ppm`;
-    reportData.petroleum_contaminant = {
-      type: petroleumType,
-      ppm: Math.round(finalPpm),
-      rawValue: Number.isFinite(petroleumRawValue) ? petroleumRawValue : undefined,
-      level,
-    };
-
-    const updated = await updateReportDataByRegistrationId(registration.id, reportData);
-    if (!updated) {
+    if (!registration.report) {
       return {
         error: "No report found. Upload CSV first, then apply manual config.",
         intent: "manual_config" as const,
@@ -169,13 +133,7 @@ export const action = async ({ params, request }: ActionFunctionArgs) => {
     };
   }
 
-  const reportData = buildReportDataFromRows(
-    rows,
-    registration.name,
-    registration.kitRegistrationNumber,
-  );
-
-  await upsertReport(registration.id, file.name, rows, reportData);
+  await upsertReport(registration.id, file.name, rows);
 
   return {
     success: true,

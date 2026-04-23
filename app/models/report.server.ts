@@ -1,6 +1,5 @@
 import prisma from "../db.server";
 import * as XLSX from "xlsx";
-import { sampleProxyReportData } from "../lib/proxy-report-data";
 import type {
   ProxyReportData,
   BreakdownBarItem,
@@ -330,17 +329,72 @@ function categoryIncludes(category: string, ...keywords: string[]) {
   return keywords.some((k) => category.includes(k));
 }
 
+function createEmptyProxyReportData(customerName: string, kitNumber: string): ProxyReportData {
+  return {
+    banner: {
+      name: customerName,
+      subtitle: `Kit Registration: ${kitNumber}`,
+    },
+    reportDetails: {
+      heavyMetals: [],
+      oilIndicator: {
+        crudeOil: "Crude oil: None",
+        petroleum: "Petroleum: None",
+        crudeOilClassName: "btn_gray",
+        petroleumClassName: "btn_gray",
+      },
+      preciousMetals: [],
+      rareEarthElements: [],
+      reportChart: {
+        elementNames: [],
+        belowData: [],
+        refData: [],
+        aboveData: [],
+      },
+    },
+    elementBreakdown: {
+      items: [],
+    },
+    otherTraceElements: {
+      items: [],
+    },
+    traceFound: {
+      title: "Traces found in your land sample",
+      subtitle: "Find more about the potential treasures in your soil below",
+      max: 1100,
+      rows: [],
+      scaleLabels: ["0", "100", "200", "300", "400", "500", "600", "700", "800", "900", "1000", "1100"],
+    },
+    multiLevelCharts: {
+      group1Max: 35,
+      group1Rows: [],
+      group1ScaleLabels: ["0", "5", "10", "15", "20", "25", "30", "35"],
+      group2Max: 450,
+      group2Rows: [],
+      group2ScaleLabels: ["0", "50", "100", "150", "200", "250", "300", "350", "400", "450"],
+    },
+    oilContaminants: {
+      status: "Not Detected",
+      value: "0ppm",
+    },
+    preciousMetalPresent: {
+      items: [],
+    },
+    earthElementsBreakdown: {
+      items: [],
+    },
+    soilFeatures: [],
+    foundElements: [],
+    notFoundElements: [],
+  };
+}
+
 export function buildReportDataFromRows(
   rows: ParsedReportRow[],
   customerName: string,
   kitNumber: string,
 ): ProxyReportData {
-  const base: ProxyReportData = JSON.parse(
-    JSON.stringify(sampleProxyReportData),
-  ) as ProxyReportData;
-
-  base.banner.name = customerName;
-  base.banner.subtitle = `Kit Registration: ${kitNumber}`;
+  const base = createEmptyProxyReportData(customerName, kitNumber);
 
   if (rows.length === 0) return base;
 
@@ -720,7 +774,6 @@ export async function upsertReport(
   registrationId: string,
   csvFileName: string,
   rows: ParsedReportRow[],
-  reportData: ProxyReportData,
 ) {
   const existing = await prisma.report.findUnique({ where: { registrationId } });
 
@@ -732,7 +785,6 @@ export async function upsertReport(
       data: {
         csvFileName,
         status: "uploaded",
-        reportData: JSON.stringify(reportData),
         updatedAt: new Date(),
       },
     });
@@ -750,27 +802,9 @@ export async function upsertReport(
       registrationId,
       csvFileName,
       status: "uploaded",
-      reportData: JSON.stringify(reportData),
       rows: {
         createMany: { data: rows.map((r) => ({ ...r })) },
       },
-    },
-    include: { rows: true },
-  });
-}
-
-export async function updateReportDataByRegistrationId(
-  registrationId: string,
-  reportData: ProxyReportData,
-) {
-  const existing = await prisma.report.findUnique({ where: { registrationId } });
-  if (!existing) return null;
-
-  return prisma.report.update({
-    where: { id: existing.id },
-    data: {
-      reportData: JSON.stringify(reportData),
-      updatedAt: new Date(),
     },
     include: { rows: true },
   });
