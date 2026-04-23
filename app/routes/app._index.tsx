@@ -6,14 +6,20 @@ import { listRegistrations } from "../models/registration.server";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
-  await authenticate.admin(request);
+  const { session } = await authenticate.admin(request);
 
   const url = new URL(request.url);
   const page = Math.max(1, Number(url.searchParams.get("page") || "1"));
   const query = url.searchParams.get("q") || "";
   const sort = (url.searchParams.get("sort") || "desc") as "asc" | "desc";
 
-  const result = await listRegistrations({ page, query, sort, perPage: 25 });
+  const result = await listRegistrations({
+    page,
+    query,
+    sort,
+    perPage: 25,
+    shop: session.shop,
+  });
   return { ...result, query, sort };
 };
 
@@ -126,10 +132,10 @@ export default function RegistrationsIndex() {
 
         {/* Table */}
         <div style={{ overflowX: "auto" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "14px" }}>
+          <table style={{ width: "100%", minWidth: "1200px", borderCollapse: "collapse", fontSize: "14px" }}>
             <thead>
               <tr style={{ borderBottom: "2px solid #e5e7eb", textAlign: "left" }}>
-                {["Customer", "Email", "Phone", "Order #", "Kit #", "Status", "Date", ""].map(
+                {["Customer", "Email", "Order #", "Shopify Order ID", "Shopify Customer ID", "Kit #", "Status", "Date", ""].map(
                   (h) => (
                     <th
                       key={h}
@@ -144,7 +150,7 @@ export default function RegistrationsIndex() {
             <tbody>
               {items.length === 0 ? (
                 <tr>
-                  <td colSpan={8} style={{ padding: "40px", textAlign: "center", color: "#9ca3af" }}>
+                  <td colSpan={9} style={{ padding: "40px", textAlign: "center", color: "#9ca3af" }}>
                     No registrations found.
                   </td>
                 </tr>
@@ -157,8 +163,13 @@ export default function RegistrationsIndex() {
                   >
                     <td style={{ padding: "12px", fontWeight: 600 }}>{reg.name}</td>
                     <td style={{ padding: "12px", color: "#6b7280" }}>{reg.email}</td>
-                    <td style={{ padding: "12px", color: "#6b7280" }}>{reg.phone}</td>
                     <td style={{ padding: "12px" }}>{reg.orderNumber}</td>
+                    <td style={{ padding: "12px", color: "#6b7280", fontFamily: "monospace", fontSize: "13px" }}>
+                      {reg.shopifyOrderId || "-"}
+                    </td>
+                    <td style={{ padding: "12px", color: "#6b7280", fontFamily: "monospace", fontSize: "13px" }}>
+                      {reg.shopifyCustomerId || "-"}
+                    </td>
                     <td style={{ padding: "12px", fontFamily: "monospace", fontSize: "13px" }}>
                       {reg.kitRegistrationNumber}
                     </td>

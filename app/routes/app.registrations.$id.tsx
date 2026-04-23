@@ -1,5 +1,6 @@
 import type { ActionFunctionArgs, HeadersFunction, LoaderFunctionArgs } from "react-router";
 import { useActionData, useLoaderData, useNavigation } from "react-router";
+import { useEffect, useState } from "react";
 import { authenticate } from "../shopify.server";
 import { getRegistrationById } from "../models/registration.server";
 import {
@@ -34,7 +35,7 @@ export const action = async ({ params, request }: ActionFunctionArgs) => {
 
   const registration = await getRegistrationById(id);
   if (!registration) {
-    return { error: "Registration not found." };
+    return { error: "Registration not found.", intent: "upload_csv" as const };
   }
 
   const formData = await request.formData();
@@ -73,51 +74,57 @@ export const action = async ({ params, request }: ActionFunctionArgs) => {
           ? derivedPpmFromRaw
           : NaN;
 
-    if (petroleumType && Number.isFinite(finalPpm) && finalPpm >= 0) {
-      const level = finalPpm <= 75 ? "Green" : finalPpm <= 1000 ? "Yellow" : "Red";
-      reportData.oilContaminants.status = `${petroleumType} (${level})`;
-      reportData.oilContaminants.value = `${Math.round(finalPpm)}ppm`;
-      reportData.reportDetails.oilIndicator.petroleum = Number.isFinite(petroleumRawValue)
-        ? `${petroleumType}: raw ${petroleumRawValue} (${Math.round(finalPpm)}ppm)`
-        : `${petroleumType}: ${Math.round(finalPpm)}ppm`;
-      reportData.petroleum_contaminant = {
-        type: petroleumType,
-        ppm: Math.round(finalPpm),
-        rawValue: Number.isFinite(petroleumRawValue) ? petroleumRawValue : undefined,
-        level,
+    if (!petroleumType || !Number.isFinite(finalPpm) || finalPpm < 0) {
+      return {
+        error: "Enter a valid contaminant and a non-negative PPM value.",
+        intent: "manual_config" as const,
       };
     }
 
+    const level = finalPpm <= 75 ? "Green" : finalPpm <= 1000 ? "Yellow" : "Red";
+    reportData.oilContaminants.status = `${petroleumType} (${level})`;
+    reportData.oilContaminants.value = `${Math.round(finalPpm)}ppm`;
+    reportData.reportDetails.oilIndicator.petroleum = Number.isFinite(petroleumRawValue)
+      ? `${petroleumType}: raw ${petroleumRawValue} (${Math.round(finalPpm)}ppm)`
+      : `${petroleumType}: ${Math.round(finalPpm)}ppm`;
+    reportData.petroleum_contaminant = {
+      type: petroleumType,
+      ppm: Math.round(finalPpm),
+      rawValue: Number.isFinite(petroleumRawValue) ? petroleumRawValue : undefined,
+      level,
+    };
+
     const updated = await updateReportDataByRegistrationId(registration.id, reportData);
     if (!updated) {
-      return { error: "No report found. Upload CSV first, then apply manual config." };
+      return {
+        error: "No report found. Upload CSV first, then apply manual config.",
+        intent: "manual_config" as const,
+      };
     }
 
-    if (petroleumType && Number.isFinite(finalPpm) && finalPpm >= 0) {
-      const rawForDb =
-        Number.isFinite(petroleumRawValue) && petroleumRawValue >= 0
-          ? petroleumRawValue
-          : finalPpm / 10000;
-      await upsertManualPetroleumRowByRegistrationId({
-        registrationId: registration.id,
-        element: petroleumType,
-        rawValue: rawForDb,
-        ppmValue: finalPpm,
-      });
-    }
+    const rawForDb =
+      Number.isFinite(petroleumRawValue) && petroleumRawValue >= 0
+        ? petroleumRawValue
+        : finalPpm / 10000;
+    await upsertManualPetroleumRowByRegistrationId({
+      registrationId: registration.id,
+      element: petroleumType,
+      rawValue: rawForDb,
+      ppmValue: finalPpm,
+    });
 
-    return { success: true, message: "Manual petroleum config saved." };
+    return { success: true, message: "Manual petroleum config saved.", intent: "manual_config" as const };
   }
 
   const file = formData.get("csv");
 
   if (!(file instanceof File) || file.size === 0) {
-    return { error: "Please select a CSV file to upload." };
+    return { error: "Please select a CSV file to upload.", intent: "upload_csv" as const };
   }
 
   const MAX_CSV_BYTES = 5 * 1024 * 1024; // 5 MB
   if (file.size > MAX_CSV_BYTES) {
-    return { error: "File is too large (max 5 MB)." };
+    return { error: "File is too large (max 5 MB).", intent: "upload_csv" as const };
   }
 
   let inputRows: Record<string, string>[];
@@ -133,13 +140,14 @@ export const action = async ({ params, request }: ActionFunctionArgs) => {
       inputRows = parseCsv(text);
     }
   } catch {
-    return { error: "Could not read the uploaded file." };
+    return { error: "Could not read the uploaded file.", intent: "upload_csv" as const };
   }
 
   if (inputRows.length === 0) {
     return {
       error:
         "The uploaded file appears to be empty or has no parseable rows.",
+      intent: "upload_csv" as const,
     };
   }
 
@@ -148,13 +156,17 @@ export const action = async ({ params, request }: ActionFunctionArgs) => {
     return {
       error:
         "No element/value pairs found. Ensure the CSV has 'element' and 'value' (or 'raw_value') columns.",
+      intent: "upload_csv" as const,
     };
   }
 
   // Validate rawValues are numbers
   const badRows = rows.filter((r) => isNaN(r.rawValue));
   if (badRows.length > 0) {
-    return { error: `${badRows.length} row(s) had non-numeric values and were skipped.` };
+    return {
+      error: `${badRows.length} row(s) had non-numeric values and were skipped.`,
+      intent: "upload_csv" as const,
+    };
   }
 
   const reportData = buildReportDataFromRows(
@@ -165,7 +177,12 @@ export const action = async ({ params, request }: ActionFunctionArgs) => {
 
   await upsertReport(registration.id, file.name, rows, reportData);
 
-  return { success: true, rowCount: rows.length, message: "CSV uploaded and report saved." };
+  return {
+    success: true,
+    rowCount: rows.length,
+    message: "CSV uploaded and report saved.",
+    intent: "upload_csv" as const,
+  };
 };
 
 export const headers: HeadersFunction = (args) => boundary.headers(args);
@@ -174,8 +191,8 @@ export const headers: HeadersFunction = (args) => boundary.headers(args);
 
 type LoaderData = Awaited<ReturnType<typeof loader>>;
 type ActionData =
-  | { success: true; message: string; rowCount?: number }
-  | { error: string }
+  | { success: true; message: string; rowCount?: number; intent?: "upload_csv" | "manual_config" }
+  | { error: string; intent?: "upload_csv" | "manual_config" }
   | undefined;
 
   const PETROLEUM_CONTAMINANTS = [
@@ -226,6 +243,14 @@ function InfoRow({ label, value }: { label: string; value: string }) {
   );
 }
 
+function buildPetroleumPpmValues(rows: Array<{ element: string; ppmValue: number }>) {
+  return PETROLEUM_CONTAMINANTS.reduce<Record<string, string>>((acc, item) => {
+    const matchedRow = rows.find((row) => row.element === item);
+    acc[item] = matchedRow && Number.isFinite(matchedRow.ppmValue) ? String(matchedRow.ppmValue) : "0";
+    return acc;
+  }, {});
+}
+
 export default function RegistrationDetail() {
   const { registration, shopDomain } = useLoaderData<LoaderData>();
   const actionData = useActionData<ActionData>();
@@ -234,6 +259,24 @@ export default function RegistrationDetail() {
 
   const report = registration.report;
   const rows = report?.rows ?? [];
+  const [petroleumPpmValues, setPetroleumPpmValues] = useState<Record<string, string>>(() =>
+    buildPetroleumPpmValues(rows),
+  );
+  const [editingPetroleum, setEditingPetroleum] = useState<string | null>(null);
+
+  useEffect(() => {
+    setPetroleumPpmValues(buildPetroleumPpmValues(rows));
+  }, [rows]);
+
+  useEffect(() => {
+    if (actionData && actionData.intent === "manual_config" && "success" in actionData) {
+      setEditingPetroleum(null);
+    }
+  }, [actionData]);
+
+  const onPetroleumPpmChange = (type: string, nextValue: string) => {
+    setPetroleumPpmValues((prev) => ({ ...prev, [type]: nextValue }));
+  };
   const appUrl = (typeof process !== "undefined" ? process.env.SHOPIFY_APP_URL : "") || "";
   const normalizedShopDomain = String(shopDomain || "")
     .replace(/^https?:\/\//, "")
@@ -291,7 +334,7 @@ export default function RegistrationDetail() {
 
       {/* ── CSV Upload ── */}
       <s-section heading={report?.status === "uploaded" ? "Replace CSV report" : "Upload CSV report"}>
-        {actionData && "error" in actionData && (
+        {actionData && actionData.intent === "upload_csv" && "error" in actionData && (
           <div
             style={{
               marginBottom: "16px",
@@ -305,7 +348,7 @@ export default function RegistrationDetail() {
             {actionData.error}
           </div>
         )}
-        {actionData && "success" in actionData && (
+        {actionData && actionData.intent === "upload_csv" && "success" in actionData && (
           <div
             style={{
               marginBottom: "16px",
@@ -364,66 +407,6 @@ export default function RegistrationDetail() {
           </div>
         </form>
 
-        <div
-          style={{
-            marginTop: "18px",
-            paddingTop: "14px",
-            borderTop: "1px solid #e5e7eb",
-            display: "grid",
-            gap: "12px",
-            maxWidth: "760px",
-          }}
-        >
-          <h4 style={{ margin: 0, fontSize: "14px", fontWeight: 700 }}>Manual petroleum controls</h4>
-          <p style={{ margin: 0, fontSize: "12px", color: "#6b7280" }}>
-            Select contaminant and enter PPM or Raw value. Data will be saved in report JSON and report rows.
-          </p>
-
-          <form method="post" style={{ display: "grid", gap: "12px" }}>
-            <input type="hidden" name="intent" value="manual_config" />
-            <div style={{ display: "grid", gap: "8px", gridTemplateColumns: "1fr 180px 180px", alignItems: "end" }}>
-              <label style={{ display: "grid", gap: "6px" }}>
-                <span style={{ fontSize: "13px", fontWeight: 600 }}>Petroleum contaminant type</span>
-                <select name="petroleumType" style={{ minHeight: "36px", padding: "0 10px" }}>
-                  <option value="">Select type</option>
-                  {PETROLEUM_CONTAMINANTS.map((item) => (
-                    <option key={item} value={item}>
-                      {item}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label style={{ display: "grid", gap: "6px" }}>
-                <span style={{ fontSize: "13px", fontWeight: 600 }}>PPM value</span>
-                <input type="number" min="0" step="0.01" name="petroleumPpm" placeholder=" e.g. 125"  style={{ height: "36px" }}/>
-              </label>
-              <label style={{ display: "grid", gap: "6px" }}>
-                <span style={{ fontSize: "13px", fontWeight: 600 }}>Raw value</span>
-                <input type="number" min="0" step="0.0001" name="petroleumRawValue" placeholder=" e.g. 0.0125" style={{ height: "36px" }} />
-              </label>
-            </div>
-            <div>
-              <button
-                type="submit"
-                disabled={isUploading}
-                style={{
-                  minHeight: "40px",
-                  padding: "0 20px",
-                  border: 0,
-                  borderRadius: "999px",
-                  background: isUploading ? "#9ca3af" : "#0f766e",
-                  color: "#fff",
-                  fontSize: "14px",
-                  fontWeight: 600,
-                  cursor: isUploading ? "default" : "pointer",
-                }}
-              >
-                {isUploading ? "Saving…" : "Save petroleum config"}
-              </button>
-            </div>
-          </form>
-        </div>
-
         <details style={{ marginTop: "20px" }}>
           <summary style={{ fontSize: "13px", color: "#6b7280", cursor: "pointer" }}>
             Accepted file formats
@@ -465,6 +448,178 @@ Ni,6.7106,mass%`}
             ppm_value = raw_value × 10,000. Category is optional but helps organise the report.
           </p>
         </details>
+      </s-section>
+
+      <s-section heading="Manual petroleum controls">
+        {actionData && actionData.intent === "manual_config" && "error" in actionData && (
+          <div
+            style={{
+              marginBottom: "16px",
+              padding: "12px 16px",
+              borderRadius: "10px",
+              background: "#fef2f2",
+              color: "#b91c1c",
+              fontSize: "14px",
+            }}
+          >
+            {actionData.error}
+          </div>
+        )}
+        {actionData && actionData.intent === "manual_config" && "success" in actionData && (
+          <div
+            style={{
+              marginBottom: "16px",
+              padding: "12px 16px",
+              borderRadius: "10px",
+              background: "#ecfdf3",
+              color: "#065f46",
+              fontSize: "14px",
+              fontWeight: 600,
+            }}
+          >
+            ✓ {actionData.message}
+          </div>
+        )}
+
+        <p style={{ margin: "0 0 12px", fontSize: "13px", color: "#6b7280" }}>
+          All petroleum contaminant values are listed below. Default PPM is 0. Click the pencil icon to edit, then save.
+        </p>
+
+        <div style={{ border: "1px solid #e5e7eb", borderRadius: "12px", overflow: "hidden" }}>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1.8fr 1fr 1fr auto",
+              gap: "10px",
+              padding: "10px 12px",
+              background: "#f9fafb",
+              borderBottom: "1px solid #e5e7eb",
+              fontSize: "12px",
+              fontWeight: 700,
+              color: "#374151",
+            }}
+          >
+            <span>Contaminant</span>
+            <span>PPM value</span>
+            <span>Raw value</span>
+            <span>Action</span>
+          </div>
+
+          {PETROLEUM_CONTAMINANTS.map((item) => {
+            const ppmValue = petroleumPpmValues[item] ?? "0";
+            const numericPpm = Number(ppmValue);
+            const rawDisplay = Number.isFinite(numericPpm) ? (numericPpm / 10000).toFixed(4) : "0.0000";
+            const isEditing = editingPetroleum === item;
+
+            return (
+              <form
+                key={item}
+                method="post"
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1.8fr 1fr 1fr auto",
+                  gap: "10px",
+                  alignItems: "center",
+                  padding: "10px 12px",
+                  borderBottom: "1px solid #f3f4f6",
+                }}
+              >
+                <input type="hidden" name="intent" value="manual_config" />
+                <input type="hidden" name="petroleumType" value={item} />
+                <input type="hidden" name="petroleumRawValue" value={rawDisplay} />
+
+                <span style={{ fontSize: "13px", fontWeight: 600, color: "#111827" }}>{item}</span>
+
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  name="petroleumPpm"
+                  value={ppmValue}
+                  onChange={(e) => onPetroleumPpmChange(item, e.currentTarget.value)}
+                  disabled={!isEditing || isUploading}
+                  style={{
+                    height: "34px",
+                    borderRadius: "8px",
+                    border: "1px solid #d1d5db",
+                    padding: "0 10px",
+                    fontSize: "13px",
+                    background: !isEditing ? "#f9fafb" : "#ffffff",
+                  }}
+                />
+
+                <span style={{ fontSize: "13px", color: "#4b5563", fontFamily: "monospace" }}>{rawDisplay}</span>
+
+                <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                  {!isEditing ? (
+                    <button
+                      type="button"
+                      onClick={() => setEditingPetroleum(item)}
+                      style={{
+                        height: "32px",
+                        width: "32px",
+                        borderRadius: "999px",
+                        border: "1px solid #d1d5db",
+                        background: "#fff",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        cursor: "pointer",
+                      }}
+                      aria-label={`Edit ${item}`}
+                      title={`Edit ${item}`}
+                    >
+                      <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+                        <path
+                          d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zm17.71-10.04a1 1 0 0 0 0-1.41l-2.51-2.51a1 1 0 0 0-1.41 0l-1.96 1.96 3.75 3.75 2.13-2z"
+                          fill="currentColor"
+                        />
+                      </svg>
+                    </button>
+                  ) : (
+                    <>
+                      <button
+                        type="submit"
+                        disabled={isUploading}
+                        style={{
+                          minHeight: "32px",
+                          padding: "0 12px",
+                          border: 0,
+                          borderRadius: "999px",
+                          background: isUploading ? "#9ca3af" : "#0f766e",
+                          color: "#fff",
+                          fontSize: "12px",
+                          fontWeight: 600,
+                          cursor: isUploading ? "default" : "pointer",
+                        }}
+                      >
+                        Save
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setEditingPetroleum(null)}
+                        disabled={isUploading}
+                        style={{
+                          minHeight: "32px",
+                          padding: "0 12px",
+                          borderRadius: "999px",
+                          border: "1px solid #d1d5db",
+                          background: "#fff",
+                          color: "#111827",
+                          fontSize: "12px",
+                          fontWeight: 600,
+                          cursor: isUploading ? "default" : "pointer",
+                        }}
+                      >
+                        Cancel
+                      </button>
+                    </>
+                  )}
+                </div>
+              </form>
+            );
+          })}
+        </div>
       </s-section>
 
       {/* ── Parsed rows table ── */}

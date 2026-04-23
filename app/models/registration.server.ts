@@ -36,6 +36,7 @@ export interface ListRegistrationsOptions {
   perPage?: number;
   query?: string;
   sort?: "asc" | "desc";
+  shop?: string;
 }
 
 export function getRegistrationDefaults(): RegistrationFormState {
@@ -119,19 +120,22 @@ export async function getRegistrationById(id: string) {
 }
 
 export async function listRegistrations(options: ListRegistrationsOptions = {}) {
-  const { page = 1, perPage = 25, query = "", sort = "desc" } = options;
+  const { page = 1, perPage = 25, query = "", sort = "desc", shop } = options;
   const skip = (page - 1) * perPage;
 
-  const where = query
-    ? {
-        OR: [
-          { name: { contains: query, mode: "insensitive" as const } },
-          { email: { contains: query, mode: "insensitive" as const } },
-          { orderNumber: { contains: query, mode: "insensitive" as const } },
-          { kitRegistrationNumber: { contains: query, mode: "insensitive" as const } },
-        ],
-      }
-    : {};
+  const where = {
+    ...(shop ? { shop } : {}),
+    ...(query
+      ? {
+          OR: [
+            { name: { contains: query, mode: "insensitive" as const } },
+            { email: { contains: query, mode: "insensitive" as const } },
+            { orderNumber: { contains: query, mode: "insensitive" as const } },
+            { kitRegistrationNumber: { contains: query, mode: "insensitive" as const } },
+          ],
+        }
+      : {}),
+  };
 
   const [items, total] = await Promise.all([
     prisma.registration.findMany({
