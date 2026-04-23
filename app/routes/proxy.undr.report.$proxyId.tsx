@@ -27,6 +27,15 @@ function isEmbedMode(url: URL) {
   return embed === "1" || embed === "true";
 }
 
+function renderReportNotFoundPage() {
+  return `
+<section style="padding:40px 20px;max-width:760px;margin:0 auto;font-family:Arial,sans-serif;">
+  <h1 style="margin:0 0 12px;font-size:30px;line-height:1.2;color:#111827;">Report not found</h1>
+  <p style="margin:0;font-size:16px;line-height:1.6;color:#4b5563;">We could not find a report for this kit on the current store.</p>
+</section>
+`;
+}
+
 function ensurePetroleumContaminant(report: ProxyReportData) {
   if (report.petroleum_contaminant) return;
 
@@ -109,18 +118,24 @@ function createEmptyReport(
 }
 
 export const loader = async ({ params, request }: LoaderFunctionArgs) => {
-  const { liquid } = await authenticate.public.appProxy(request);
+  const { liquid, session } = await authenticate.public.appProxy(request);
   const url = new URL(request.url);
   const embed = isEmbedMode(url);
   const proxyId = params.proxyId || "";
   const appUrl = (process.env.SHOPIFY_APP_URL || "").replace(/\/$/, "");
+  const requestingShop = (session?.shop || url.searchParams.get("shop") || "").trim().toLowerCase();
 
   
   const registration = await getRegistrationByKitNumber(proxyId);
 
-  console.log("Loader input - proxyId:", proxyId);
-  console.log("Loader input - registration found:", registration?.report?.rows);  
+  if (!registration) {
+    return liquid(renderReportNotFoundPage(), { layout: !embed });
+  }
 
+  const registrationShop = String(registration.shop || "").trim().toLowerCase();
+  if (!requestingShop || !registrationShop || requestingShop !== registrationShop) {
+    return liquid(renderReportNotFoundPage(), { layout: !embed });
+  }
 
   
   const customerName = registration?.name || proxyId;
@@ -156,32 +171,26 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
 
   // Ensure heavyMetals are always normalized for both page HTML and injected JSON.
   if (report?.reportDetails?.heavyMetals) {
-    const beforeCount = Array.isArray(report.reportDetails.heavyMetals) ? report.reportDetails.heavyMetals.length : 0;
     report.reportDetails.heavyMetals = mapHeavyMetals(report.reportDetails.heavyMetals);
  
   }
   if (report?.reportDetails?.preciousMetals) {
-    const beforeCount = Array.isArray(report.reportDetails.preciousMetals) ? report.reportDetails.preciousMetals.length : 0;
     report.reportDetails.preciousMetals = mapPreciousMetals(report.reportDetails.preciousMetals);
 
   }
   if (report?.reportDetails?.rareEarthElements) {
-    const beforeCount = Array.isArray(report.reportDetails.rareEarthElements) ? report.reportDetails.rareEarthElements.length : 0;
     report.reportDetails.rareEarthElements = mapRareEarthElements(report.reportDetails.rareEarthElements);
 
   }
   if (report?.foundElements) {
-    const beforeCount = Array.isArray(report.foundElements) ? report.foundElements.length : 0;
     report.foundElements = mapFoundElements(report.foundElements);
 
   }
   if (report?.notFoundElements) {
-    const beforeCount = Array.isArray(report.notFoundElements) ? report.notFoundElements.length : 0;
     report.notFoundElements = mapNotFoundElements(report.notFoundElements);
 
   }
   if (report?.earthElementsBreakdown?.items) {
-    const beforeCount = Array.isArray(report.earthElementsBreakdown.items) ? report.earthElementsBreakdown.items.length : 0;
     report.earthElementsBreakdown.items = mapEarthElementsBreakdown(report.earthElementsBreakdown.items);
 
   }
