@@ -131,15 +131,24 @@ export default function RegistrationsIndex() {
         </Form>
 
         {/* Table */}
-        <div style={{ overflowX: "auto" }}>
-          <table style={{ width: "100%", minWidth: "1200px", borderCollapse: "collapse", fontSize: "14px" }}>
+        <div>
+          <table style={{ width: "100%", tableLayout: "fixed", borderCollapse: "collapse", fontSize: "14px" }}>
+            <colgroup>
+              <col style={{ width: "18%" }} />
+              <col style={{ width: "18%" }} />
+              <col style={{ width: "16%" }} />
+              <col style={{ width: "22%" }} />
+              <col style={{ width: "10%" }} />
+              <col style={{ width: "10%" }} />
+              <col style={{ width: "6%" }} />
+            </colgroup>
             <thead>
               <tr style={{ borderBottom: "2px solid #e5e7eb", textAlign: "left" }}>
-                {["Customer", "Email", "Order #", "Shopify Order ID", "Shopify Customer ID", "Kit #", "Status", "Date", ""].map(
+                {["Customer", "Contact", "Order / Kit", "Shopify IDs", "Status", "Date", ""].map(
                   (h) => (
                     <th
                       key={h}
-                      style={{ padding: "10px 12px", fontWeight: 600, color: "#374151", whiteSpace: "nowrap" }}
+                      style={{ padding: "10px 12px", fontWeight: 600, color: "#374151" }}
                     >
                       {h}
                     </th>
@@ -150,7 +159,7 @@ export default function RegistrationsIndex() {
             <tbody>
               {items.length === 0 ? (
                 <tr>
-                  <td colSpan={9} style={{ padding: "40px", textAlign: "center", color: "#9ca3af" }}>
+                  <td colSpan={7} style={{ padding: "40px", textAlign: "center", color: "#9ca3af" }}>
                     No registrations found.
                   </td>
                 </tr>
@@ -161,24 +170,26 @@ export default function RegistrationsIndex() {
                     style={{ borderBottom: "1px solid #f3f4f6", cursor: "pointer" }}
                     onClick={() => navigate(`/app/registrations/${reg.id}`)}
                   >
-                    <td style={{ padding: "12px", fontWeight: 600 }}>{reg.name}</td>
-                    <td style={{ padding: "12px", color: "#6b7280" }}>{reg.email}</td>
-                    <td style={{ padding: "12px" }}>{reg.orderNumber}</td>
-                    <td style={{ padding: "12px", color: "#6b7280", fontFamily: "monospace", fontSize: "13px" }}>
-                      {reg.shopifyOrderId || "-"}
+                    <td style={{ padding: "12px", fontWeight: 600, wordBreak: "break-word" }}>{reg.name}</td>
+                    <td style={{ padding: "12px", color: "#6b7280", wordBreak: "break-word" }}>{reg.email}</td>
+                    <td style={{ padding: "12px", wordBreak: "break-word" }}>
+                      <div style={{ fontWeight: 600, color: "#111827" }}>#{reg.orderNumber}</div>
+                      <div style={{ marginTop: "2px", color: "#6b7280", fontFamily: "monospace", fontSize: "12px" }}>
+                        {reg.kitRegistrationNumber}
+                      </div>
                     </td>
-                    <td style={{ padding: "12px", color: "#6b7280", fontFamily: "monospace", fontSize: "13px" }}>
-                      {reg.shopifyCustomerId || "-"}
-                    </td>
-                    <td style={{ padding: "12px", fontFamily: "monospace", fontSize: "13px" }}>
-                      {reg.kitRegistrationNumber}
+                    <td style={{ padding: "12px", color: "#6b7280", wordBreak: "break-word" }}>
+                      <div style={{ fontFamily: "monospace", fontSize: "12px" }}>O: {reg.shopifyOrderId || "-"}</div>
+                      <div style={{ marginTop: "2px", fontFamily: "monospace", fontSize: "12px" }}>
+                        C: {reg.shopifyCustomerId || "-"}
+                      </div>
                     </td>
                     <td style={{ padding: "12px" }}>
                       <span style={statusStyle(reg.report?.status)}>
                         {statusLabel(reg.report?.status)}
                       </span>
                     </td>
-                    <td style={{ padding: "12px", color: "#9ca3af", whiteSpace: "nowrap" }}>
+                    <td style={{ padding: "12px", color: "#9ca3af", fontSize: "13px" }}>
                       {new Date(reg.createdAt).toLocaleDateString()}
                     </td>
                     <td style={{ padding: "12px" }}>
