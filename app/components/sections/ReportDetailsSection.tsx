@@ -65,12 +65,14 @@ const ReportDetailsSection = ({
             <div className="top_info_row">
               <div className="heavy_metals_block">
                 <h2 className="report_main_heading">Heavy Metals</h2>
+                <div className="metal_list_item_wrapper">
                 {heavyMetals.map((item) => (
                   <div className="metal_list_item" key={item.name}>
                     <span className={`val_box ${item.valueClassName}`}  style={{ backgroundColor: item.valueStyle?.backgroundColor }}>{item.value}</span>{" "}
                     <span className={`metal_txt ${item.textClassName}`} style={{ color: item.valueStyle?.color }} >{item.name}</span>
                   </div>
                 ))}
+                </div>
               </div>
               <div className="vertical_divider"></div>
               <div className="oil_indicator_block">

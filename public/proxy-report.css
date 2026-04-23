@@ -166,9 +166,12 @@ p {
     display: flex;
     justify-content: center;
     gap: 15px;
-    margin: 20px 0;
+    margin-top: 20px;
+    margin-bottom: 15px;
     font-size: 12px;
     font-weight: 600;
+    border-bottom: 1px solid #d9dee4;
+    padding-bottom: 15px;
 }
 
 .report_details_section .legend_item {
@@ -501,8 +504,9 @@ p {
         width: 100%;
     }
 
-    .report_details_section .metal_list_item {
-        justify-content: center;
+    .report_details_section .metal_list_item_wrapper {
+        width: fit-content;
+        margin: 0 auto;
     }
 
     .report_details_section .circles_flex {
@@ -1140,6 +1144,7 @@ p {
     .multi_level_chart_section .legend_item {
         width: calc(50% - 15px);
         font-size: 13px;
+        line-height: 18px;
     }
 
     .multi_level_chart_section .legend_item .color_box {
@@ -1171,6 +1176,7 @@ p {
     display: block;
     font-weight: 400;
     font-size: 36px;
+    line-height: 46px;
     color: #ffffff;
     margin-bottom: 10px;
 }
@@ -1185,6 +1191,7 @@ p {
 .oil_contaminants_section .oil_ppm_value {
     font-weight: 700;
     font-size: 44px;
+    line-height: 54px;
     color: #ffffff;
 }
 
@@ -1251,6 +1258,7 @@ p {
 
     .oil_contaminants_section .oil_label {
         font-size: 24px;
+        line-height: 30px;
     }
 
     .oil_contaminants_section .oil_value_row {
@@ -1260,6 +1268,7 @@ p {
     .oil_contaminants_section .oil_found_text,
     .oil_contaminants_section .oil_ppm_value {
         font-size: 28px;
+        line-height: 34px;
     }
 }
 
@@ -1364,7 +1373,7 @@ p {
 
     .traces_wrapper .traces_main_title {
         font-size: 28px;
-        line-height: 38px;
+        line-height: 34px;
         margin-bottom: 10px;
     }
 
@@ -1374,7 +1383,7 @@ p {
 
     .traces_wrapper .traces_sub_text {
         font-size: 20px;
-        line-height: 30px;
+        line-height: 26px;
     }
 
     .traces_wrapper .traces_sub_text br {
@@ -1572,6 +1581,7 @@ p {
 
     .precious_metal_present_section .main_title {
         font-size: 28px;
+        line-height: 34px;
     }
 
     .precious_metal_present_section .main_title br {
@@ -1698,6 +1708,7 @@ p {
 
     .earth_element_breakdown_section .main_title {
         font-size: 28px;
+        line-height: 34px;
     }
 
     .earth_element_breakdown_section .sub_title {
@@ -1786,8 +1797,8 @@ p {
     }
 
     .unique_soil_section .soil_main_heading {
-        font-size: 40px;
-        line-height: 48px;
+        font-size: 36px;
+        line-height: 42px;
     }
 
     .unique_soil_section .soil_sub_heading {
@@ -2203,6 +2214,7 @@ p {
 
     .found_elements_list_section .section_main_title {
         font-size: 28px;
+        line-height: 34px;
     }
 
     .found_elements_list_section .section_sub_title {
