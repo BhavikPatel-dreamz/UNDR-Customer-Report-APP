@@ -117,6 +117,11 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
 
   
   const registration = await getRegistrationByKitNumber(proxyId);
+
+  console.log("Loader input - proxyId:", proxyId);
+  console.log("Loader input - registration found:", registration?.report?.rows);  
+
+
   
   const customerName = registration?.name || proxyId;
   const selectedReportPackage = normalizeReportPackage(
@@ -134,7 +139,11 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
         proxyId,
       );
       report.reportPackage = selectedReportPackage;
+
+      console.log("Loader input - registration found:", report);  
     }
+
+
   }
 
 

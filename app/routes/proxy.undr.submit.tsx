@@ -264,10 +264,7 @@ async function findCustomerIdByEmail(params: {
 		};
 
 		if (json.errors?.length) {
-			
-				errors: json.errors,
-				email,
-			});
+		
 			return null;
 		}
 
@@ -279,7 +276,10 @@ async function findCustomerIdByEmail(params: {
 
 		return normalizeCustomerId(match?.id ?? null);
 	} catch (error) {
-		
+		console.error("[proxy.undr.submit] Shopify customer lookup failed", {
+			error,
+			email,
+		});
 		return null;
 	}
 }
