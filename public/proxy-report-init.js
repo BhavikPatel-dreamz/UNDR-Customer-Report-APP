@@ -63,7 +63,9 @@
 
     sorted.forEach(function (item) {
       var heightPercent = (item.ppm / maxPpm) * 100;
-      if (heightPercent < 18) heightPercent = 18;
+            // if (heightPercent < 18) heightPercent = 18;
+      if (heightPercent < 8 && item.ppm > 0) heightPercent = 8;
+
 
       var barWrapper = document.createElement("div");
       barWrapper.className = "graph_bar_wrapper";
@@ -233,6 +235,48 @@
     var minPpm = d3.min(data, function (item) { return item.ppm; }) || 2;
     var maxPpm = d3.max(data, function (item) { return item.ppm; }) || 31;
     var radiusScale = d3.scaleSqrt().domain([minPpm, maxPpm]).range([isMobile ? 55 : 50, isMobile ? 130 : 120]);
+    function truncateLabel(text, maxChars) {
+      if (!text || text.length <= maxChars) return text;
+      return text.slice(0, Math.max(1, maxChars - 3)) + "...";
+    }
+
+    function getCircleLabelParts(item) {
+      var rawName = String(item.name || "").trim();
+      var match = rawName.match(/^(.*?)(?:\s*\(([A-Za-z0-9]{1,3})\))?$/);
+      var fullName = match && match[1] ? match[1].trim() : rawName;
+      var symbol = match && match[2] ? match[2].trim().toUpperCase() : "";
+      var radius = radiusScale(item.ppm);
+
+      if (radius <= (isMobile ? 65 : 58)) {
+        return {
+          name: symbol || truncateLabel(fullName, 4),
+          nameFont: isMobile ? "20px" : "16px",
+          ppmFont: isMobile ? "36px" : "28px",
+        };
+      }
+
+      if (radius <= (isMobile ? 82 : 74)) {
+        return {
+          name: truncateLabel(fullName, symbol ? 6 : 8) + (symbol ? "(" + symbol + ")" : ""),
+          nameFont: isMobile ? "16px" : "12px",
+          ppmFont: isMobile ? "38px" : "30px",
+        };
+      }
+
+      if (radius <= (isMobile ? 100 : 90)) {
+        return {
+          name: truncateLabel(fullName, 10) + (symbol ? " (" + symbol + ")" : ""),
+          nameFont: isMobile ? "18px" : "14px",
+          ppmFont: isMobile ? "40px" : "32px",
+        };
+      }
+
+      return {
+        name: rawName,
+        nameFont: isMobile ? "22px" : "18px",
+        ppmFont: isMobile ? "44px" : "36px",
+      };
+    }
     var highest = data.reduce(function (prev, curr) { return prev.ppm > curr.ppm ? prev : curr; });
     var centerX = width / 2;
     var centerY = isMobile ? (height / 2) + 50 : height / 2;
@@ -274,13 +318,13 @@
     text.append("tspan")
       .attr("x", 0)
       .attr("dy", "-0.6em")
-      .style("font-size", isMobile ? "22px" : "18px")
-      .text(function (item) { return item.name; });
+      .style("font-size", function (item) { return getCircleLabelParts(item).nameFont; })
+      .text(function (item) { return getCircleLabelParts(item).name; });
 
     text.append("tspan")
       .attr("x", 0)
       .attr("dy", "1.1em")
-      .style("font-size", isMobile ? "44px" : "36px")
+      .style("font-size", function (item) { return getCircleLabelParts(item).ppmFont; })
       .style("font-weight", "bold")
       .text(function (item) { return item.ppm; });
 

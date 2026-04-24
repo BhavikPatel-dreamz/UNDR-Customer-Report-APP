@@ -97,6 +97,13 @@ function createEmptyReport(
       rows: [],
       scaleLabels: ["0", "200", "400", "600", "800", "1000"],
     },
+    petroleumTraceFound: {
+      title: "Petroleum contaminants found in your land sample",
+      subtitle: "No petroleum contaminant rows are available yet.",
+      max: 1000,
+      rows: [],
+      scaleLabels: ["0", "200", "400", "600", "800", "1000"],
+    },
     multiLevelCharts: {
       group1Max: 100,
       group1Rows: [],

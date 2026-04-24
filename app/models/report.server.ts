@@ -5,6 +5,8 @@ import type {
   BreakdownBarItem,
   HeavyMetalItem,
   MetalCardItem,
+  PreciousMetalGraphItem,
+  EarthElementItem,
   FoundElementItem,
   NotFoundElementItem,
 } from "../lib/proxy-report-data";
@@ -329,6 +331,92 @@ function categoryIncludes(category: string, ...keywords: string[]) {
   return keywords.some((k) => category.includes(k));
 }
 
+const HEAVY_METAL_ELEMENTS = new Set([
+  "arsenic",
+  "as",
+  "cadmium",
+  "cd",
+  "antimony",
+  "sb",
+  "tellurium",
+  "te",
+  "mercury",
+  "hg",
+  "thallium",
+  "tl",
+  "thorium",
+  "th",
+  "uranium",
+  "u",
+  "chromium",
+  "cr",
+  "lead",
+  "pb",
+]);
+
+const HEAVY_METAL_DISPLAY_ORDER = [
+  "arsenic",
+  "cadmium",
+  "antimony",
+  "tellurium",
+  "mercury",
+  "thallium",
+  "thorium",
+  "uranium",
+  "chromium",
+  "lead",
+] as const;
+
+const HEAVY_METAL_DISPLAY_ORDER_INDEX = new Map<string, number>(
+  HEAVY_METAL_DISPLAY_ORDER.map((name, index) => [name, index]),
+);
+
+const HEAVY_METAL_THRESHOLD_VALUES: Record<
+  string,
+  { safeVal: number; marginalVal: number }
+> = {
+  arsenic: { safeVal: 10, marginalVal: 20 },
+  as: { safeVal: 10, marginalVal: 20 },
+
+  cadmium: { safeVal: 2, marginalVal: 7.1 },
+  cd: { safeVal: 2, marginalVal: 7.1 },
+
+  lead: { safeVal: 80, marginalVal: 400 },
+  pb: { safeVal: 80, marginalVal: 400 },
+
+  mercury: { safeVal: 1, marginalVal: 23 },
+  hg: { safeVal: 1, marginalVal: 23 },
+
+  antimony: { safeVal: 5, marginalVal: 31 },
+  sb: { safeVal: 5, marginalVal: 31 },
+
+  thallium: { safeVal: 5, marginalVal: 25 },
+  tl: { safeVal: 5, marginalVal: 25 },
+
+  uranium: { safeVal: 3, marginalVal: 16 },
+  u: { safeVal: 3, marginalVal: 16 },
+
+  chromium: { safeVal: 100, marginalVal: 300 },
+  cr: { safeVal: 100, marginalVal: 300 },
+
+  thorium: { safeVal: 10, marginalVal: 30 },
+  th: { safeVal: 10, marginalVal: 30 },
+
+  tellurium: { safeVal: 5, marginalVal: 30 },
+  te: { safeVal: 5, marginalVal: 30 },
+};
+
+function getHeavyMetalReference(input: string) {
+  const key = input.trim().toLowerCase();
+  return HEAVY_METAL_THRESHOLD_VALUES[key] || null;
+}
+
+function getHeavyMetalDisplayOrder(input: string) {
+  const key = input.trim().toLowerCase();
+  const normalizedName = ELEMENT_NAME_MAP[key]?.toLowerCase() || key;
+  return HEAVY_METAL_DISPLAY_ORDER_INDEX.get(normalizedName) ?? Number.MAX_SAFE_INTEGER;
+}
+
 function createEmptyProxyReportData(customerName: string, kitNumber: string): ProxyReportData {
   return {
     banner: {
@@ -359,6 +447,13 @@ function createEmptyProxyReportData(customerName: string, kitNumber: string): Pr
       items: [],
     },
     traceFound: {
+      title: "Traces found in your land sample",
+      subtitle: "Find more about the potential treasures in your soil below",
+      max: 1100,
+      rows: [],
+      scaleLabels: ["0", "100", "200", "300", "400", "500", "600", "700", "800", "900", "1000", "1100"],
+    },
+    petroleumTraceFound: {
       title: "Traces found in your land sample",
       subtitle: "Find more about the potential treasures in your soil below",
       max: 1100,
@@ -399,9 +494,13 @@ export function buildReportDataFromRows(
   if (rows.length === 0) return base;
 
   // Separate rows by known categories
-  const heavyMetalRows = rows.filter((r) =>
-    categoryIncludes(r.category, "heavy", "metal", "toxic"),
-  );
+  const heavyMetalRows = rows.filter((r) => {
+    const elementKey = String(r.element || "").trim().toLowerCase();
+    return (
+      categoryIncludes(r.category, "heavy", "metal", "toxic") &&
+      HEAVY_METAL_ELEMENTS.has(elementKey)
+    );
+  });
   const preciousRows = rows.filter((r) =>
     categoryIncludes(r.category, "precious", "gold", "silver", "platinum"),
   );
@@ -479,14 +578,16 @@ base.foundElements = found.slice(0, 60)
   // --- Element Breakdown (top 8 by ppmValue)
   const sorted = [...found].sort((a, b) => b.ppmValue - a.ppmValue);
   const top8 = sorted.slice(0, 8);
+  const next8 = sorted.slice(8, 16);
   const totalPpm = top8.reduce((s, r) => s + r.ppmValue, 0);
+  const otherTraceTotalPpm = next8.reduce((s, r) => s + r.ppmValue, 0);
 
   if (top8.length > 0) {
     const breakdownItems = top8.map(
-      (r, i): BreakdownBarItem => ({
+      (r): BreakdownBarItem => ({
         name: r.element,
         percentage: totalPpm > 0 ? Math.round((r.ppmValue / totalPpm) * 100) : 0,
-        color: BAR_COLORS[i % BAR_COLORS.length],
+        color: (ELEMENT_COLOR_MAP[r.element.trim().toLowerCase()] ?? ELEMENT_COLOR_MAP.default).bg,
       }),
     );
 
@@ -520,6 +621,19 @@ base.foundElements = found.slice(0, 60)
         refData: [] as number[],
         aboveData: [] as number[],
       },
+    );
+  }
+
+  if (next8.length > 0) {
+    base.otherTraceElements.items = next8.map(
+      (r): BreakdownBarItem => ({
+        name: r.element,
+        percentage:
+          otherTraceTotalPpm > 0
+            ? Math.round((r.ppmValue / otherTraceTotalPpm) * 100)
+            : 0,
+        color: (ELEMENT_COLOR_MAP[r.element.trim().toLowerCase()] ?? ELEMENT_COLOR_MAP.default).bg,
+      }),
     );
   }
 
@@ -558,17 +672,79 @@ base.foundElements = found.slice(0, 60)
           textClassName: "text-gray-700",
         };
       });
+
+    const sortedHeavyMetalRows = [...heavyMetalRows].sort((a, b) => {
+      const orderDiff = getHeavyMetalDisplayOrder(a.element) - getHeavyMetalDisplayOrder(b.element);
+      if (orderDiff !== 0) return orderDiff;
+      return a.ppmValue - b.ppmValue;
+    });
+    const group1Threshold = 35;
+    const group1Source = sortedHeavyMetalRows.filter((r) => r.ppmValue <= group1Threshold);
+    const group2Source = sortedHeavyMetalRows.filter((r) => r.ppmValue > group1Threshold);
+
+    base.multiLevelCharts.group1Rows = group1Source.map((r) => {
+      const maxVal = base.multiLevelCharts.group1Max;
+      const threshold = getHeavyMetalReference(r.element);
+      const safeVal = threshold
+        ? Math.max(0, Math.min(maxVal, threshold.safeVal))
+        : maxVal * 0.3;
+      const marginalVal = threshold
+        ? Math.max(safeVal, Math.min(maxVal, threshold.marginalVal))
+        : maxVal * 0.85;
+
+      return {
+        label: formatElementName(r.element).replace(/\s*\([^)]+\)\s*$/, ""),
+        userVal: Math.min(r.ppmValue, maxVal),
+        safeVal,
+        marginalVal,
+        displayVal: `${Math.round(r.ppmValue)}ppm`,
+      };
+    });
+
+    base.multiLevelCharts.group2Rows = group2Source.map((r) => {
+      const maxVal = base.multiLevelCharts.group2Max;
+      const threshold = getHeavyMetalReference(r.element);
+      const safeVal = threshold
+        ? Math.max(0, Math.min(maxVal, threshold.safeVal))
+        : maxVal * 0.3;
+      const marginalVal = threshold
+        ? Math.max(safeVal, Math.min(maxVal, threshold.marginalVal))
+        : maxVal * 0.78;
+
+      return {
+        label: formatElementName(r.element).replace(/\s*\([^)]+\)\s*$/, ""),
+        userVal: Math.min(r.ppmValue, maxVal),
+        safeVal,
+        marginalVal,
+        displayVal: `${Math.round(r.ppmValue)}ppm`,
+      };
+    });
   }
 
   // --- Precious Metals
   if (preciousRows.length > 0) {
     base.reportDetails.preciousMetals = preciousRows
+      .sort((a, b) => b.ppmValue - a.ppmValue)
       .slice(0, 3)
       .map((r): MetalCardItem => ({
         name: r.element,
         ppm: r.ppmValue.toFixed(6),
         className: "bg_"+r.element,
       }));
+
+    base.preciousMetalPresent.items = preciousRows
+      // .filter((r) => r.ppmValue > 0)
+      .sort((a, b) => b.ppmValue - a.ppmValue)
+      .slice(0, 8)
+      .map((r): PreciousMetalGraphItem => {
+        const key = r.element.trim().toLowerCase();
+        return {
+          name: ELEMENT_NAME_MAP[key] || r.element,
+          symbol: ELEMENT_SYMBOL_FROM_NAME[key]?.toUpperCase() || key.substring(0, 2).toUpperCase(),
+          ppm: Number(r.ppmValue.toFixed(6)),
+          color: (ELEMENT_COLOR_MAP[key] ?? ELEMENT_COLOR_MAP.default).bg,
+        };
+      });
   }
 
   // --- Rare Earth Elements
@@ -580,6 +756,19 @@ base.foundElements = found.slice(0, 60)
         ppm: r.ppmValue.toFixed(4),
         className: "bg_"+r.element,
       }));
+
+    base.earthElementsBreakdown.items = earthRows
+      .filter((r) => r.ppmValue > 0)
+      .sort((a, b) => b.ppmValue - a.ppmValue)
+      .map((r): EarthElementItem => {
+        const key = r.element.trim().toLowerCase();
+
+        return {
+          name: formatElementName(r.element),
+          ppm: Number(r.ppmValue.toFixed(4)),
+          color: (ELEMENT_COLOR_MAP[key] ?? ELEMENT_COLOR_MAP.default).bg,
+        };
+      });
   }
 
   // --- Oil / Petroleum contaminants
@@ -598,6 +787,24 @@ base.foundElements = found.slice(0, 60)
       userVal: Math.min(r.ppmValue, base.traceFound.max),
       safeVal: base.traceFound.max * 0.3,
       marginalVal: base.traceFound.max * 0.6,
+      displayVal: r.ppmValue.toFixed(2),
+    }));
+  }
+
+  const petroleumRows = rows.filter(
+    (r) => String(r.category || "").trim().toLowerCase() === "petroleum_contaminant",
+  );
+  const topPetroleum10 = [...petroleumRows]
+    .filter((r) => r.ppmValue > 0)
+    .sort((a, b) => b.ppmValue - a.ppmValue)
+    .slice(0, 10);
+
+  if (topPetroleum10.length > 0) {
+    base.petroleumTraceFound.rows = topPetroleum10.map((r) => ({
+      label: r.element,
+      userVal: Math.min(r.ppmValue, base.petroleumTraceFound.max),
+      safeVal: base.petroleumTraceFound.max * 0.3,
+      marginalVal: base.petroleumTraceFound.max * 0.6,
       displayVal: r.ppmValue.toFixed(2),
     }));
   }
@@ -688,84 +895,84 @@ const ELEMENT_NAME_MAP: Record<string, string> = {
 };
 
 const ELEMENT_COLOR_MAP: Record<string, { bg: string; text: string }> = {
-  fe: { bg: "#B7410E", text: "#B7410E" }, 
+  fe: { bg: "#F2CF91", text: "#F2CF91" }, 
   cr: { bg: "#8A99C7", text: "#8A99C7" },
   co2:{ bg: "#9CA3AF", text: "#9CA3AF" },
-  ni: { bg: "#50D050", text: "#50D050" },
-  mn: { bg: "#9C7AC7", text: "#9C7AC7" },
+  ni: { bg: "#F2CF91", text: "#F2CF91" },
+  mn: { bg: "#707768", text: "#707768" },
   si: { bg: "#F0C8A0", text: "#F0C8A0" },
-  cu: { bg: "#C87533", text: "#C87533" },
-  mo: { bg: "#54B5B5", text: "#54B5B5" },
+  cu: { bg: "#A83F3F", text: "#A83F3F" },
+  mo: { bg: "#D6A09", text: "#D6A09" },
   co: { bg: "#F090A0", text: "#F090A0" },
-  tb: { bg: "#30FFC7", text: "#30FFC7" },
-  na: { bg: "#AB5CF2", text: "#AB5CF2" },
+  tb: { bg: "#942320", text: "#942320" },
+  na: { bg: "#707768", text: "#707768" },
   v:  { bg: "#A6A6AB", text: "#A6A6AB" },
   s:  { bg: "#FFFF30", text: "#FFFF30" },
   yb: { bg: "#00BF38", text: "#00BF38" },
-  dy: { bg: "#1FFFC7", text: "#1FFFC7" },
+  dy: { bg: "#707768", text: "#707768" },
   p:  { bg: "#FF8000", text: "#FF8000" },
   al: { bg: "#BFA6A6", text: "#BFA6A6" },
   i:  { bg: "#940094", text: "#940094" },
   re: { bg: "#267DAB", text: "#267DAB" },
-  ca: { bg: "#3DFF00", text: "#3DFF00" },
-  cl: { bg: "#1FF01F", text: "#1FF01F" },
-  k:  { bg: "#8F40D4", text: "#8F40D4" },
+  ca: { bg: "#707768", text: "#707768" },
+  cl: { bg: "#D8816C", text: "#D8816C" },
+  k:  { bg: "#D8816C", text: "#D8816C" },
   nb: { bg: "#73C2C9", text: "#73C2C9" },
   ba: { bg: "#00C900", text: "#00C900" },
   sn: { bg: "#668080", text: "#668080" },
   ga: { bg: "#C28F8F", text: "#C28F8F" },
-  sm: { bg: "#8FFFC7", text: "#8FFFC7" },
+  sm: { bg: "#707768", text: "#707768" },
   ge: { bg: "#668F8F", text: "#668F8F" },
   ta: { bg: "#4DA6FF", text: "#4DA6FF" },
   in: { bg: "#A67573", text: "#A67573" },
-  la: { bg: "#70D4FF", text: "#70D4FF" },
+  la: { bg: "#F2C394", text: "#F2C394" },
   pa: { bg: "#00A1FF", text: "#00A1FF" },
   ra: { bg: "#00FF00", text: "#00FF00" },
   ac: { bg: "#70ABFA", text: "#70ABFA" },
-  ag: { bg: "#C0C0C0", text: "#C0C0C0" },
-  y:  { bg: "#94FFFF", text: "#94FFFF" },
+  ag: { bg: "#869B9B", text: "#869B9B" },
+  y:  { bg: "#B4C2D6", text: "#B4C2D6" },
   te: { bg: "#D47A00", text: "#D47A00" },
   sr: { bg: "#00FF00", text: "#00FF00" },
   cs: { bg: "#57178F", text: "#57178F" },
-  ce: { bg: "#FFFFC7", text: "#FFFFC7" },
-  pr: { bg: "#D9FFC7", text: "#D9FFC7" },
-  nd: { bg: "#C7FFC7", text: "#C7FFC7" },
-  o:  { bg: "#FF0D0D", text: "#FF0D0D" },
-  eu: { bg: "#61FFC7", text: "#61FFC7" },
-  gd: { bg: "#45FFC7", text: "#45FFC7" },
-  zn: { bg: "#7D80B0", text: "#7D80B0" },
-  ti: { bg: "#BFC2C7", text: "#BFC2C7" },
-  ho: { bg: "#00FF9C", text: "#00FF9C" },
-  er: { bg: "#00E675", text: "#00E675" },
-  tm: { bg: "#00D452", text: "#00D452" },
+  ce: { bg: "#869B9B", text: "#869B9B" },
+  pr: { bg: "#AF6666", text: "#AF6666" },
+  nd: { bg: "#707768", text: "#707768" },
+  o:  { bg: "#D8816C", text: "#D8816C" },
+  eu: { bg: "#D8816C", text: "#D8816C" },
+  gd: { bg: "#AF6666", text: "#AF6666" },
+  zn: { bg: "#869B9B", text: "#869B9B" },
+  ti: { bg: "#D6A091", text: "#D6A091" },
+  ho: { bg: "#E5AB91", text: "#E5AB91" },
+  er: { bg: "#D8816C", text: "#D8816C" },
+  tm: { bg: "#707768", text: "#707768" },
   sc: { bg: "#E6E6E6", text: "#E6E6E6" },
-  lu: { bg: "#00AB24", text: "#00AB24" },
+  lu: { bg: "#869B9B", text: "#869B9B" },
   hf: { bg: "#4DC2FF", text: "#4DC2FF" },
   w:  { bg: "#2194D6", text: "#2194D6" },
-  mg: { bg: "#8AFF00", text: "#8AFF00" },
-  os: { bg: "#266696", text: "#266696" },
-  ir: { bg: "#175487", text: "#175487" },
+  mg: { bg: "#D6A091", text: "#D6A091" },
+  os: { bg: "#707768", text: "#707768" },
+  ir: { bg: "#AA3F3F", text: "#AA3F3F" },
   pt: { bg: "#D0D0E0", text: "#D0D0E0" },
-  au: { bg: "#FFD123", text: "#FFD123" },
+  au: { bg: "#B4C2D6", text: "#B4C2D6" },
   hg: { bg: "#B8B8D0", text: "#B8B8D0" },
   tl: { bg: "#A6544D", text: "#A6544D" },
-  pb: { bg: "#575961", text: "#575961" },
-  bi: { bg: "#9E4FB5", text: "#9E4FB5" },
+  pb: { bg: "#942320", text: "#942320" },
+  bi: { bg: "#707768", text: "#707768" },
   po: { bg: "#AB5C00", text: "#AB5C00" },
   at: { bg: "#754F45", text: "#754F45" },
   fr: { bg: "#420066", text: "#420066" },
-  th: { bg: "#e9cc8e", text: "#e9cc8e" },
+  th: { bg: "#F2CF91", text: "#F2CF91" },
   u:  { bg: "#008FFF", text: "#008FFF" },
   f:  { bg: "#90E050", text: "#90E050" },
   zr: { bg: "#94E0E0", text: "#94E0E0" },
   rb: { bg: "#702EB0", text: "#702EB0" },
   br: { bg: "#A62929", text: "#A62929" },
-  ru: { bg: "#248F8F", text: "#248F8F" },
-  rh: { bg: "#0A7D8C", text: "#0A7D8C" },
-  pd: { bg: "#006985", text: "#006985" },
-  cd: { bg: "#8ba0a3", text: "#8ba0a3" },
-  se: { bg: "#FFA100", text: "#FFA100" },
-  sb: { bg: "#d98670", text: "#d98670" },
+  ru: { bg: "#D6A091", text: "#D6A091" },
+  rh: { bg: "#A83F3F", text: "#A83F3F" },
+  pd: { bg: "#869B9B", text: "#869B9B" },
+  cd: { bg: "#D6A091", text: "#D6A091" },
+  se: { bg: "#D8816C", text: "#D8816C" },
+  sb: { bg: "#F2CF91", text: "#F2CF91" },
   as: { bg: "#BD80E3", text: "#BD80E3" },
 
   default: { bg: "#9CA3AF", text: "#9CA3AF" }
