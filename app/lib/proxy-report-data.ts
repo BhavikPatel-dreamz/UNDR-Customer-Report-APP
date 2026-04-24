@@ -124,6 +124,13 @@ export type ProxyReportData = {
     rows: RangeChartRow[];
     scaleLabels: string[];
   };
+  petroleumTraceFound: {
+    title: string;
+    subtitle: string;
+    max: number;
+    rows: RangeChartRow[];
+    scaleLabels: string[];
+  };
   multiLevelCharts: {
     group1Max: number;
     group1Rows: RangeChartRow[];
@@ -157,4 +164,3 @@ export type ProxyReportData = {
   foundElements: FoundElementItem[];
   notFoundElements: NotFoundElementItem[];
 };
-

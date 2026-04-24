@@ -84,34 +84,44 @@ const Index = ({ report }: IndexProps) => {
       {/* 9. Trace Found */}
       {canSeePetroleum && (
         <TraceFoundSection
+          title={report.petroleumTraceFound.title}
+          subtitle={report.petroleumTraceFound.subtitle}
+          max={report.petroleumTraceFound.max}
+          rows={report.petroleumTraceFound.rows}
+          scaleLabels={report.petroleumTraceFound.scaleLabels}
+        />
+      )}
+      {/* 10. Trace Found */}
+      {/* {canSeePetroleum && (
+        <TraceFoundSection
           title={report.traceFound.title}
           subtitle={report.traceFound.subtitle}
           max={report.traceFound.max}
           rows={report.traceFound.rows}
           scaleLabels={report.traceFound.scaleLabels}
         />
-      )}
-      {/* 10. Precious Metals Breakdown */}
+      )} */}
+      {/* 11. Precious Metals Breakdown */}
       {canSeePrecious && <PreciousMetalsBreakdownSection />}
-      {/* 11. Precious Metal Present */}
-      {canSeePrecious && <PreciousMetalPresentSection />}
-      {/* 12. Earth Elements Breakdown */}
+      {/* 12. Precious Metal Present */}
+      {canSeePrecious && <PreciousMetalPresentSection items={report.preciousMetalPresent.items} />}
+      {/* 13. Earth Elements Breakdown */}
       {canSeeRareEarth && <EarthElementsBreakdownSection />}
-      {/* 13. Unique Soil */}
+      {/* 14. Unique Soil */}
       <UniqueSoilSection />
-      {/* 14. Soil Feature */}
+      {/* 15. Soil Feature */}
       <SoilFeatureSection items={report.soilFeatures} />
-      {/* 15. Found Elements List */}
+      {/* 16. Found Elements List */}
       <FoundElementsListSection elements={foundElementsForList} />
-      {/* 16. Not Found Elements List */}
+      {/* 17. Not Found Elements List */}
       <NotFoundElementsListSection elements={notFoundElementsForList} />
-      {/* 17. Precious Metals Breakdown Heading */}
+      {/* 18. Precious Metals Breakdown Heading */}
       {canSeePrecious && <PreciousMetalsBreakdownHeading />}
-      {/* 18. Precious Metals */}
+      {/* 19. Precious Metals */}
       {canSeePrecious && <PreciousMetalsSection />}
-      {/* 19. Precious Metals Breakdown Heading Alt */}
+      {/* 20. Precious Metals Breakdown Heading Alt */}
       {canSeePrecious && <PreciousMetalsBreakdownHeadingAlt />}
-      {/* 20. Precious Metals Not Present */}
+      {/* 21. Precious Metals Not Present */}
       {canSeePrecious && <PreciousMetalsNotPresent />}
     </div>
   );
