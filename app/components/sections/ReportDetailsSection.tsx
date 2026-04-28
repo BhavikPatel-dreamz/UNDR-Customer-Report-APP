@@ -33,9 +33,11 @@ type ReportDetailsSectionProps = {
   rareEarthElements: MetalCardItem[];
   lockHeavyMetals?: boolean;
   lockOilIndicator?: boolean;
+  lockPreciousMetals?: boolean;
   lockRareEarthElements?: boolean;
   lockedHeavyMetalsImageUrl?: string;
   lockedOilIndicatorImageUrl?: string;
+  lockedPreciousMetalsImageUrl?: string;
   lockedRareEarthElementsImageUrl?: string;
 };
 
@@ -46,9 +48,11 @@ const ReportDetailsSection = ({
   rareEarthElements,
   lockHeavyMetals = false,
   lockOilIndicator = false,
+  lockPreciousMetals = false,
   lockRareEarthElements = false,
   lockedHeavyMetalsImageUrl,
   lockedOilIndicatorImageUrl,
+  lockedPreciousMetalsImageUrl,
   lockedRareEarthElementsImageUrl,
 }: ReportDetailsSectionProps) => {
   
@@ -106,6 +110,9 @@ const ReportDetailsSection = ({
 
             <div className="info_block">
               <h2 className="report_main_heading">Precious Metals</h2>
+              {lockPreciousMetals && lockedPreciousMetalsImageUrl ? (
+                <img src={lockedPreciousMetalsImageUrl} alt="" className="quicklook_locked_preview precious" aria-hidden="true" />
+              ) : (
               <div className="circles_flex">
                 {preciousMetals.map((item) => (
                   <div
@@ -119,6 +126,7 @@ const ReportDetailsSection = ({
                   </div>
                 ))}
               </div>
+              )}
             </div>
 
             <div className="info_block no_border">

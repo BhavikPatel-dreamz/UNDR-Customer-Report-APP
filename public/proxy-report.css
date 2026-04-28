@@ -355,9 +355,21 @@ p {
     height: auto;
 }
 
+.report_details_section .quicklook_locked_preview.precious {
+    max-width: 340px;
+    height: auto;
+}
+
 .report_details_section .quicklook_locked_preview.rare {
     max-width: 340px;
     height: auto;
+}
+
+.report_details_section .locked_preview {
+    filter: blur(4px);
+    opacity: 0.7;
+    pointer-events: none;
+    user-select: none;
 }
 
 .report_details_section .gold_bg,
@@ -812,6 +824,7 @@ p {
     background-color: #727a67;
     padding: 70px 0;
     border-bottom-right-radius: 150px;
+    margin-top: 80px;
 }
 
 .heavy_metal_breakdown_section .heavy_metal_inner_wrapper {
@@ -848,6 +861,7 @@ p {
     .heavy_metal_breakdown_section {
         border-bottom-right-radius: 130px;
         padding: 60px 0;
+        margin-top: 60px;
     }
 
     .heavy_metal_breakdown_section .heavy_metal_title {
@@ -866,6 +880,7 @@ p {
     .heavy_metal_breakdown_section {
         border-bottom-right-radius: 100px;
         padding: 50px 0;
+        margin-top: 50px;
     }
 
     .heavy_metal_breakdown_section .heavy_metal_title {
@@ -881,6 +896,9 @@ p {
 }
 
 @media (max-width: 767px) {
+    .heavy_metal_breakdown_section {
+        margin-top: 40px;
+    }
     .heavy_metal_breakdown_section .heavy_metal_inner_wrapper {
         flex-direction: column;
         align-items: flex-start;

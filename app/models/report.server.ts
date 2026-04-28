@@ -724,8 +724,20 @@ base.foundElements = found.slice(0, 60)
 
     base.elementBreakdown.items = breakdownItems;
 
+    const reportChartRows = sorted
+      .filter((r) => String(r.category || "").trim().toLowerCase() !== "petroleum_contaminant")
+      // .slice(0, 15);
+    const reportChartTotalPpm = reportChartRows.reduce((sum, r) => sum + r.ppmValue, 0);
+    const reportChartItems = reportChartRows.map(
+      (r): BreakdownBarItem => ({
+        name: r.element,
+        percentage: reportChartTotalPpm > 0 ? Math.round((r.ppmValue / reportChartTotalPpm) * 100) : 0,
+        color: (ELEMENT_COLOR_MAP[r.element.trim().toLowerCase()] ?? ELEMENT_COLOR_MAP.default).bg,
+      }),
+    );
+
     // Populate layered chart arrays used by the report details polar chart.
-    base.reportDetails.reportChart = breakdownItems.reduce(
+    base.reportDetails.reportChart = reportChartItems.reduce(
       (acc, item) => {
         const value = Number(item.percentage) || 0;
         acc.elementNames.push(item.name);
