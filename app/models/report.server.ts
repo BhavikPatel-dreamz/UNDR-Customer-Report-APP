@@ -153,6 +153,93 @@ const ELEMENT_STANDARD_DEVIATION_PPM_BY_NAME: Record<string, number> = {
   protactinium: 3,
 };
 
+const ELEMENT_AVERAGE_PPM_BY_SYMBOL: Record<string, number> = {
+  o: 425000,
+  f: 300,
+  na: 5500,
+  mg: 5500,
+  al: 55000,
+  si: 275000,
+  p: 700,
+  s: 550,
+  cl: 130,
+  k: 20000,
+  ca: 25500,
+  sc: 20,
+  ti: 5500,
+  v: 80,
+  cr: 77.5,
+  mn: 1750,
+  fe: 37500,
+  co: 20.5,
+  ni: 51,
+  cu: 51,
+  zn: 165,
+  ga: 12.5,
+  ge: 1.05,
+  as: 10.5,
+  se: 1.05,
+  br: 2.5,
+  rb: 65,
+  sr: 260,
+  y: 22.5,
+  zr: 200,
+  nb: 16,
+  mo: 1,
+  tc: 0,
+  ru: 0,
+  rh: 0,
+  pd: 0,
+  ag: 0.505,
+  cd: 0.505,
+  in: 0.255,
+  sn: 2.75,
+  sb: 1.025,
+  te: 0.505,
+  i: 2.75,
+  cs: 6,
+  ba: 700,
+  la: 27.5,
+  ce: 55,
+  pr: 6.5,
+  nd: 27.5,
+  pm: 0,
+  sm: 5.5,
+  eu: 1.6,
+  gd: 5.5,
+  tb: 1.05,
+  dy: 3,
+  ho: 1.05,
+  er: 2.25,
+  tm: 0.4,
+  yb: 2,
+  lu: 0.525,
+  hf: 2.75,
+  ta: 2.75,
+  w: 2.55,
+  re: 0,
+  os: 0,
+  ir: 0,
+  pt: 0,
+  au: 0.00525,
+  hg: 0.105,
+  tl: 0.2,
+  pb: 17.5,
+  bi: 0.505,
+  po: 0,
+  at: 0,
+  ra: 0,
+  ac: 0,
+  pa: 0,
+  th: 7,
+  u: 2.25,
+};
+
+const ELEMENT_AVERAGE_PPM_BY_NAME: Record<string, number> = {
+  thorium: 0,
+  protactinium: 7,
+};
+
 function getElementStandardDeviationPpm(input: string) {
   const key = input.trim().toLowerCase();
   if (ELEMENT_STANDARD_DEVIATION_PPM_BY_NAME[key] !== undefined) {
@@ -171,6 +258,41 @@ function getElementStandardDeviationPpm(input: string) {
 function formatElementMargin(input: string) {
   const standardDeviation = getElementStandardDeviationPpm(input);
   return standardDeviation == null ? "± 0 ppm" : `± ${standardDeviation} ppm`;
+}
+
+function getElementAveragePpm(input: string) {
+  const key = input.trim().toLowerCase();
+  if (ELEMENT_AVERAGE_PPM_BY_NAME[key] !== undefined) {
+    return ELEMENT_AVERAGE_PPM_BY_NAME[key];
+  }
+
+  const symbol = ELEMENT_AVERAGE_PPM_BY_SYMBOL[key] !== undefined
+    ? key
+    : ELEMENT_SYMBOL_FROM_NAME[key];
+
+  if (!symbol) return null;
+  const average = ELEMENT_AVERAGE_PPM_BY_SYMBOL[symbol.toLowerCase()];
+  return Number.isFinite(average) ? average : null;
+}
+
+function formatElementSymbol(input: string) {
+  const key = input.trim().toLowerCase();
+  const symbol = ELEMENT_AVERAGE_PPM_BY_SYMBOL[key] !== undefined
+    ? key
+    : ELEMENT_SYMBOL_FROM_NAME[key] || key;
+
+  return symbol.length <= 2
+    ? symbol.charAt(0).toUpperCase() + symbol.slice(1)
+    : input;
+}
+
+function getElementRangeChartValue(adjustedPpm: number, averagePpm: number) {
+  if (!Number.isFinite(adjustedPpm) || adjustedPpm <= 0) return 0;
+  if (!Number.isFinite(averagePpm) || averagePpm <= 0) return adjustedPpm;
+
+  const percentOfAverage = (adjustedPpm / averagePpm) * 100;
+  if (percentOfAverage <= 100) return Math.max(4, percentOfAverage);
+  return 100 + Math.log10(percentOfAverage / 100) * 50;
 }
 
 function normalizeRows(
@@ -561,6 +683,7 @@ function createEmptyProxyReportData(customerName: string, kitNumber: string): Pr
         belowData: [],
         refData: [],
         aboveData: [],
+        calculations: [],
       },
     },
     elementBreakdown: {
@@ -648,8 +771,8 @@ base.foundElements = found.slice(0, 60)
     const colors = ELEMENT_COLOR_MAP[key] ?? ELEMENT_COLOR_MAP.default;
 
     const mapped: FoundElementItem = {
-      symbol: r.element.substring(0, 2).toUpperCase(),
-      name: r.element,
+      symbol: ELEMENT_SYMBOL_FROM_NAME[key]?.toUpperCase() || key.substring(0, 2).toUpperCase(),
+      name: formatElementName(r.element).replace(/\s*\([^)]+\)\s*$/, ""),
       // ppm: r.ppmValue.toFixed(2),
       ppm: Math.floor(r.ppmValue).toString().slice(0, 2) +"ppm",
       margin: formatElementMargin(r.element),
@@ -684,8 +807,8 @@ base.foundElements = found.slice(0, 60)
     
 
     return {
-      symbol: r.element.substring(0, 2).toUpperCase(),
-      name: r.element,
+      symbol: ELEMENT_SYMBOL_FROM_NAME[key]?.toUpperCase() || key.substring(0, 2).toUpperCase(),
+      name: formatElementName(r.element).replace(/\s*\([^)]+\)\s*$/, ""),
       valueStyle: {
         backgroundColor: colors.bg,
         color: colors.text,
@@ -723,49 +846,97 @@ base.foundElements = found.slice(0, 60)
     );
 
     base.elementBreakdown.items = breakdownItems;
-
-    const reportChartRows = sorted
-      .filter((r) => String(r.category || "").trim().toLowerCase() !== "petroleum_contaminant")
-      // .slice(0, 15);
-    const reportChartTotalPpm = reportChartRows.reduce((sum, r) => sum + r.ppmValue, 0);
-    const reportChartItems = reportChartRows.map(
-      (r): BreakdownBarItem => ({
-        name: r.element,
-        percentage: reportChartTotalPpm > 0 ? Math.round((r.ppmValue / reportChartTotalPpm) * 100) : 0,
-        color: (ELEMENT_COLOR_MAP[r.element.trim().toLowerCase()] ?? ELEMENT_COLOR_MAP.default).bg,
-      }),
-    );
-
-    // Populate layered chart arrays used by the report details polar chart.
-    base.reportDetails.reportChart = reportChartItems.reduce(
-      (acc, item) => {
-        const value = Number(item.percentage) || 0;
-        acc.elementNames.push(item.name);
-
-        if (value <= 10) {
-          acc.belowData.push(value);
-          acc.refData.push(0);
-          acc.aboveData.push(0);
-        } else if (value <= 25) {
-          acc.belowData.push(0);
-          acc.refData.push(value);
-          acc.aboveData.push(0);
-        } else {
-          acc.belowData.push(0);
-          acc.refData.push(0);
-          acc.aboveData.push(value);
-        }
-
-        return acc;
-      },
-      {
-        elementNames: [] as string[],
-        belowData: [] as number[],
-        refData: [] as number[],
-        aboveData: [] as number[],
-      },
-    );
   }
+
+  const reportChartRows = [...allElements]
+    .filter((r) => {
+      const category = String(r.category || "").trim().toLowerCase();
+      const elementKey = String(r.element || "").trim().toLowerCase();
+      return category !== "petroleum_contaminant" && getElementAveragePpm(elementKey) !== null;
+    })
+    .sort((a, b) => formatElementSymbol(a.element).localeCompare(formatElementSymbol(b.element)));
+
+  // Element Breakdown Chart:
+  // Result is already adjusted to ppm in extractReportRows as Result * 10,000.
+  // Compare adjusted ppm against static average ppm, then pass 3 values per element.
+  base.reportDetails.reportChart = reportChartRows.reduce(
+    (acc, item) => {
+      const elementKey = String(item.element || "").trim().toLowerCase();
+      const elementLabel = formatElementSymbol(item.element);
+      const adjustedPpm = Number(item.ppmValue);
+      const averagePpm = getElementAveragePpm(elementKey);
+      if (averagePpm === null || !Number.isFinite(adjustedPpm)) return acc;
+
+      const isBelowAverage = adjustedPpm < averagePpm;
+      const isAboveAverage = adjustedPpm > averagePpm;
+      const chartValue = getElementRangeChartValue(adjustedPpm, averagePpm);
+      const referenceChartValue = averagePpm > 0 ? 100 : 0;
+      const percentOfAverage = averagePpm > 0 ? (adjustedPpm / averagePpm) * 100 : null;
+      const comparisonOperator = isBelowAverage ? "<" : isAboveAverage ? ">" : "=";
+      const range = isBelowAverage
+        ? "Below Range"
+        : isAboveAverage
+          ? "Above Range"
+          : "Reference Range";
+      const calculation = `${item.rawValue} * 10000 = ${adjustedPpm}`;
+      const comparison = `${adjustedPpm} ${comparisonOperator} ${averagePpm}`;
+
+      acc.elementNames.push(elementLabel);
+      acc.belowData.push(isBelowAverage ? chartValue : 0);
+      acc.refData.push(referenceChartValue);
+      acc.aboveData.push(isAboveAverage ? chartValue : 0);
+      acc.calculations.push({
+        element: elementLabel,
+        elementName: formatElementName(item.element).replace(/\s*\([^)]+\)\s*$/, ""),
+        reportedResult: item.rawValue,
+        adjustedPpm,
+        averagePpm,
+        calculation,
+        comparison,
+        percentOfAverage,
+        range,
+      });
+
+      console.log("[Element Breakdown Chart]", {
+        element: elementLabel,
+        elementName: formatElementName(item.element).replace(/\s*\([^)]+\)\s*$/, ""),
+        elementKey,
+        reportedResult: item.rawValue,
+        adjustedPpm,
+        averagePpm,
+        calculation,
+        comparison,
+        percentOfAverage,
+        range,
+        belowRangePpm: isBelowAverage ? adjustedPpm : 0,
+        referenceRangePpm: averagePpm,
+        aboveRangePpm: isAboveAverage ? adjustedPpm : 0,
+        visualScale: "Reference = 100. Below = percent of average. Above = 100 + log10(percent / 100) * 50.",
+        belowRangeChartValue: isBelowAverage ? chartValue : 0,
+        referenceRangeChartValue: referenceChartValue,
+        aboveRangeChartValue: isAboveAverage ? chartValue : 0,
+      });
+
+      return acc;
+    },
+    {
+      elementNames: [] as string[],
+      belowData: [] as number[],
+      refData: [] as number[],
+      aboveData: [] as number[],
+      calculations: [] as Array<{
+        element: string;
+        elementName: string;
+        reportedResult: number;
+        adjustedPpm: number;
+        averagePpm: number;
+        calculation: string;
+        comparison: string;
+        percentOfAverage: number | null;
+        range: "Below Range" | "Reference Range" | "Above Range";
+      }>,
+    },
+  );
 
   if (next8.length > 0) {
     base.otherTraceElements.items = next8.map(

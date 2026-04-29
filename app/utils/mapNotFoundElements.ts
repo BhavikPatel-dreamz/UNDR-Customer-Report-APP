@@ -1,5 +1,5 @@
 import type { NotFoundElementItem } from "../lib/proxy-report-data";
-import { getElementColors } from "./elementMeta";
+import { formatElementName, getElementColors } from "./elementMeta";
 
 type RawNotFoundElement = NotFoundElementItem | Record<string, unknown>;
 
@@ -15,18 +15,19 @@ export function mapNotFoundElements(rows: unknown): NotFoundElementItem[] {
   const mapped = rows
     .map((row) => {
       const r = row as RawNotFoundElement;
-      const symbol = toStr((r as any).symbol).toUpperCase();
-      const name = toStr((r as any).name);
+      const raw = r as Record<string, unknown>;
+      const symbol = toStr(raw.symbol).toUpperCase();
+      const name = toStr(raw.name);
       if (!symbol && !name) return null;
 
       const key = symbol || name;
 
       return {
         symbol: symbol || key,
-        name: name || key,
-        bgClass: toStr((r as any).bgClass, "bg-gray-50"),
-        textClass: toStr((r as any).textClass, "text-gray-400"),
-        valueStyle: (r as any).valueStyle || getElementColors(key),
+        name: formatElementName(name || key).replace(/\s*\([^)]+\)\s*$/, ""),
+        bgClass: toStr(raw.bgClass, "bg-gray-50"),
+        textClass: toStr(raw.textClass, "text-gray-400"),
+        valueStyle: raw.valueStyle || getElementColors(key),
       } as NotFoundElementItem;
     })
     .filter(Boolean) as NotFoundElementItem[];
@@ -37,4 +38,3 @@ export function mapNotFoundElements(rows: unknown): NotFoundElementItem[] {
 
   return mapped;
 }
-

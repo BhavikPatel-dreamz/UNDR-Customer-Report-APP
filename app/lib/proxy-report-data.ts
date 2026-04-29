@@ -109,6 +109,17 @@ export type ProxyReportData = {
       belowData: number[];
       refData: number[];
       aboveData: number[];
+      calculations?: Array<{
+        element: string;
+        elementName: string;
+        reportedResult: number;
+        adjustedPpm: number;
+        averagePpm: number;
+        calculation: string;
+        comparison: string;
+        percentOfAverage: number | null;
+        range: "Below Range" | "Reference Range" | "Above Range";
+      }>;
     };
   };
   elementBreakdown: {

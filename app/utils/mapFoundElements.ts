@@ -1,5 +1,5 @@
 import type { FoundElementItem } from "../lib/proxy-report-data";
-import { getElementColors } from "./elementMeta";
+import { formatElementName, getElementColors } from "./elementMeta";
 
 type RawFoundElement = FoundElementItem | Record<string, unknown>;
 
@@ -33,20 +33,21 @@ export function mapFoundElements(rows: unknown): FoundElementItem[] {
   const mapped = rows
     .map((row) => {
       const r = row as RawFoundElement;
-      const symbol = toStr((r as any).symbol).toUpperCase();
-      const name = toStr((r as any).name);
+      const raw = r as Record<string, unknown>;
+      const symbol = toStr(raw.symbol).toUpperCase();
+      const name = toStr(raw.name);
       if (!symbol && !name) return null;
 
       const key = symbol || name;
 
       return {
         symbol: symbol || key,
-        name: name || key,
-        ppm: formatPpm((r as any).ppm)+"ppm",
-        margin: toStr((r as any).margin, "0"),
-        bgClass: toStr((r as any).bgClass, "bg-green-50"),
-        colorClass: toStr((r as any).colorClass, "text-green-700"),
-        valueStyle: (r as any).valueStyle || getElementColors(key),
+        name: formatElementName(name || key).replace(/\s*\([^)]+\)\s*$/, ""),
+        ppm: formatPpm(raw.ppm)+"ppm",
+        margin: toStr(raw.margin, "0"),
+        bgClass: toStr(raw.bgClass, "bg-green-50"),
+        colorClass: toStr(raw.colorClass, "text-green-700"),
+        valueStyle: raw.valueStyle || getElementColors(key),
       } as FoundElementItem;
     })
     .filter(Boolean) as FoundElementItem[];
@@ -56,4 +57,3 @@ export function mapFoundElements(rows: unknown): FoundElementItem[] {
 
   return mapped;
 }
-
