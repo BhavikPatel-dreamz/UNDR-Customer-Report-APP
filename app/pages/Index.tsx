@@ -168,14 +168,14 @@ const Index = ({ report, appUrl = '' }: IndexProps) => {
 
 
       {/* 14. Unique Soil */}
-      {/* <UniqueSoilSection /> */}
+      <UniqueSoilSection />
       {/* 15. Soil Feature */}
-      {/* <SoilFeatureSection items={report.soilFeatures} /> */}
+      <SoilFeatureSection items={report.soilFeatures} />
 
       {/* 18. Precious Metals Breakdown Heading */}
       <PreciousMetalsBreakdownHeading />
       {/* 19. Precious Metals */}
-      <PreciousMetalsSection />
+      <PreciousMetalsSection items={report.preciousMetalPresent.items} />
       {/* 20. Precious Metals Breakdown Heading Alt */}
       <PreciousMetalsBreakdownHeadingAlt />
       {/* 21. Precious Metals Not Present */}

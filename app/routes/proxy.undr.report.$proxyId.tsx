@@ -152,6 +152,12 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
 
   let report: ProxyReportData | null = null;
 
+  console.log("[Unique Soil] proxy loader", {
+    proxyId,
+    reportStatus: registration?.report?.status,
+    rowCount: registration?.report?.rows?.length ?? 0,
+  });
+
   if (registration?.report?.status === "uploaded") {
     
     if (registration.report.rows && registration.report.rows.length > 0) {
@@ -233,6 +239,15 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
   ${pageHtml}
 </div>
 <script id="proxy-report-data" type="application/json">${reportJson}</script>
+<script>
+  try {
+    const report = JSON.parse(document.getElementById("proxy-report-data")?.textContent || "{}");
+    console.warn("[Unique Soil] all calculations", report.soilFeatureCalculations || []);
+    console.warn("[Unique Soil] top 3", report.soilFeatures || []);
+  } catch (error) {
+    console.warn("[Unique Soil] log failed", error);
+  }
+</script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js" defer></script>
 <script src="${appUrl}/proxy-report-init.js" defer></script>

@@ -78,6 +78,17 @@ export type SoilFeatureItem = {
   title: string;
   description: string;
   cardClassName: string;
+  result?: number;
+  calculation?: string;
+  value?: number;
+  output?: number;
+};
+
+export type SoilFeatureCalculation = {
+  element: string;
+  calculation: string;
+  value: number;
+  output: number;
 };
 
 export type ReportPackage =
@@ -171,6 +182,7 @@ export type ProxyReportData = {
   earthElementsBreakdown: {
     items: EarthElementItem[];
   };
+  soilFeatureCalculations?: SoilFeatureCalculation[];
   soilFeatures: SoilFeatureItem[];
   foundElements: FoundElementItem[];
   notFoundElements: NotFoundElementItem[];

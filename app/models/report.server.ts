@@ -9,6 +9,7 @@ import type {
   EarthElementItem,
   FoundElementItem,
   NotFoundElementItem,
+  SoilFeatureItem,
 } from "../lib/proxy-report-data";
 
 export type ParsedReportRow = {
@@ -17,6 +18,88 @@ export type ParsedReportRow = {
   ppmValue: number;
   unit: string;
   category: string;
+};
+
+const UNIQUE_SOIL_RESULT_BY_SYMBOL: Record<string, number> = {
+  o: 0,
+  f: 0,
+  na: 0.0966,
+  mg: 0,
+  al: 0.0251,
+  si: 0.4414,
+  p: 0.033,
+  s: 0.0788,
+  cl: 0.0075,
+  k: 0.0059,
+  ca: 0.0092,
+  sc: 0,
+  ti: 0,
+  v: 0.0812,
+  cr: 15.8755,
+  mn: 1.3116,
+  fe: 63.1272,
+  co: 0.1558,
+  ni: 6.7106,
+  cu: 0.3264,
+  zn: 0,
+  ga: 0.0023,
+  ge: 0.0017,
+  as: 0,
+  se: 0,
+  br: 0,
+  rb: 0,
+  sr: 0.0001,
+  y: 0.0002,
+  zr: 0,
+  nb: 0.0045,
+  mo: 0.2868,
+  ru: 0,
+  rh: 0,
+  pd: 0,
+  ag: 0.0002,
+  cd: 0,
+  in: 0.0008,
+  sn: 0.0025,
+  sb: 0,
+  te: 0.0002,
+  i: 0.0169,
+  cs: 0,
+  ba: 0.0036,
+  la: 0.0007,
+  ce: 0,
+  pr: 0,
+  nd: 0,
+  sm: 0.0018,
+  eu: 0,
+  gd: 0,
+  tb: 0.1246,
+  dy: 0.0366,
+  ho: 0,
+  er: 0,
+  tm: 0,
+  yb: 0.0618,
+  lu: 0,
+  hf: 0,
+  ta: 0.0009,
+  w: 0,
+  re: 0.01,
+  os: 0,
+  ir: 0,
+  pt: 0,
+  au: 0,
+  hg: 0,
+  tl: 0,
+  pb: 0,
+  bi: 0,
+  po: 0,
+  at: 0,
+  fr: 0,
+  ra: 0.0005,
+  ac: 0.0004,
+  th: 0,
+  pa: 0.0006,
+  u: 0,
+  co2: 11.1,
 };
 
 // ─── CSV Parsing ─────────────────────────────────────────────────────────────
@@ -293,6 +376,22 @@ function getElementRangeChartValue(adjustedPpm: number, averagePpm: number) {
   const percentOfAverage = (adjustedPpm / averagePpm) * 100;
   if (percentOfAverage <= 100) return Math.max(4, percentOfAverage);
   return 100 + Math.log10(percentOfAverage / 100) * 50;
+}
+
+function formatSoilFeatureDifference(resultPpm: number, averagePpm: number) {
+  const ratio = averagePpm > 0 ? resultPpm / averagePpm : 0;
+
+  if (ratio >= 10) {
+    return `${Math.round(ratio).toLocaleString("en-US")} times higher`;
+  }
+
+  if (ratio >= 1) {
+    const percentHigher = Math.round((ratio - 1) * 100);
+    return `${percentHigher}% higher`;
+  }
+
+  const percentLower = Math.round((1 - ratio) * 100);
+  return `${percentLower}% lower`;
 }
 
 function normalizeRows(
@@ -737,7 +836,20 @@ export function buildReportDataFromRows(
 ): ProxyReportData {
   const base = createEmptyProxyReportData(customerName, kitNumber);
 
+  console.log("[Unique Soil] buildReportDataFromRows", {
+    rowCount: rows.length,
+    customerName,
+    kitNumber,
+  });
+
   if (rows.length === 0) return base;
+
+  const resultColumnValues = Object.entries(UNIQUE_SOIL_RESULT_BY_SYMBOL).map(([element, result]) => ({
+    element: formatElementSymbol(element),
+    result,
+  }));
+
+  console.log("[Unique Soil] result column", resultColumnValues);
 
   // Separate rows by known categories
   const heavyMetalRows = rows.filter((r) => {
@@ -847,6 +959,87 @@ base.foundElements = found.slice(0, 60)
 
     base.elementBreakdown.items = breakdownItems;
   }
+
+  const soilFeatureCardClasses = ["iron_card", "potas_card", "sodium_card"];
+  const soilFeatureCalculations = Object.entries(UNIQUE_SOIL_RESULT_BY_SYMBOL)
+    .map(([element, rawResult]) => {
+      const elementKey = element.trim().toLowerCase();
+      const resultPpm = Number(rawResult) * 10000;
+      const averagePpm = getElementAveragePpm(elementKey);
+      const standardDeviationPpm = getElementStandardDeviationPpm(elementKey);
+
+      if (
+        averagePpm === null ||
+        standardDeviationPpm === null ||
+        !Number.isFinite(resultPpm) ||
+        !Number.isFinite(averagePpm) ||
+        !Number.isFinite(standardDeviationPpm) ||
+        resultPpm <= 0 ||
+        averagePpm <= 0 ||
+        standardDeviationPpm <= 0
+      ) {
+        return null;
+      }
+
+      const standardDeviationDistance = (resultPpm - averagePpm) / standardDeviationPpm;
+      return {
+        element,
+        rawResult,
+        resultPpm,
+        averagePpm,
+        standardDeviationPpm,
+        standardDeviationDistance,
+      };
+    })
+    .filter((item): item is {
+      element: string;
+      rawResult: number;
+      resultPpm: number;
+      averagePpm: number;
+      standardDeviationPpm: number;
+      standardDeviationDistance: number;
+    } => item !== null);
+
+  const topSoilFeatureCalculations = [...soilFeatureCalculations]
+    .sort((a, b) => Math.abs(b.standardDeviationDistance) - Math.abs(a.standardDeviationDistance))
+    .slice(0, 3);
+
+  const uniqueSoilCalculationsLog = soilFeatureCalculations.map((item) => ({
+    element: formatElementSymbol(item.element),
+    calculation: `((${item.rawResult} * 10000) - ${item.averagePpm}) / ${item.standardDeviationPpm}`,
+    value: item.standardDeviationDistance,
+    output: item.resultPpm / item.averagePpm,
+  }));
+  const uniqueSoilTop3Log = topSoilFeatureCalculations.map((item) => ({
+    element: formatElementSymbol(item.element),
+    value: item.standardDeviationDistance,
+    output: item.resultPpm / item.averagePpm,
+  }));
+
+  console.log(
+    "[Unique Soil] calculations",
+    uniqueSoilCalculationsLog,
+  );
+
+  console.log(
+    "[Unique Soil] top 3",
+    uniqueSoilTop3Log,
+  );
+
+  base.soilFeatureCalculations = uniqueSoilCalculationsLog;
+
+  base.soilFeatures = topSoilFeatureCalculations.map((item, index): SoilFeatureItem => {
+    const elementName = formatElementName(item.element).replace(/\s*\([^)]+\)\s*$/, "");
+    return {
+      title: `${elementName} is ${formatSoilFeatureDifference(item.resultPpm, item.averagePpm)}`,
+      description: "than commonly found in soil samples",
+      cardClassName: soilFeatureCardClasses[index % soilFeatureCardClasses.length],
+      result: item.rawResult,
+      calculation: `((${item.rawResult} * 10000) - ${item.averagePpm}) / ${item.standardDeviationPpm}`,
+      value: item.standardDeviationDistance,
+      output: item.resultPpm / item.averagePpm,
+    };
+  });
 
   const reportChartRows = [...allElements]
     .filter((r) => {
@@ -1219,7 +1412,7 @@ const ELEMENT_COLOR_MAP: Record<string, { bg: string; text: string }> = {
   mn: { bg: "#707768", text: "#707768" },
   si: { bg: "#F0C8A0", text: "#F0C8A0" },
   cu: { bg: "#A83F3F", text: "#A83F3F" },
-  mo: { bg: "#D6A09", text: "#D6A09" },
+  mo: { bg: "#D6A09A", text: "#D6A09A" },
   co: { bg: "#F090A0", text: "#F090A0" },
   tb: { bg: "#942320", text: "#942320" },
   na: { bg: "#707768", text: "#707768" },

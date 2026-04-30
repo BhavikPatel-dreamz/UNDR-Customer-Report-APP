@@ -9,6 +9,8 @@ type SoilFeatureSectionProps = {
 };
 
 const SoilFeatureSection = ({ items }: SoilFeatureSectionProps) => {
+  if (items.length === 0) return null;
+
   return (
     <section className="soil_feature_section">
       <div className="container">
