@@ -150,6 +150,11 @@ const Index = ({ report, appUrl = '' }: IndexProps) => {
         lockedPreviewImageUrl={`${appUrl}/images/heavy-metals-breakdown-locked-preview.svg`}
       />
 
+      {/* 14. Unique Soil */}
+      <UniqueSoilSection />
+      {/* 15. Soil Feature */}
+      <SoilFeatureSection items={report.soilFeatures} />
+
       {/* 16. Found Elements List */}
       <FoundElementsListSection elements={foundElementsForList} />
       {/* 17. Not Found Elements List */}
@@ -167,11 +172,7 @@ const Index = ({ report, appUrl = '' }: IndexProps) => {
       )} */}
 
 
-      {/* 14. Unique Soil */}
-      <UniqueSoilSection />
-      {/* 15. Soil Feature */}
-      <SoilFeatureSection items={report.soilFeatures} />
-
+     
       {/* 18. Precious Metals Breakdown Heading */}
       <PreciousMetalsBreakdownHeading />
       {/* 19. Precious Metals */}
