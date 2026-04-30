@@ -1081,6 +1081,15 @@ p {
     width: 100%;
 }
 
+.multi_level_chart_section .heavy_metals_breakdown_locked_preview {
+    display: block;
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto;
+    filter: blur(1.5px);
+    opacity: 0.85;
+}
+
 @media (max-width: 1199px) {
 
     .multi_level_chart_section {
@@ -1539,6 +1548,8 @@ p {
 .precious_metal_present_section .precious_metal_locked_preview {
     display: block;
     width: 100%;
+    filter: blur(2px);
+    opacity: 0.9;
 }
 
 @media (max-width: 1199px) {
@@ -1739,6 +1750,8 @@ p {
     width: 100%;
     max-width: 900px;
     margin: 0 auto;
+    filter: blur(2px);
+    opacity: 0.9;
 }
 
 @media (max-width: 1199px) {

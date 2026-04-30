@@ -38,6 +38,7 @@ const Index = ({ report, appUrl = '' }: IndexProps) => {
     reportPackage === 'hs_base' ||
     reportPackage === 'hs_plus' ||
     reportPackage === 'premium';
+  const canUnlockHeavyMetalsBreakdown = reportPackage === 'treasure_base' || reportPackage === 'treasure_plus';
   const canDisplayPreciousBreakdown =
     reportPackage === 'treasure_base' ||
     reportPackage === 'treasure_plus' ||
@@ -52,13 +53,13 @@ const Index = ({ report, appUrl = '' }: IndexProps) => {
   const shouldShowRareEarthBreakdown = canDisplayRareEarthBreakdown || canUnlockRareEarthBreakdown;
   const canHideOilBreakdown = reportPackage === 'treasure_base' || reportPackage === 'hs_base';
   const canDisplayOilBreakdown = reportPackage === 'treasure_plus' || reportPackage === 'premium';
-  const canUnlockOilBreakdown = reportPackage === 'hs_plus';
-  const shouldShowOilBreakdown = !canHideOilBreakdown && (canDisplayOilBreakdown || canUnlockOilBreakdown);
+  const canUnlockOilBreakdown = reportPackage === 'hs_plus' || canHideOilBreakdown;
+  const shouldShowOilBreakdown = canDisplayOilBreakdown || canUnlockOilBreakdown;
   const canHidePetroleumBreakdown = reportPackage === 'treasure_base' || reportPackage === 'hs_base';
   const canDisplayPetroleumBreakdown = reportPackage === 'hs_plus' || reportPackage === 'premium';
-  const canUnlockPetroleumBreakdown = reportPackage === 'treasure_plus';
+  const canUnlockPetroleumBreakdown = reportPackage === 'treasure_plus' || canHidePetroleumBreakdown;
   const shouldShowPetroleumBreakdown =
-    !canHidePetroleumBreakdown && (canDisplayPetroleumBreakdown || canUnlockPetroleumBreakdown);
+    canDisplayPetroleumBreakdown || canUnlockPetroleumBreakdown;
   const foundElementsForList = report.foundElements.map((item) => ({
     ...item,
     valueStyle: item.valueStyle || { backgroundColor: '#d1d5db', color: '#4b5563' },
@@ -145,6 +146,8 @@ const Index = ({ report, appUrl = '' }: IndexProps) => {
         group2Max={report.multiLevelCharts.group2Max}
         group2Rows={report.multiLevelCharts.group2Rows}
         group2ScaleLabels={report.multiLevelCharts.group2ScaleLabels}
+        locked={canUnlockHeavyMetalsBreakdown}
+        lockedPreviewImageUrl={`${appUrl}/images/heavy-metals-breakdown-locked-preview.svg`}
       />
 
       {/* 16. Found Elements List */}

@@ -21,6 +21,8 @@ type MultiLevelChartSectionProps = {
   group2Max: number;
   group2Rows: ChartRowData[];
   group2ScaleLabels: string[];
+  locked?: boolean;
+  lockedPreviewImageUrl?: string;
 };
 
 const ChartRow = ({ row, maxVal }: { row: ChartRowData; maxVal: number }) => {
@@ -74,20 +76,33 @@ const MultiLevelChartSection = ({
   group2Max,
   group2Rows,
   group2ScaleLabels,
+  locked = false,
+  lockedPreviewImageUrl,
 }: MultiLevelChartSectionProps) => {
   return (
     <section className="multi_level_chart_section">
       <div className="container">
-        <ChartGroup maxVal={group1Max} rows={group1Rows} scaleLabels={group1ScaleLabels} />
-        <div className="spacer_div"></div>
-        <ChartGroup maxVal={group2Max} rows={group2Rows} scaleLabels={group2ScaleLabels} />
+        {locked && lockedPreviewImageUrl ? (
+          <img
+            src={lockedPreviewImageUrl}
+            alt=""
+            className="heavy_metals_breakdown_locked_preview"
+            aria-hidden="true"
+          />
+        ) : (
+          <>
+            <ChartGroup maxVal={group1Max} rows={group1Rows} scaleLabels={group1ScaleLabels} />
+            <div className="spacer_div"></div>
+            <ChartGroup maxVal={group2Max} rows={group2Rows} scaleLabels={group2ScaleLabels} />
 
-        <div className="legend_box">
-          <div className="legend_item"><span className="color_box safe_level"></span> Safe Levels</div>
-          <div className="legend_item"><span className="color_box marginal_level"></span> Marginally Unsafe Levels</div>
-          <div className="legend_item"><span className="color_box unsafe_level"></span> Unsafe Levels</div>
-          <div className="legend_item"><span className="color_box user_level"></span> Your Levels</div>
-        </div>
+            <div className="legend_box">
+              <div className="legend_item"><span className="color_box safe_level"></span> Safe Levels</div>
+              <div className="legend_item"><span className="color_box marginal_level"></span> Marginally Unsafe Levels</div>
+              <div className="legend_item"><span className="color_box unsafe_level"></span> Unsafe Levels</div>
+              <div className="legend_item"><span className="color_box user_level"></span> Your Levels</div>
+            </div>
+          </>
+        )}
 
         <div className="report_details_section">
           <div className="dive_deeper_wrap">
