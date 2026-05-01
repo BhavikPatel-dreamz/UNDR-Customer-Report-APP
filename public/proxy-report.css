@@ -1,5 +1,3 @@
-/* Register Obviously family (weights/styles). Files are located in public/fonts/obviously/ */
-/* Map the available OTF variants to numeric weights so 'font-weight' and <b>render correctly.</b> */
 @font-face {
     font-family: 'Obviously';
     src: url('fonts/obviously/fonnts.com-Obviously_Thin.otf') format('opentype');
@@ -48,7 +46,6 @@
     font-display: swap;
 }
 
-/* Heavy / Black */
 @font-face {
     font-family: 'Obviously';
     src: url('fonts/obviously/fonnts.com-Obviously_Blck.otf') format('opentype');
@@ -72,7 +69,6 @@ h4,
 h5,
 h6,
 p {
-    /* Use the bundled 'Obviously' family provided in public/fonts/obviously. Fall back to Arial then sans-serif. */
     font-family: 'Obviously', Arial, sans-serif;
     letter-spacing: 0;
 }
