@@ -122,16 +122,18 @@ p {
 }
 
 .main_banner_section .banner_title {
-    font-weight: 800;
+    font-family: 'Obviously', Arial, sans-serif;
+    font-weight: 600;
     font-size: 72px;
     line-height: 80px;
     color: #e5b567;
-    margin-bottom: 5px;
+    margin-bottom: 10px;
     text-transform: capitalize;
 }
 
 .main_banner_section .banner_subtitle {
-    font-weight: 300;
+    font-family: 'Obviously', Arial, sans-serif;
+    font-weight: 400;
     font-size: 38px;
     line-height: 46px;
     color: #ffffff;
@@ -212,9 +214,10 @@ p {
 }
 
 .report_details_section .report_main_heading {
+    font-family: 'Obviously', Arial, sans-serif;
+    font-weight: 500;
     color: #8b231a;
     font-size: 24px;
-    font-weight: 800;
     margin-bottom: 30px;
     text-transform: capitalize;
 }
@@ -237,8 +240,10 @@ p {
 }
 
 .report_details_section .legend_item {
+    font-family: 'Obviously', Arial, sans-serif;
     display: flex;
     align-items: center;
+    letter-spacing: 0;
 }
 
 .report_details_section .box_below {
@@ -268,7 +273,8 @@ p {
     margin-bottom: 10px;
 }
 
-.report_details_section .chart_footer_text {
+.report_details_section .chart_footer_text p {
+    font-family: 'Obviously', Arial, sans-serif;
     font-size: 14px;
     line-height: 20px;
     color: #000;
@@ -298,6 +304,7 @@ p {
 }
 
 .report_details_section .metal_list_item {
+    font-family: 'Obviously', Arial, sans-serif;
     display: flex;
     align-items: center;
     margin-bottom: 12px;
@@ -310,12 +317,14 @@ p {
 }
 
 .report_details_section .val_box {
+    font-family: 'Obviously', Arial, sans-serif;
     width: 110px;
     padding: 4px;
     text-align: center;
     color: #fff;
     border-radius: 5px 0 0 0;
     margin-right: 10px;
+    letter-spacing: 0;
 }
 
 .report_details_section .bg_peach {
@@ -470,6 +479,7 @@ p {
 }
 
 .report_details_section .dive_text {
+    font-family: 'Obviously', Arial, sans-serif;
     color: #8b231a;
     font-size: 18px;
     font-weight: 600;
@@ -645,7 +655,7 @@ p {
 }
 
 .elemental_breakdown_section .report_title {
-    font-weight: 800;
+    font-weight: 700;
     font-size: 64px;
     line-height: 68px;
     color: #8B2323;
@@ -904,7 +914,7 @@ p {
 }
 
 .heavy_metal_breakdown_section .heavy_metal_title {
-    font-weight: 800;
+    font-weight: 700;
     font-size: 64px;
     line-height: 70px;
     color: #ffffff;
