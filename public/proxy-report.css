@@ -12,8 +12,52 @@ h4,
 h5,
 h6,
 p {
-    font-family: Arial, sans-serif;
+    /* Use the bundled 'Obviously' family provided in public/fonts/obviously. Fall back to Arial then sans-serif. */
+    font-family: 'Obviously', Arial, sans-serif;
     letter-spacing: 0;
+}
+
+/* Register Obviously family (subset of weights/styles). Files are located in public/fonts/obviously/ */
+@font-face {
+    font-family: 'Obviously';
+    /* Use relative paths so the font files are loaded from the same origin as proxy-report.css (appUrl). */
+    src: url('fonts/obviously/fonnts.com-Obviously.otf') format('opentype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Obviously';
+    src: url('fonts/obviously/fonnts.com-Obviously_Bold.otf') format('opentype');
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Obviously';
+    src: url('fonts/obviously/fonnts.com-Obviously_Italic.otf') format('opentype');
+    font-weight: 400;
+    font-style: italic;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Obviously';
+    src: url('fonts/obviously/fonnts.com-Obviously_Blck.otf') format('opentype');
+    font-weight: 900;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* Optional extended weights (if used elsewhere) - reference by numeric weight */
+@font-face {
+    font-family: 'Obviously';
+    src: url('fonts/obviously/fonnts.com-Obviously_Extd.otf') format('opentype');
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
 }
 
 .container {
@@ -66,6 +110,7 @@ p {
     line-height: 80px;
     color: #e5b567;
     margin-bottom: 5px;
+    text-transform: capitalize;
 }
 
 .main_banner_section .banner_subtitle {

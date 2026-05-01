@@ -345,7 +345,7 @@ function renderRegistrationPage(state: ActionData | LoaderData) {
 	}
 
 	return `
-<div style="max-width:760px;margin:0 auto;padding:48px 20px 72px;color:#111827;font-family:system-ui,sans-serif;">
+	<div style="max-width:760px;margin:0 auto;padding:48px 20px 72px;color:#111827;">
 	<div style="margin-bottom:28px;">
 		<p style="margin:0 0 8px;font-size:12px;letter-spacing:0.16em;text-transform:uppercase;opacity:0.6;">UNDR</p>
 		<h1 style="margin:0 0 10px;font-size:clamp(26px,5vw,42px);font-weight:700;line-height:1.1;">Register your test kit</h1>

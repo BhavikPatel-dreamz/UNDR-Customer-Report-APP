@@ -29,7 +29,7 @@ function isEmbedMode(url: URL) {
 
 function renderReportNotFoundPage() {
   return `
-<section style="padding:40px 20px;max-width:760px;margin:0 auto;font-family:Arial,sans-serif;">
+<section style="padding:40px 20px;max-width:760px;margin:0 auto;">
   <h1 style="margin:0 0 12px;font-size:30px;line-height:1.2;color:#111827;">Report not found</h1>
   <p style="margin:0;font-size:16px;line-height:1.6;color:#4b5563;">We could not find a report for this kit on the current store.</p>
 </section>
