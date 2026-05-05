@@ -756,7 +756,9 @@ function createEmptyProxyReportData(customerName: string, kitNumber: string): Pr
   return {
     banner: {
       name: customerName,
-      subtitle: `Kit Registration: ${kitNumber}`,
+      // subtitle: `Kit Registration: ${kitNumber}`,
+      subtitle: `Let’s see what’s in your dirt!`,
+
     },
     reportDetails: {
       heavyMetals: [],
