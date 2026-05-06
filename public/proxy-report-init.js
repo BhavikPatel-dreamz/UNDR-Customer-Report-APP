@@ -135,93 +135,6 @@
       return Math.log10(n + 1);
     }
 
-    var elementNamesBySymbol = {
-      o: "Oxygen",
-      f: "Fluorine",
-      na: "Sodium",
-      mg: "Magnesium",
-      al: "Aluminum",
-      si: "Silicon",
-      p: "Phosphorus",
-      s: "Sulfur",
-      cl: "Chlorine",
-      k: "Potassium",
-      ca: "Calcium",
-      sc: "Scandium",
-      ti: "Titanium",
-      v: "Vanadium",
-      cr: "Chromium",
-      mn: "Manganese",
-      fe: "Iron",
-      co: "Cobalt",
-      ni: "Nickel",
-      cu: "Copper",
-      zn: "Zinc",
-      ga: "Gallium",
-      ge: "Germanium",
-      as: "Arsenic",
-      se: "Selenium",
-      br: "Bromine",
-      rb: "Rubidium",
-      sr: "Strontium",
-      y: "Yttrium",
-      zr: "Zirconium",
-      nb: "Niobium",
-      mo: "Molybdenum",
-      tc: "Technetium",
-      ru: "Ruthenium",
-      rh: "Rhodium",
-      pd: "Palladium",
-      ag: "Silver",
-      cd: "Cadmium",
-      in: "Indium",
-      sn: "Tin",
-      sb: "Antimony",
-      te: "Tellurium",
-      i: "Iodine",
-      cs: "Cesium",
-      ba: "Barium",
-      la: "Lanthanum",
-      ce: "Cerium",
-      pr: "Praseodymium",
-      nd: "Neodymium",
-      pm: "Promethium",
-      sm: "Samarium",
-      eu: "Europium",
-      gd: "Gadolinium",
-      tb: "Terbium",
-      dy: "Dysprosium",
-      ho: "Holmium",
-      er: "Erbium",
-      tm: "Thulium",
-      yb: "Ytterbium",
-      lu: "Lutetium",
-      hf: "Hafnium",
-      ta: "Tantalum",
-      w: "Tungsten",
-      re: "Rhenium",
-      os: "Osmium",
-      ir: "Iridium",
-      pt: "Platinum",
-      au: "Gold",
-      hg: "Mercury",
-      tl: "Thallium",
-      pb: "Lead",
-      bi: "Bismuth",
-      po: "Polonium",
-      at: "Astatine",
-      ra: "Radium",
-      ac: "Actinium",
-      pa: "Protactinium",
-      th: "Thorium",
-      u: "Uranium"
-    };
-
-    function getElementDisplayName(label) {
-      var key = String(label || "").trim().toLowerCase();
-      return elementNamesBySymbol[key] || String(label || "").trim();
-    }
-
     var reportChartData = (reportData.reportDetails && reportData.reportDetails.reportChart) || null;
     var chartInput = hasLayeredChartData(reportChartData)
       ? {
@@ -238,44 +151,6 @@
           aboveData: [],
           calculations: []
         };
-
-    var chartDebugRows = (chartInput.labels || []).map(function (label, index) {
-      var belowValue = normalizeNumber((chartInput.belowData || [])[index]);
-      var referenceValue = normalizeNumber((chartInput.refData || [])[index]);
-      var aboveValue = normalizeNumber((chartInput.aboveData || [])[index]);
-      var calculation = (chartInput.calculations || [])[index] || {};
-      var reportedResult = normalizeNumber(calculation.reportedResult);
-      var adjustedPpm = normalizeNumber(calculation.adjustedPpm);
-      var averagePpm = normalizeNumber(calculation.averagePpm);
-      var range = calculation.range || (belowValue > 0 ? "Below Range" : aboveValue > 0 ? "Above Range" : "Reference Range");
-      var adjustedPpmCalculation = reportedResult + " * 10000 = " + adjustedPpm;
-      var belowRangeCalculation = adjustedPpm < averagePpm && averagePpm > 0
-        ? adjustedPpm + " because adjustedPpm is below averagePpm"
-        : "0 because adjustedPpm is not below averagePpm";
-      var referenceRangeCalculation = averagePpm > 0
-        ? averagePpm + " because averagePpm is the reference benchmark"
-        : "0 because averagePpm is 0";
-      var aboveRangeCalculation = adjustedPpm > averagePpm && averagePpm > 0
-        ? adjustedPpm + " because adjustedPpm is above averagePpm"
-        : "0 because adjustedPpm is not above averagePpm";
-
-      return {
-        element: label,
-        elementName: calculation.elementName || getElementDisplayName(label),
-        reportedResult: reportedResult,
-        adjustedPpm: adjustedPpm,
-        adjustedPpmCalculation: adjustedPpmCalculation,
-        averagePpm: averagePpm,
-        comparison: calculation.comparison || (adjustedPpm + " " + (adjustedPpm < averagePpm ? "<" : adjustedPpm > averagePpm ? ">" : "=") + " " + averagePpm),
-        range: range,
-        belowRangeCalculation: belowRangeCalculation,
-        belowRange: belowValue,
-        referenceRangeCalculation: referenceRangeCalculation,
-        referenceRange: referenceValue,
-        aboveRangeCalculation: aboveRangeCalculation,
-        aboveRange: aboveValue
-      };
-    });
 
     var chartRows = (chartInput.labels || []).map(function (label, index) {
       var below = normalizeNumber((chartInput.belowData || [])[index]);

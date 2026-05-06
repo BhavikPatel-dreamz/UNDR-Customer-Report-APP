@@ -218,29 +218,18 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
     .filter((item) => item.type.length > 0);
 
   if (petroleumContaminants.length > 0) {
-    report.petroleum_contaminants = petroleumContaminants;
     report.petroleum_contaminant = petroleumContaminants[0];
-    
   }
 
   const pageHtml = renderToStaticMarkup(<IndexPage report={report} appUrl={appUrl} />);
   const reportJson = JSON.stringify(report).replaceAll("<", "\\u003c");
 
   const template = `
-<link rel="stylesheet" href="${appUrl}/proxy-report.css">
+<link rel="stylesheet" href="${appUrl}/proxy-report.css?v=20260506-cors">
 <div data-proxy-id="${proxyId.replaceAll("&", "&amp;").replaceAll('"', "&quot;")}">
   ${pageHtml}
 </div>
 <script id="proxy-report-data" type="application/json">${reportJson}</script>
-<script>
-  try {
-    const report = JSON.parse(document.getElementById("proxy-report-data")?.textContent || "{}");
-    console.warn("[Unique Soil] all calculations", report.soilFeatureCalculations || []);
-    console.warn("[Unique Soil] top 3", report.soilFeatures || []);
-  } catch (error) {
-    console.warn("[Unique Soil] log failed", error);
-  }
-</script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js" defer></script>
 <script src="${appUrl}/proxy-report-init.js" defer></script>

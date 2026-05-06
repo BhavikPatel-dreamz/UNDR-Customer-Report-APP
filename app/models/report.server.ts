@@ -994,30 +994,12 @@ base.foundElements = found.slice(0, 60)
     .sort((a, b) => Math.abs(b.standardDeviationDistance) - Math.abs(a.standardDeviationDistance))
     .slice(0, 3);
 
-  const uniqueSoilCalculationsLog = soilFeatureCalculations.map((item) => ({
-    element: formatElementSymbol(item.element),
-    calculation: `((${item.rawResult} * 10000) - ${item.averagePpm}) / ${item.standardDeviationPpm}`,
-    value: item.standardDeviationDistance,
-    output: item.resultPpm / item.averagePpm,
-  }));
-  const uniqueSoilTop3Log = topSoilFeatureCalculations.map((item) => ({
-    element: formatElementSymbol(item.element),
-    value: item.standardDeviationDistance,
-    output: item.resultPpm / item.averagePpm,
-  }));
-
-  base.soilFeatureCalculations = uniqueSoilCalculationsLog;
-
   base.soilFeatures = topSoilFeatureCalculations.map((item, index): SoilFeatureItem => {
     const elementName = formatElementName(item.element).replace(/\s*\([^)]+\)\s*$/, "");
     return {
       title: `${elementName} is ${formatSoilFeatureDifference(item.resultPpm, item.averagePpm)}`,
       description: "than commonly found in soil samples",
       cardClassName: soilFeatureCardClasses[index % soilFeatureCardClasses.length],
-      result: item.rawResult,
-      calculation: `((${item.rawResult} * 10000) - ${item.averagePpm}) / ${item.standardDeviationPpm}`,
-      value: item.standardDeviationDistance,
-      output: item.resultPpm / item.averagePpm,
     };
   });
 
@@ -1044,30 +1026,13 @@ base.foundElements = found.slice(0, 60)
 
       const isBelowAverage = adjustedPpm < averagePpm;
       const isAboveAverage = adjustedPpm > averagePpm;
-      const percentOfAverage = averagePpm > 0 ? (adjustedPpm / averagePpm) * 100 : null;
-      const comparisonOperator = isBelowAverage ? "<" : isAboveAverage ? ">" : "=";
-      const range = isBelowAverage
-        ? "Below Range"
-        : isAboveAverage
-          ? "Above Range"
-          : "Reference Range";
-      const calculation = `${item.rawValue} * 10000 = ${adjustedPpm}`;
-      const comparison = `${adjustedPpm} ${comparisonOperator} ${averagePpm}`;
 
       acc.elementNames.push(elementLabel);
       acc.belowData.push(isBelowAverage ? adjustedPpm : 0);
       acc.refData.push(averagePpm);
       acc.aboveData.push(isAboveAverage ? adjustedPpm : 0);
       acc.calculations.push({
-        element: elementLabel,
-        elementName: formatElementName(item.element).replace(/\s*\([^)]+\)\s*$/, ""),
-        reportedResult: item.rawValue,
         adjustedPpm,
-        averagePpm,
-        calculation,
-        comparison,
-        percentOfAverage,
-        range,
       });
 
       return acc;
@@ -1078,15 +1043,7 @@ base.foundElements = found.slice(0, 60)
       refData: [] as number[],
       aboveData: [] as number[],
       calculations: [] as Array<{
-        element: string;
-        elementName: string;
-        reportedResult: number;
         adjustedPpm: number;
-        averagePpm: number;
-        calculation: string;
-        comparison: string;
-        percentOfAverage: number | null;
-        range: "Below Range" | "Reference Range" | "Above Range";
       }>,
     },
   );
