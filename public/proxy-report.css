@@ -1075,7 +1075,7 @@ p {
     bottom: 0;
     width: 8px;
     background-color: #3e3e3e;
-    z-index: 5;
+    z-index: 1;
     border-radius: 1px;
 }
 
