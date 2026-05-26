@@ -37,6 +37,7 @@ model Registration {
   id                    String   @id @default(cuid())
   shop                  String   @default("")
   reportPackage         String   @default("premium")
+  quickViewPackage      String   @default("premium")
   name                  String
   email                 String
   phone                 String

@@ -356,6 +356,10 @@ p {
     padding-bottom: 25px;
 }
 
+.report_details_section .top_info_row.single_info_row {
+    display: block;
+}
+
 .report_details_section .heavy_metals_block {
     flex: 1.2;
 }
@@ -444,6 +448,36 @@ p {
 .report_details_section .btn_red_curved {
     background: #8b231a;
     border-radius: 0 10px 0 0;
+}
+
+.report_details_section .oil_indicator_block_compact {
+    width: 100%;
+}
+
+.report_details_section .petroleum_indicator_card {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 20px;
+    width: 100%;
+    max-width: 360px;
+    min-height: 74px;
+    padding: 13px 18px;
+    border-radius: 0 10px 0 0;
+    background: #9e241f;
+    color: #ffffff;
+    font-family: 'Obviously', Arial, sans-serif;
+    font-size: 23px;
+    font-weight: 500;
+    line-height: 1.02;
+}
+
+.report_details_section .petroleum_indicator_card strong {
+    color: #ffffff;
+    font-size: 21px;
+    font-weight: 500;
+    line-height: 1.05;
+    text-align: left;
 }
 
 .report_details_section .info_block {
@@ -756,6 +790,19 @@ p {
         width: 100%;
         max-width: 280px;
         margin: 0 auto 10px;
+    }
+
+    .report_details_section .petroleum_indicator_card {
+        grid-template-columns: 1fr;
+        gap: 8px;
+        max-width: 320px;
+        margin: 0 auto;
+        font-size: 20px;
+        text-align: left;
+    }
+
+    .report_details_section .petroleum_indicator_card strong {
+        font-size: 19px;
     }
 
 }
@@ -2342,14 +2389,178 @@ p {
     justify-content: flex-end;
 }
 
-.found_elements_list_section .dropdown_icon {
-    display: inline-block;
-    width: 19px;
-    height: 8px;
-    background-image: url("data:image/svg+xml,%3Csvg width='19' height='8' viewBox='0 0 14 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L7 7L13 1' stroke='%237D8E95' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-    background-position: center;
-    background-repeat: no-repeat;
-    background-size: contain;
+.found_elements_list_section .element_blurb_button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.found_elements_list_section .element_blurb_button:hover {
+    transform: translateY(-1px);
+}
+
+.found_elements_list_section .element_view_icon {
+    display: inline-flex;
+    width: 20px;
+    height: 20px;
+    color: #7d8e95;
+}
+
+.found_elements_list_section .element_view_icon svg {
+    width: 100%;
+    height: 100%;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.found_elements_list_section .element_blurb_button:hover .element_view_icon {
+    color: #8b2323;
+}
+
+.element_blurb_modal {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+}
+
+.element_blurb_modal.is_open {
+    display: flex;
+}
+
+.element_blurb_modal_open {
+    overflow: hidden;
+}
+
+.element_blurb_backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(17, 24, 39, 0.55);
+}
+
+.element_blurb_dialog {
+    position: relative;
+    width: min(620px, calc(100vw - 48px));
+    max-height: min(78vh, 760px);
+    overflow: hidden;
+    padding: 34px 30px 0;
+    border-radius: 0 0 0 16px;
+    background: #fffdf8;
+    box-shadow: 0 28px 80px rgba(17, 24, 39, 0.3);
+}
+
+.element_blurb_close {
+    position: absolute;
+    top: 18px;
+    right: 18px;
+    z-index: 2;
+    width: 36px;
+    height: 36px;
+    border: 0;
+    border-radius: 50%;
+    background: #8b2323;
+    color: #ffffff;
+    font-size: 24px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.element_blurb_eyebrow {
+    margin: 0 0 8px;
+    color: #e67e66;
+    font-size: 13px;
+    line-height: 1.3;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.element_blurb_title {
+    margin: 0 52px 22px 0;
+    color: #8b2323;
+    font-size: 34px;
+    line-height: 1.08;
+    font-weight: 800;
+    letter-spacing: 0;
+}
+
+.element_blurb_content {
+    display: grid;
+    gap: 18px;
+    max-height: calc(min(78vh, 760px) - 145px);
+    overflow-y: auto;
+    padding: 0 18px 34px 0;
+    scrollbar-color: #8b2323 transparent;
+    scrollbar-width: thin;
+}
+
+.element_blurb_content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.element_blurb_content::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.element_blurb_content::-webkit-scrollbar-thumb {
+    background: #8b2323;
+    border-radius: 999px;
+}
+
+.element_blurb_section {
+    padding-bottom: 18px;
+    border-bottom: 1px solid rgba(93, 103, 96, 0.28);
+}
+
+.element_blurb_section:last-child {
+    padding-bottom: 0;
+    border-bottom: 0;
+}
+
+.element_blurb_section h4 {
+    margin: 0 0 7px;
+    color: #a82822;
+    font-size: 15px;
+    line-height: 1.35;
+    font-weight: 800;
+    letter-spacing: 0;
+}
+
+.element_blurb_section p {
+    margin: 0;
+    color: #5d6760;
+    font-size: 14px;
+    line-height: 1.58;
+    font-weight: 500;
+    letter-spacing: 0;
+}
+
+@media (max-width: 767px) {
+    .element_blurb_modal {
+        padding: 16px;
+    }
+
+    .element_blurb_dialog {
+        width: calc(100vw - 32px);
+        padding: 30px 22px 0;
+    }
+
+    .element_blurb_title {
+        font-size: 28px;
+    }
 }
 
 .found_elements_list_section .bg_grey_blue {
@@ -2938,5 +3149,215 @@ p {
 
     .precious_metals_section .bar_label span {
         font-size: 12px;
+    }
+}
+
+/* Additional Resources Section CSS */
+
+.additional_resources_heading_section {
+    background-color: #86bebd;
+    border-bottom-right-radius: 78px;
+    padding: 34px 0 32px;
+}
+
+.additional_resources_heading_section .container,
+.additional_resources_section .container {
+    max-width: 980px;
+}
+
+.additional_resources_header {
+    display: flex;
+    align-items: flex-start;
+}
+
+.additional_resources_title {
+    color: #ffffff;
+    font-family: 'Obviously', Arial, sans-serif;
+    font-size: 40px;
+    font-weight: 800;
+    line-height: 0.88;
+}
+
+.additional_resources_section {
+    background-color: #ffffff;
+    padding: 54px 0 72px;
+}
+
+.additional_resources_body {
+    max-width: 760px;
+}
+
+.additional_resources_intro {
+    max-width: 700px;
+}
+
+.additional_resources_intro.contaminants {
+    margin-top: 72px;
+}
+
+.additional_resources_intro h3 {
+    color: #b13b31;
+    font-size: 36px;
+    font-weight: 800;
+    line-height: 1.02;
+    margin-bottom: 22px;
+    max-width: 650px;
+}
+
+.additional_resources_intro p {
+    color: #656565;
+    font-size: 17px;
+    font-weight: 400;
+    line-height: 1.38;
+    margin-bottom: 26px;
+}
+
+.additional_resources_list {
+    margin-top: 40px;
+    max-width: 680px;
+}
+
+.additional_resource_item {
+    border-top: 1px solid #9a9a9a;
+    padding: 26px 0 27px 88px;
+}
+
+.additional_resource_item:last-child {
+    border-bottom: 1px solid #9a9a9a;
+}
+
+.additional_resource_item h4 {
+    color: #9e2a1f;
+    font-size: 15px;
+    font-weight: 800;
+    line-height: 1.25;
+    margin-bottom: 7px;
+}
+
+.additional_resource_item p {
+    color: #686868;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.42;
+    max-width: 530px;
+}
+
+.additional_resources_disclaimer {
+    margin-top: 70px;
+    max-width: 760px;
+}
+
+.additional_resources_disclaimer h3 {
+    color: #9e2a1f;
+    font-size: 26px;
+    font-weight: 800;
+    line-height: 1.15;
+    margin-bottom: 14px;
+}
+
+.additional_resources_disclaimer p {
+    color: #656565;
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 1.45;
+}
+
+@media (max-width: 991px) {
+    .additional_resources_heading_section {
+        border-bottom-right-radius: 64px;
+        padding: 30px 0 28px;
+    }
+
+    .additional_resources_title {
+        font-size: 34px;
+    }
+
+    .additional_resources_section {
+        padding: 46px 0 64px;
+    }
+
+    .additional_resources_intro h3 {
+        font-size: 30px;
+    }
+
+    .additional_resource_item {
+        padding-left: 58px;
+    }
+}
+
+@media (max-width: 767px) {
+    .additional_resources_heading_section {
+        border-bottom-right-radius: 52px;
+        padding: 22px 0 21px;
+    }
+
+    .additional_resources_heading_section .container,
+    .additional_resources_section .container {
+        padding-left: 18px;
+        padding-right: 18px;
+    }
+
+    .additional_resources_title {
+        font-size: 22px;
+        line-height: 0.94;
+    }
+
+    .additional_resources_section {
+        padding: 34px 0 54px;
+    }
+
+    .additional_resources_body,
+    .additional_resources_intro,
+    .additional_resources_list,
+    .additional_resources_disclaimer {
+        max-width: none;
+    }
+
+    .additional_resources_intro h3 {
+        font-size: 22px;
+        line-height: 1.04;
+        margin-bottom: 14px;
+    }
+
+    .additional_resources_intro p {
+        font-size: 11px;
+        line-height: 1.42;
+        margin-bottom: 20px;
+    }
+
+    .additional_resources_list {
+        margin-top: 30px;
+    }
+
+    .additional_resource_item {
+        padding: 19px 0 20px 36px;
+    }
+
+    .additional_resource_item h4 {
+        font-size: 10px;
+        line-height: 1.32;
+        margin-bottom: 6px;
+    }
+
+    .additional_resource_item p {
+        font-size: 9px;
+        line-height: 1.48;
+        max-width: none;
+    }
+
+    .additional_resources_intro.contaminants {
+        margin-top: 48px;
+    }
+
+    .additional_resources_disclaimer {
+        margin-top: 48px;
+    }
+
+    .additional_resources_disclaimer h3 {
+        font-size: 18px;
+    }
+
+    .additional_resources_disclaimer p {
+        font-size: 9px;
     }
 }

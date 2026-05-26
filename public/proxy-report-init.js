@@ -51,6 +51,80 @@
     renderBarChart("#trace-chart", ".other_trace_elements_section .report_left_content", reportData.otherTraceElements.items || []);
   }
 
+  function getElementBlurbs() {
+    var script = document.getElementById("element-blurbs-data");
+    if (!script || !script.textContent) return {};
+
+    try {
+      return JSON.parse(script.textContent);
+    } catch (error) {
+      console.error("Failed to parse element blurbs", error);
+      return {};
+    }
+  }
+
+  function initElementBlurbModal() {
+    var modal = document.querySelector("[data-element-blurb-modal]");
+    if (!modal) return;
+
+    var blurbs = getElementBlurbs();
+    var title = modal.querySelector("[data-element-blurb-title]");
+    var symbol = modal.querySelector("[data-element-blurb-symbol]");
+    var content = modal.querySelector("[data-element-blurb-content]");
+    var closeButtons = modal.querySelectorAll("[data-element-blurb-close]");
+
+    function closeModal() {
+      modal.classList.remove("is_open");
+      modal.setAttribute("aria-hidden", "true");
+      document.body.classList.remove("element_blurb_modal_open");
+    }
+
+    function openModal(elementSymbol) {
+      var key = String(elementSymbol || "").trim().toUpperCase();
+      var blurb = blurbs[key];
+      if (!blurb || !title || !symbol || !content) return;
+
+      title.textContent = blurb.name || key;
+      symbol.textContent = (blurb.symbol || key) + " · Atomic no. " + (blurb.atomicNumber || "");
+      content.innerHTML = "";
+
+      (blurb.sections || []).forEach(function (section) {
+        var item = document.createElement("section");
+        item.className = "element_blurb_section";
+
+        var heading = document.createElement("h4");
+        heading.textContent = section.title || "";
+
+        var paragraph = document.createElement("p");
+        paragraph.textContent = section.body || "";
+
+        item.appendChild(heading);
+        item.appendChild(paragraph);
+        content.appendChild(item);
+      });
+
+      modal.classList.add("is_open");
+      modal.setAttribute("aria-hidden", "false");
+      document.body.classList.add("element_blurb_modal_open");
+    }
+
+    document.querySelectorAll("[data-element-blurb-trigger]").forEach(function (button) {
+      button.addEventListener("click", function () {
+        openModal(button.getAttribute("data-element-symbol"));
+      });
+    });
+
+    closeButtons.forEach(function (button) {
+      button.addEventListener("click", closeModal);
+    });
+
+    document.addEventListener("keydown", function (event) {
+      if (event.key === "Escape" && modal.classList.contains("is_open")) {
+        closeModal();
+      }
+    });
+  }
+
   function initPreciousMetals() {
     var wrapper = document.getElementById("graph_wrapper");
     if (!wrapper || !reportData) return;
@@ -555,6 +629,7 @@
     initPreciousMetals();
     initReportDetails();
     initEarthElements();
+    initElementBlurbModal();
   }
 
   if (document.readyState === "loading") {

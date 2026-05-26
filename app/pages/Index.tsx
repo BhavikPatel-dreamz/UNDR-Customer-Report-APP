@@ -18,6 +18,7 @@ import PreciousMetalsBreakdownHeading from '../components/sections/PreciousMetal
 import PreciousMetalsSection from '../components/sections/PreciousMetalsSection';
 import PreciousMetalsBreakdownHeadingAlt from '../components/sections/PreciousMetalsBreakdownHeadingAlt';
 import PreciousMetalsNotPresent from '../components/sections/PreciousMetalsNotPresent';
+import AdditionalResourcesSection from '../components/sections/AdditionalResourcesSection';
 import type { ProxyReportData } from '../lib/proxy-report-data';
 import { formatUnlockPrice, hasReportUnlock, type UnlockModule } from '../lib/report-packages';
 
@@ -28,30 +29,19 @@ type IndexProps = {
 
 const Index = ({ report, appUrl = '' }: IndexProps) => {
   const reportPackage = report.reportPackage || 'premium';
+  const quickViewPackage = report.quickViewPackage || reportPackage;
   const unlockedModules = report.unlockedModules || [];
   const kitRegistrationNumber = report.kitRegistrationNumber || report.banner.subtitle.replace(/^Kit Registration:\s*/i, '');
   const unlockHref = (module: UnlockModule) =>
     `/apps/undr/unlock/start?kit=${encodeURIComponent(kitRegistrationNumber)}&module=${encodeURIComponent(module)}&package=${encodeURIComponent(reportPackage)}`;
   const unlockLabel = (module: UnlockModule, title: string) => `Unlock ${title} for ${formatUnlockPrice(module)}`;
   const premiumUnlockHref = hasReportUnlock(unlockedModules, 'premium') ? undefined : unlockHref('premium');
-  const isPremium = reportPackage === 'premium';
   const hasPreciousUnlock = hasReportUnlock(unlockedModules, 'precious_metals');
   const hasRareEarthUnlock = hasReportUnlock(unlockedModules, 'rare_earth');
   const hasCrudeOilUnlock = hasReportUnlock(unlockedModules, 'crude_oil');
   const hasPetroleumUnlock = hasReportUnlock(unlockedModules, 'petroleum');
   const hasHeavyMetalsUnlock = hasReportUnlock(unlockedModules, 'heavy_metals');
-  const quickLookDisplayPreciousMetals =
-    reportPackage === 'treasure_base' ||
-    reportPackage === 'treasure_plus' ||
-    reportPackage === 'premium' ||
-    hasPreciousUnlock;
-  const quickLookDisplayRareEarthElements = reportPackage === 'treasure_plus' || reportPackage === 'premium' || hasRareEarthUnlock;
-  const quickLookDisplayOil = reportPackage === 'treasure_plus' || reportPackage === 'premium' || hasCrudeOilUnlock;
-  const quickLookDisplayHeavyMetals =
-    reportPackage === 'hs_base' ||
-    reportPackage === 'hs_plus' ||
-    reportPackage === 'premium' ||
-    hasHeavyMetalsUnlock;
+  const isPremium = reportPackage === 'premium';
   const canUnlockHeavyMetalsBreakdown = !hasHeavyMetalsUnlock && (reportPackage === 'treasure_base' || reportPackage === 'treasure_plus');
   const canDisplayPreciousBreakdown =
     reportPackage === 'treasure_base' ||
@@ -91,18 +81,11 @@ const Index = ({ report, appUrl = '' }: IndexProps) => {
       <MainBannerSection name={report.banner.name} subtitle={report.banner.subtitle} />
       {/* 2. Report Details */}
       <ReportDetailsSection
+        quickViewPackage={quickViewPackage}
         heavyMetals={report.reportDetails.heavyMetals}
         oilIndicator={report.reportDetails.oilIndicator}
         preciousMetals={report.reportDetails.preciousMetals}
         rareEarthElements={report.reportDetails.rareEarthElements}
-        lockHeavyMetals={!isPremium && !quickLookDisplayHeavyMetals}
-        lockOilIndicator={!isPremium && !quickLookDisplayOil}
-        lockPreciousMetals={!isPremium && !quickLookDisplayPreciousMetals}
-        lockRareEarthElements={!isPremium && !quickLookDisplayRareEarthElements}
-        lockedHeavyMetalsImageUrl={`${appUrl}/images/quicklook-heavy-locked-preview.png`}
-        lockedOilIndicatorImageUrl={`${appUrl}/images/quicklook-oil-locked-preview.png`}
-        lockedPreciousMetalsImageUrl={`${appUrl}/images/quicklook-precious-locked-preview.png`}
-        lockedRareEarthElementsImageUrl={`${appUrl}/images/quicklook-rare-earth-locked-preview.png`}
       />
       {/* 3. Elemental Breakdown */}
       <ElementalBreakdownSection />
@@ -212,6 +195,7 @@ const Index = ({ report, appUrl = '' }: IndexProps) => {
       {/* <PreciousMetalsBreakdownHeadingAlt /> */}
       {/* 21. Precious Metals Not Present */}
       {/* <PreciousMetalsNotPresent /> */}
+      <AdditionalResourcesSection />
       <div className="pdf_download_footer" aria-label="Report actions">
         <button className="pdf_download_button" type="button" data-pdf-download aria-label="Download report PDF" title="Download PDF">
           <svg className="pdf_download_icon" viewBox="0 0 24 24" aria-hidden="true">

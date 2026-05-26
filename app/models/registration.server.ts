@@ -242,3 +242,19 @@ export async function updateRegistrationReportPackageById(input: {
     data: { reportPackage: normalizedPackage },
   });
 }
+
+export async function updateRegistrationQuickViewPackageById(input: {
+  registrationId: string;
+  shop: string;
+  quickViewPackage: string;
+}) {
+  const normalizedPackage = input.quickViewPackage.trim().toLowerCase();
+  if (!isReportPackage(normalizedPackage)) {
+    return null;
+  }
+
+  return prisma.registration.updateMany({
+    where: { id: input.registrationId, shop: input.shop },
+    data: { quickViewPackage: normalizedPackage },
+  });
+}

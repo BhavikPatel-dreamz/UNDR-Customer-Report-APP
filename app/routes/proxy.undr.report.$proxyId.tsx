@@ -78,7 +78,7 @@ function createEmptyReport(
       heavyMetals: [],
       oilIndicator: {
         crudeOil: "Crude oil: None",
-        petroleum: "Petroleum: None",
+        petroleum: "Petroleum Contaminants: None Detected",
         crudeOilClassName: "btn_gray",
         petroleumClassName: "btn_gray",
       },
@@ -152,6 +152,9 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
   const selectedReportPackage = normalizeReportPackage(
     (registration as unknown as { reportPackage?: string } | null)?.reportPackage,
   );
+  const selectedQuickViewPackage = normalizeReportPackage(
+    (registration as unknown as { quickViewPackage?: string } | null)?.quickViewPackage,
+  );
 
   let report: ProxyReportData | null = null;
 
@@ -164,6 +167,7 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
         proxyId,
       );
       report.reportPackage = selectedReportPackage;
+      report.quickViewPackage = selectedQuickViewPackage;
 
     }
 
@@ -177,6 +181,7 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
   }
 
   report.reportPackage = selectedReportPackage;
+  report.quickViewPackage = selectedQuickViewPackage;
   report.kitRegistrationNumber = proxyId;
   const registrationUnlocks =
     "unlocks" in registration && Array.isArray(registration.unlocks)
@@ -248,7 +253,7 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
   const reportJson = JSON.stringify(report).replaceAll("<", "\\u003c");
 
   const template = `
-<link rel="stylesheet" href="${appUrl}/proxy-report.css?v=20260511-oil-pdf">
+<link rel="stylesheet" href="${appUrl}/proxy-report.css?v=20260522-element-blurbs">
 <div data-proxy-id="${proxyId.replaceAll("&", "&amp;").replaceAll('"', "&quot;")}">
   ${pageHtml}
 </div>
@@ -257,7 +262,7 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
 <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@3.0.3/dist/jspdf.umd.min.js" defer></script>
-<script src="${appUrl}/proxy-report-init.js?v=20260511-list-pagination" defer></script>
+<script src="${appUrl}/proxy-report-init.js?v=20260522-element-blurbs" defer></script>
 `;
 
   return liquid(template, { layout: !embed });

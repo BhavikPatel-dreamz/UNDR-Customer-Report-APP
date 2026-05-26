@@ -22,6 +22,7 @@ type MetalCardItem = {
 };
 
 type ReportDetailsSectionProps = {
+  quickViewPackage?: string;
   heavyMetals: HeavyMetalItem[];
   oilIndicator: {
     crudeOil: string;
@@ -31,30 +32,65 @@ type ReportDetailsSectionProps = {
   };
   preciousMetals: MetalCardItem[];
   rareEarthElements: MetalCardItem[];
-  lockHeavyMetals?: boolean;
-  lockOilIndicator?: boolean;
-  lockPreciousMetals?: boolean;
-  lockRareEarthElements?: boolean;
-  lockedHeavyMetalsImageUrl?: string;
-  lockedOilIndicatorImageUrl?: string;
-  lockedPreciousMetalsImageUrl?: string;
-  lockedRareEarthElementsImageUrl?: string;
 };
 
 const ReportDetailsSection = ({
+  quickViewPackage = "premium",
   heavyMetals,
   oilIndicator,
   preciousMetals,
   rareEarthElements,
-  lockHeavyMetals = false,
-  lockOilIndicator = false,
-  lockPreciousMetals = false,
-  lockRareEarthElements = false,
-  lockedHeavyMetalsImageUrl,
-  lockedOilIndicatorImageUrl,
-  lockedPreciousMetalsImageUrl,
-  lockedRareEarthElementsImageUrl,
 }: ReportDetailsSectionProps) => {
+  const showHeavyMetals = quickViewPackage === "premium" || quickViewPackage === "hs_base" || quickViewPackage === "hs_plus";
+  const showOilIndicator = quickViewPackage === "premium" || quickViewPackage === "treasure_plus" || quickViewPackage === "hs_plus";
+  const showPreciousMetals =
+    quickViewPackage === "premium" || quickViewPackage === "treasure_base" || quickViewPackage === "treasure_plus";
+  const showRareEarthElements = quickViewPackage === "premium" || quickViewPackage === "treasure_plus";
+  const hasTopRow = showHeavyMetals || (showOilIndicator && quickViewPackage !== "hs_plus");
+  const showOilAsInfoBlock = showOilIndicator && quickViewPackage === "hs_plus";
+
+  const renderHeavyMetals = () => (
+    <div className="heavy_metals_block">
+      <h2 className="report_main_heading">Heavy Metals</h2>
+      <div className="metal_list_item_wrapper">
+        {heavyMetals.map((item) => (
+          <div className="metal_list_item" key={item.name}>
+            <span className={`val_box ${item.valueClassName}`} style={{ backgroundColor: item.valueStyle?.backgroundColor }}>
+              {item.value}
+            </span>{" "}
+            <span className={`metal_txt ${item.textClassName}`} style={{ color: item.valueStyle?.color }}>
+              {item.name}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  const renderOilIndicator = () => (
+    <div className="oil_indicator_block">
+      <h2 className="report_main_heading">Oil Indicator</h2>
+      <div className="oil_indicator_buttons">
+        <div className={`oil_btn ${oilIndicator.crudeOilClassName}`}>{oilIndicator.crudeOil}</div>
+        <div className={`oil_btn ${oilIndicator.petroleumClassName}`}>{oilIndicator.petroleum}</div>
+      </div>
+    </div>
+  );
+
+  const petroleumValue = (() => {
+    const value = oilIndicator.petroleum.replace(/^petroleum(?:\s+contaminants?)?:\s*/i, "").trim();
+    return value.toLowerCase() === "none" ? "None Detected" : value || oilIndicator.petroleum;
+  })();
+
+  const renderPetroleumIndicator = () => (
+    <div className="oil_indicator_block oil_indicator_block_compact">
+      <h2 className="report_main_heading">Oil Indicator</h2>
+      <div className="petroleum_indicator_card">
+        <span>Petroleum<br />Contaminants:</span>
+        <strong>{petroleumValue}</strong>
+      </div>
+    </div>
+  );
   
   return (
     <section className="report_details_section">
@@ -78,77 +114,57 @@ const ReportDetailsSection = ({
           </div>
 
           <div className="report_right_col">
-            <div className="top_info_row">
-              <div className="heavy_metals_block">
-                <h2 className="report_main_heading">Heavy Metals</h2>
-                {lockHeavyMetals && lockedHeavyMetalsImageUrl ? (
-                  <img src={lockedHeavyMetalsImageUrl} alt="" className="quicklook_locked_preview heavy" aria-hidden="true" />
-                ) : (
-                <div className="metal_list_item_wrapper">
-                {heavyMetals.map((item) => (
-                  <div className="metal_list_item" key={item.name}>
-                    <span className={`val_box ${item.valueClassName}`}  style={{ backgroundColor: item.valueStyle?.backgroundColor }}>{item.value}</span>{" "}
-                    <span className={`metal_txt ${item.textClassName}`} style={{ color: item.valueStyle?.color }} >{item.name}</span>
-                  </div>
-                ))}
+            {hasTopRow && (
+              <div className={`top_info_row ${showHeavyMetals && showOilIndicator && quickViewPackage === "premium" ? "" : "single_info_row"}`}>
+                {showHeavyMetals && renderHeavyMetals()}
+                {showHeavyMetals && showOilIndicator && quickViewPackage === "premium" && <div className="vertical_divider"></div>}
+                {showOilIndicator && quickViewPackage !== "hs_plus" && renderOilIndicator()}
+              </div>
+            )}
+
+            {showOilAsInfoBlock && (
+              <div className={`info_block ${!showPreciousMetals && !showRareEarthElements ? "no_border" : ""}`}>
+                {renderPetroleumIndicator()}
+              </div>
+            )}
+
+            {showPreciousMetals && (
+              <div className={`info_block ${!showRareEarthElements ? "no_border" : ""}`}>
+                <h2 className="report_main_heading">Precious Metals</h2>
+                <div className="circles_flex">
+                  {preciousMetals.map((item) => (
+                    <div
+                      className={`metal_circle ${item.className}`}
+                      style={{ backgroundColor: item.valueStyle?.backgroundColor }}
+                      key={item.name}
+                    >
+                      {item.name}
+                      <br />
+                      <span>{item.ppm}</span>
+                    </div>
+                  ))}
                 </div>
-                )}
               </div>
-              <div className="vertical_divider"></div>
-              <div className="oil_indicator_block">
-                <h2 className="report_main_heading">Oil Indicator</h2>
-                {lockOilIndicator && lockedOilIndicatorImageUrl ? (
-                  <img src={lockedOilIndicatorImageUrl} alt="" className="quicklook_locked_preview oil" aria-hidden="true" />
-                ) : (
-                  <div className="oil_indicator_buttons">
-                    <div className={`oil_btn ${oilIndicator.crudeOilClassName}`}>{oilIndicator.crudeOil}</div>
-                    <div className={`oil_btn ${oilIndicator.petroleumClassName}`}>{oilIndicator.petroleum}</div>
-                  </div>
-                )}
-              </div>
-            </div>
+            )}
 
-            <div className="info_block">
-              <h2 className="report_main_heading">Precious Metals</h2>
-              {lockPreciousMetals && lockedPreciousMetalsImageUrl ? (
-                <img src={lockedPreciousMetalsImageUrl} alt="" className="quicklook_locked_preview precious" aria-hidden="true" />
-              ) : (
-              <div className="circles_flex">
-                {preciousMetals.map((item) => (
-                  <div
-                    className={`metal_circle ${item.className}`}
-                    style={{ backgroundColor: item.valueStyle?.backgroundColor }}
-                    key={item.name}
-                  >
-                    {item.name}
-                    <br />
-                    <span>{item.ppm}</span>
-                  </div>
-                ))}
+            {showRareEarthElements && (
+              <div className="info_block no_border">
+                <h2 className="report_main_heading">Rare Earth Elements</h2>
+                <div className="circles_flex">
+                  {rareEarthElements.map((item) => (
+                    <div
+                      className={`metal_circle ${item.className}`}
+                      style={{ backgroundColor: item.valueStyle?.backgroundColor }}
+                      key={item.name}
+                    >
+                      {item.name}
+                      <br />
+                      <span>{item.ppm}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
-              )}
-            </div>
-
-            <div className="info_block no_border">
-              <h2 className="report_main_heading">Rare Earth Elements</h2>
-              {lockRareEarthElements && lockedRareEarthElementsImageUrl ? (
-                <img src={lockedRareEarthElementsImageUrl} alt="" className="quicklook_locked_preview rare" aria-hidden="true" />
-              ) : (
-              <div className="circles_flex">
-                {rareEarthElements.map((item) => (
-                  <div
-                    className={`metal_circle ${item.className}`}
-                    style={{ backgroundColor: item.valueStyle?.backgroundColor }}
-                    key={item.name}
-                  >
-                    {item.name}
-                    <br />
-                    <span>{item.ppm}</span>
-                  </div>
-                ))}
-              </div>
-              )}
-            </div>
+            )}
           </div>
         </div>
 

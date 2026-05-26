@@ -96,6 +96,7 @@ export type UnlockModule =
 
 export type ProxyReportData = {
   reportPackage?: ReportPackage;
+  quickViewPackage?: ReportPackage;
   unlockedModules?: UnlockModule[];
   kitRegistrationNumber?: string;
   banner: {

@@ -5,6 +5,7 @@ import { authenticate } from "../shopify.server";
 import { isReportPackage } from "../lib/report-packages";
 import {
   getRegistrationById,
+  updateRegistrationQuickViewPackageById,
   updateRegistrationReportPackageById,
 } from "../models/registration.server";
 import {
@@ -65,6 +66,25 @@ export const action = async ({ params, request }: ActionFunctionArgs) => {
     }
 
     return { success: true, message: "Report package updated.", intent: "package_config" as const };
+  }
+
+  if (intent === "quick_view_config") {
+    const selectedPackage = String(formData.get("quickViewPackage") || "").trim().toLowerCase();
+    if (!isReportPackage(selectedPackage)) {
+      return { error: "Select a valid Quick view package.", intent: "quick_view_config" as const };
+    }
+
+    const result = await updateRegistrationQuickViewPackageById({
+      registrationId: registration.id,
+      shop: session.shop,
+      quickViewPackage: selectedPackage,
+    });
+
+    if (!result || result.count === 0) {
+      return { error: "Could not update Quick view package.", intent: "quick_view_config" as const };
+    }
+
+    return { success: true, message: "Quick view package updated.", intent: "quick_view_config" as const };
   }
 
   if (intent === "manual_config") {
@@ -178,8 +198,8 @@ export const headers: HeadersFunction = (args) => boundary.headers(args);
 
 type LoaderData = Awaited<ReturnType<typeof loader>>;
 type ActionData =
-  | { success: true; message: string; rowCount?: number; intent?: "upload_csv" | "manual_config" | "package_config" }
-  | { error: string; intent?: "upload_csv" | "manual_config" | "package_config" }
+  | { success: true; message: string; rowCount?: number; intent?: "upload_csv" | "manual_config" | "package_config" | "quick_view_config" }
+  | { error: string; intent?: "upload_csv" | "manual_config" | "package_config" | "quick_view_config" }
   | undefined;
 
   const PETROLEUM_CONTAMINANTS = [
@@ -243,14 +263,22 @@ export default function RegistrationDetail() {
   const actionData = useActionData<ActionData>();
   const manualPetroleumFetcher = useFetcher<ActionData>();
   const packageConfigFetcher = useFetcher<ActionData>();
+  const quickViewConfigFetcher = useFetcher<ActionData>();
   const nav = useNavigation();
   const isUploading = nav.state === "submitting";
   const isSavingPetroleum = manualPetroleumFetcher.state !== "idle";
   const isSavingPackage = packageConfigFetcher.state !== "idle";
+  const isSavingQuickViewPackage = quickViewConfigFetcher.state !== "idle";
   const packageConfigData =
     packageConfigFetcher.data && packageConfigFetcher.data.intent === "package_config"
       ? packageConfigFetcher.data
       : actionData && actionData.intent === "package_config"
+        ? actionData
+        : undefined;
+  const quickViewConfigData =
+    quickViewConfigFetcher.data && quickViewConfigFetcher.data.intent === "quick_view_config"
+      ? quickViewConfigFetcher.data
+      : actionData && actionData.intent === "quick_view_config"
         ? actionData
         : undefined;
   const manualPetroleumData =
@@ -267,7 +295,16 @@ export default function RegistrationDetail() {
       .toLowerCase();
     return isReportPackage(rawValue) ? rawValue : "premium";
   })();
+  const currentQuickViewPackage = (() => {
+    const rawValue = String(
+      (registration as unknown as { quickViewPackage?: string }).quickViewPackage || currentReportPackage,
+    )
+      .trim()
+      .toLowerCase();
+    return isReportPackage(rawValue) ? rawValue : currentReportPackage;
+  })();
   const [selectedReportPackage, setSelectedReportPackage] = useState(currentReportPackage);
+  const [selectedQuickViewPackage, setSelectedQuickViewPackage] = useState(currentQuickViewPackage);
 
   const report = registration.report;
   const rows = useMemo(() => report?.rows ?? [], [report?.rows]);
@@ -284,6 +321,10 @@ export default function RegistrationDetail() {
   useEffect(() => {
     setSelectedReportPackage(currentReportPackage);
   }, [currentReportPackage]);
+
+  useEffect(() => {
+    setSelectedQuickViewPackage(currentQuickViewPackage);
+  }, [currentQuickViewPackage]);
 
   useEffect(() => {
     if (actionData && actionData.intent === "manual_config" && "success" in actionData) {
@@ -323,6 +364,13 @@ export default function RegistrationDetail() {
     formData.set("intent", "package_config");
     formData.set("reportPackage", selectedReportPackage);
     packageConfigFetcher.submit(formData, { method: "post" });
+  };
+
+  const saveQuickViewPackage = () => {
+    const formData = new FormData();
+    formData.set("intent", "quick_view_config");
+    formData.set("quickViewPackage", selectedQuickViewPackage);
+    quickViewConfigFetcher.submit(formData, { method: "post" });
   };
 
   const appUrl = (typeof process !== "undefined" ? process.env.SHOPIFY_APP_URL : "") || "";
@@ -448,6 +496,82 @@ export default function RegistrationDetail() {
               }}
             >
               {isSavingPackage ? "Saving..." : "Save package"}
+            </button>
+          </div>
+        </div>
+      </s-section>
+
+      <s-section heading="Quick view package setup">
+        {quickViewConfigData && "error" in quickViewConfigData && (
+          <div
+            style={{
+              marginBottom: "16px",
+              padding: "12px 16px",
+              borderRadius: "10px",
+              background: "#fef2f2",
+              color: "#b91c1c",
+              fontSize: "14px",
+            }}
+          >
+            {quickViewConfigData.error}
+          </div>
+        )}
+        {quickViewConfigData && "success" in quickViewConfigData && (
+          <div
+            style={{
+              marginBottom: "16px",
+              padding: "12px 16px",
+              borderRadius: "10px",
+              background: "#ecfdf3",
+              color: "#065f46",
+              fontSize: "14px",
+              fontWeight: 600,
+            }}
+          >
+            ✓ {quickViewConfigData.message}
+          </div>
+        )}
+
+        <div style={{ display: "grid", gap: "10px", maxWidth: "400px" }}>
+          <label style={{ display: "grid", gap: "6px" }}>
+            <span style={{ fontSize: "13px", fontWeight: 600 }}>Select package for Quick view</span>
+            <select
+              name="quickViewPackage"
+              value={selectedQuickViewPackage}
+              onChange={(event) => {
+                const nextValue = event.currentTarget.value;
+                if (isReportPackage(nextValue)) {
+                  setSelectedQuickViewPackage(nextValue);
+                }
+              }}
+              disabled={isUploading || isSavingQuickViewPackage}
+              style={{ minHeight: "36px", borderRadius: "8px", border: "1px solid #d1d5db", padding: "0 10px" }}
+            >
+              <option value="premium">Premium Kit</option>
+              <option value="treasure_base">Treasure Hunting Kit</option>
+              <option value="treasure_plus">Treasure Hunting Plus Kit</option>
+              <option value="hs_base">Health & Safety Kit</option>
+              <option value="hs_plus">Health & Safety Plus Kit</option>
+            </select>
+          </label>
+          <div>
+            <button
+              type="button"
+              onClick={saveQuickViewPackage}
+              disabled={isUploading || isSavingQuickViewPackage}
+              style={{
+                minHeight: "38px",
+                padding: "0 16px",
+                border: 0,
+                borderRadius: "999px",
+                background: isUploading || isSavingQuickViewPackage ? "#9ca3af" : "#1f2937",
+                color: "#fff",
+                fontSize: "13px",
+                fontWeight: 600,
+                cursor: isUploading || isSavingQuickViewPackage ? "default" : "pointer",
+              }}
+            >
+              {isSavingQuickViewPackage ? "Saving..." : "Save Quick view package"}
             </button>
           </div>
         </div>

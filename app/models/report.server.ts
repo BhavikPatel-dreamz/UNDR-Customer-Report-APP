@@ -779,7 +779,7 @@ function createEmptyProxyReportData(customerName: string, kitNumber: string): Pr
       heavyMetals: [],
       oilIndicator: {
         crudeOil: "Crude oil: None",
-        petroleum: "Petroleum: None",
+        petroleum: "Petroleum Contaminants: None Detected",
         crudeOilClassName: "btn_gray",
         petroleumClassName: "btn_gray",
       },
@@ -843,6 +843,17 @@ export function buildReportDataFromRows(
   kitNumber: string,
 ): ProxyReportData {
   const base = createEmptyProxyReportData(customerName, kitNumber);
+  const petroleumRows = rows.filter(
+    (r) =>
+      !isIgnoredReportElement(r.element) &&
+      isPetroleumContaminantCategory(String(r.category || "")),
+  );
+  const hasPetroleumContaminant = petroleumRows.length > 0;
+  base.reportDetails.oilIndicator.petroleum = hasPetroleumContaminant
+    ? "Petroleum Contaminants: Detected"
+    : "Petroleum Contaminants: None Detected";
+  base.reportDetails.oilIndicator.petroleumClassName = hasPetroleumContaminant ? "btn_red_curved" : "btn_gray";
+
   const reportRows = rows.filter(
     (row) =>
       !isIgnoredReportElement(row.element) &&
@@ -867,8 +878,8 @@ export function buildReportDataFromRows(
   const preciousRows = reportRows.filter((r) =>
     categoryIncludes(r.category, "precious", "gold", "silver", "platinum"),
   );
-  const earthRows = reportRows.filter((r) =>
-    categoryIncludes(r.category, "earth", "rare", "ree"),
+  const earthRows = reportRows.filter(
+    (r) => String(r.category || "").trim().toLowerCase() === "rare_earth",
   );
   const oilRows = reportRows.filter((r) =>
     categoryIncludes(r.category, "oil", "petroleum", "hydrocarbon"),
@@ -1196,7 +1207,14 @@ base.foundElements = found.slice(0, 60)
 
   // --- Rare Earth Elements
   if (earthRows.length > 0) {
+    const detectedEarthRows = earthRows
+      .filter((r) => r.ppmValue > 0)
+      .sort((a, b) => b.ppmValue - a.ppmValue)
+      .slice(0, 15);
+
     base.reportDetails.rareEarthElements = earthRows
+      .filter((r) => r.ppmValue > 0)
+      .sort((a, b) => b.ppmValue - a.ppmValue)
       .slice(0, 3)
       .map((r): MetalCardItem => ({
         name: r.element,
@@ -1204,9 +1222,7 @@ base.foundElements = found.slice(0, 60)
         className: "bg_"+r.element,
       }));
 
-    base.earthElementsBreakdown.items = earthRows
-      .filter((r) => r.ppmValue > 0)
-      .sort((a, b) => b.ppmValue - a.ppmValue)
+    base.earthElementsBreakdown.items = detectedEarthRows
       .map((r): EarthElementItem => {
         const key = r.element.trim().toLowerCase();
 
@@ -1238,11 +1254,6 @@ base.foundElements = found.slice(0, 60)
     }));
   }
 
-  const petroleumRows = rows.filter(
-    (r) =>
-      !isIgnoredReportElement(r.element) &&
-      isPetroleumContaminantCategory(String(r.category || "")),
-  );
   const petroleumRow = petroleumRows.find((r) => Number.isFinite(r.ppmValue) && r.ppmValue >= 0);
 
   if (petroleumRow) {

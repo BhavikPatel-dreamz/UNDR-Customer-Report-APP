@@ -1,3 +1,5 @@
+import { ELEMENT_BLURBS_BY_SYMBOL } from '../../lib/element-blurbs';
+
 interface ElementItem {
   valueStyle: any;
   symbol: string;
@@ -13,6 +15,8 @@ type FoundElementsListSectionProps = {
 };
 
 const FoundElementsListSection = ({ elements }: FoundElementsListSectionProps) => {
+  const elementBlurbsJson = JSON.stringify(ELEMENT_BLURBS_BY_SYMBOL).replaceAll("<", "\\u003c");
+
   return (
     <section className="found_elements_list_section">
       <div className="container">
@@ -32,10 +36,37 @@ const FoundElementsListSection = ({ elements }: FoundElementsListSectionProps) =
                 <p className="margin_value">{el.margin}</p>
               </div>
               <div className="element_col_arrow">
-                <span className="dropdown_icon"></span>
+                <button
+                  className="element_blurb_button"
+                  type="button"
+                  data-element-blurb-trigger
+                  data-element-symbol={el.symbol}
+                  aria-label={`Read more about ${el.name}`}
+                >
+                  <span className="element_view_icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" focusable="false">
+                      <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" />
+                      <circle cx="12" cy="12" r="3" />
+                    </svg>
+                  </span>
+                </button>
               </div>
             </div>
           ))}
+        </div>
+      </div>
+      <script
+        id="element-blurbs-data"
+        type="application/json"
+        dangerouslySetInnerHTML={{ __html: elementBlurbsJson }}
+      />
+      <div className="element_blurb_modal" data-element-blurb-modal aria-hidden="true">
+        <div className="element_blurb_backdrop" data-element-blurb-close></div>
+        <div className="element_blurb_dialog" role="dialog" aria-modal="true" aria-labelledby="element-blurb-title">
+          <button className="element_blurb_close" type="button" data-element-blurb-close aria-label="Close element information">×</button>
+          <p className="element_blurb_eyebrow" data-element-blurb-symbol></p>
+          <h3 className="element_blurb_title" id="element-blurb-title" data-element-blurb-title></h3>
+          <div className="element_blurb_content" data-element-blurb-content></div>
         </div>
       </div>
     </section>
