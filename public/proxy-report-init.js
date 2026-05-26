@@ -472,14 +472,14 @@
           backgroundColor: "#ffffff",
           windowWidth: Math.max(reportElement.scrollWidth, document.documentElement.scrollWidth),
           onclone: function (clonedDocument) {
-            clonedDocument.querySelectorAll(".oil_label, .oil_found_text, .oil_ppm_value").forEach(function (element) {
+            clonedDocument.querySelectorAll(".oil_label, .oil_found_text, .oil_ppm_value, .crude_oil_title, .crude_oil_result_status, .crude_oil_result_value").forEach(function (element) {
               element.style.color = "#ffffff";
               element.style.opacity = "1";
               element.style.visibility = "visible";
               element.style.fontFamily = "Arial, sans-serif";
               element.style.textShadow = "0 0 0 #ffffff";
             });
-            clonedDocument.querySelectorAll(".oil_found_text, .oil_ppm_value").forEach(function (element) {
+            clonedDocument.querySelectorAll(".oil_found_text, .oil_ppm_value, .crude_oil_title, .crude_oil_result_status, .crude_oil_result_value").forEach(function (element) {
               element.style.display = "inline-block";
               element.style.fontWeight = "700";
             });
@@ -498,6 +498,7 @@
           function drawElementText(selector, weight) {
             var element = section.querySelector(selector);
             if (!element) return;
+            if (element.closest(".crude_oil_result_card_locked")) return;
 
             var rect = element.getBoundingClientRect();
             var styles = window.getComputedStyle(element);
@@ -527,6 +528,9 @@
           drawElementText(".oil_label", "400");
           drawElementText(".oil_found_text", "700");
           drawElementText(".oil_ppm_value", "700");
+          drawElementText(".crude_oil_title", "700");
+          drawElementText(".crude_oil_result_status", "700");
+          drawElementText(".crude_oil_result_value", "700");
           return overlays;
         }
 

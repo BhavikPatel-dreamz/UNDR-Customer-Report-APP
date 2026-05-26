@@ -1484,144 +1484,170 @@ p {
 /* Oil Contaminants Section CSS */
 
 .oil_contaminants_section {
-    padding: 70px 0 90px;
+    padding: 0 0 90px;
+    overflow: hidden;
 }
 
-.oil_contaminants_section .oil_main_heading {
-    font-weight: 700;
-    font-size: 64px;
-    line-height: 1.2;
-    color: #a52a2a;
-    margin-bottom: 30px;
+.oil_contaminants_section .crude_oil_header_band {
+    background-color: #9bad82;
+    border-bottom-right-radius: 150px;
+    margin-bottom: 52px;
+    padding: 72px 0 62px;
 }
 
-.oil_contaminants_section .oil_info_card {
-    display: inline-flex;
-    align-items: center;
-    background-color: #727b6f;
-    border-radius: 0 0 0 20px;
-    padding: 30px;
-    min-width: 450px;
-    min-height: 130px;
-    color: #ffffff;
-}
-
-.oil_contaminants_section .oil_contaminants_locked_preview {
-    display: block;
-    width: 100%;
-}
-
-.oil_contaminants_section .oil_label {
-    display: block;
-    font-weight: 400;
-    font-size: 36px;
-    line-height: 46px;
-    color: #ffffff;
-    margin-bottom: 10px;
-}
-
-.oil_contaminants_section .oil_value_row {
+.oil_contaminants_section .crude_oil_header_inner {
     display: flex;
     align-items: center;
-    gap: 30px;
+    min-height: 116px;
 }
 
-.oil_contaminants_section .oil_found_text,
-.oil_contaminants_section .oil_ppm_value {
-    display: inline-block;
-    font-weight: 700;
-    font-size: 44px;
-    line-height: 54px;
+.oil_contaminants_section .crude_oil_title {
     color: #ffffff;
+    font-size: 64px;
+    font-weight: 800;
+    line-height: 1;
+    margin: 0;
+}
+
+.oil_contaminants_section .crude_oil_result_card {
+    display: flex;
+    align-items: center;
+    gap: 48px;
+    width: min(100%, 486px);
+    min-height: 150px;
+    padding: 38px 34px;
+    background-color: #737d6b;
+    border-radius: 0 0 0 18px;
+    color: #ffffff;
+}
+
+.oil_contaminants_section .crude_oil_unlock_preview {
+    justify-items: start;
+}
+
+.oil_contaminants_section .crude_oil_unlock_preview .report_unlock_cta {
+    justify-self: center;
+}
+
+.oil_contaminants_section .crude_oil_result_card_locked {
+    filter: blur(4px);
+    opacity: 0.72;
+    pointer-events: none;
+    user-select: none;
+}
+
+.oil_contaminants_section .crude_oil_result_status,
+.oil_contaminants_section .crude_oil_result_value {
+    display: inline-block;
+    font-weight: 800;
+    font-size: 48px;
+    line-height: 1.12;
+    color: #ffffff;
+    white-space: nowrap;
 }
 
 @media (max-width: 1199px) {
     .oil_contaminants_section {
-        padding: 60px 0 80px;
+        padding-bottom: 80px;
     }
 
-    .oil_contaminants_section .oil_main_heading {
-        font-size: 54px;
-        margin-bottom: 25px;
+    .oil_contaminants_section .crude_oil_header_band {
+        border-bottom-right-radius: 120px;
+        padding: 62px 0 54px;
     }
 
-    .oil_contaminants_section .oil_info_card {
-        min-width: 400px;
-        padding: 25px;
+    .oil_contaminants_section .crude_oil_title {
+        font-size: 58px;
     }
 
-    .oil_contaminants_section .oil_label {
-        font-size: 32px;
+    .oil_contaminants_section .crude_oil_result_card {
+        min-height: 138px;
+        padding: 34px 30px;
     }
 
-    .oil_contaminants_section .oil_value_row {
-        gap: 25px;
-    }
-
-    .oil_contaminants_section .oil_found_text,
-    .oil_contaminants_section .oil_ppm_value {
-        font-size: 40px;
+    .oil_contaminants_section .crude_oil_result_status,
+    .oil_contaminants_section .crude_oil_result_value {
+        font-size: 42px;
     }
 }
 
 @media (max-width: 991px) {
     .oil_contaminants_section {
-        padding: 50px 0 70px;
+        padding-bottom: 70px;
     }
 
-    .oil_contaminants_section .oil_main_heading {
-        font-size: 48px;
-        margin-bottom: 20px;
+    .oil_contaminants_section .crude_oil_header_band {
+        border-bottom-right-radius: 96px;
+        margin-bottom: 42px;
+        padding: 52px 0 46px;
     }
 
-    .oil_contaminants_section .oil_info_card {
-        min-width: 350px;
-        padding: 20px;
+    .oil_contaminants_section .crude_oil_header_inner {
+        min-height: 104px;
     }
 
-    .oil_contaminants_section .oil_label {
-        font-size: 28px;
+    .oil_contaminants_section .crude_oil_title {
+        font-size: 50px;
     }
 
-    .oil_contaminants_section .oil_value_row {
-        gap: 20px;
+    .oil_contaminants_section .crude_oil_result_card {
+        width: min(100%, 430px);
+        min-height: 124px;
+        gap: 36px;
     }
 
-    .oil_contaminants_section .oil_found_text,
-    .oil_contaminants_section .oil_ppm_value {
-        font-size: 34px;
+    .oil_contaminants_section .crude_oil_result_status,
+    .oil_contaminants_section .crude_oil_result_value {
+        font-size: 36px;
     }
 }
 
 @media (max-width: 767px) {
     .oil_contaminants_section {
-        padding: 40px 0 60px;
+        padding-bottom: 60px;
     }
 
-    .oil_contaminants_section .oil_main_heading {
-        font-size: 34px;
-        margin-bottom: 15px;
+    .oil_contaminants_section .crude_oil_header_band {
+        border-bottom-right-radius: 72px;
+        margin-bottom: 34px;
+        padding: 38px 0 34px;
     }
 
-    .oil_contaminants_section .oil_info_card {
-        min-width: 100%;
-        padding: 15px;
-        min-height: 100px;
+    .oil_contaminants_section .crude_oil_header_inner {
+        min-height: 82px;
     }
 
-    .oil_contaminants_section .oil_label {
-        font-size: 24px;
-        line-height: 30px;
+    .oil_contaminants_section .crude_oil_title {
+        font-size: 38px;
     }
 
-    .oil_contaminants_section .oil_value_row {
-        gap: 15px;
+    .oil_contaminants_section .crude_oil_result_card {
+        gap: 22px;
+        min-height: 105px;
+        padding: 28px 24px;
     }
 
-    .oil_contaminants_section .oil_found_text,
-    .oil_contaminants_section .oil_ppm_value {
+    .oil_contaminants_section .crude_oil_result_status,
+    .oil_contaminants_section .crude_oil_result_value {
+        font-size: 30px;
+    }
+}
+
+@media (max-width: 420px) {
+    .oil_contaminants_section .crude_oil_header_inner {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .oil_contaminants_section .crude_oil_result_card {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .oil_contaminants_section .crude_oil_result_status,
+    .oil_contaminants_section .crude_oil_result_value {
         font-size: 28px;
-        line-height: 34px;
     }
 }
 

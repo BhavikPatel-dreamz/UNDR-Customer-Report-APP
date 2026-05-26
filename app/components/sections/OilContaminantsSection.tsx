@@ -14,37 +14,41 @@ const OilContaminantsSection = ({
   status,
   value,
   locked = false,
-  lockedPreviewImageUrl,
   unlockHref,
   unlockLabel = "Unlock report section",
   premiumUnlockHref,
 }: OilContaminantsSectionProps) => {
-  const displayStatus = status || "Not Detected";
-  const displayValue = value || "0ppm";
+  const numericValue = Number((value || "").match(/-?\d+(?:\.\d+)?/)?.[0] || 0);
+  const displayStatus = Number.isFinite(numericValue) && numericValue > 0 ? "Found" : status || "Not Found";
+  const formattedValue = Number.isFinite(numericValue)
+    ? (Number.isInteger(numericValue) ? String(numericValue) : numericValue.toFixed(2).replace(/\.?0+$/, ""))
+    : "0";
+  const displayValue = Number.isFinite(numericValue) && numericValue > 0
+    ? `~${formattedValue} ppm`
+    : `${formattedValue} ppm`;
 
   return (
     <section className="oil_contaminants_section">
+      <div className="crude_oil_header_band">
+        <div className="container">
+          <div className="crude_oil_header_inner">
+            <h2 className="crude_oil_title">Crude Oil</h2>
+          </div>
+        </div>
+      </div>
       <div className="container">
-        <h2 className="oil_main_heading">Oil Contaminants</h2>
-        {locked && lockedPreviewImageUrl ? (
-          <div className="report_unlock_preview">
-            <img
-              src={lockedPreviewImageUrl}
-              alt=""
-              className="oil_contaminants_locked_preview"
-              aria-hidden="true"
-            />
+        {locked ? (
+          <div className="report_unlock_preview crude_oil_unlock_preview">
+            <div className="crude_oil_result_card crude_oil_result_card_locked" aria-hidden="true">
+              <span className="crude_oil_result_status">Found</span>
+              <span className="crude_oil_result_value">~2 ppm</span>
+            </div>
             <UnlockReportCta href={unlockHref} label={unlockLabel} premiumHref={premiumUnlockHref} />
           </div>
         ) : (
-          <div className="oil_info_card">
-            <div className="oil_card_content">
-              <span className="oil_label">Crude oil:</span>
-              <div className="oil_value_row">
-                <span className="oil_found_text">{displayStatus}</span>
-                <span className="oil_ppm_value">{displayValue}</span>
-              </div>
-            </div>
+          <div className="crude_oil_result_card">
+            <span className="crude_oil_result_status">{displayStatus}</span>
+            <span className="crude_oil_result_value">{displayValue}</span>
           </div>
         )}
       </div>
