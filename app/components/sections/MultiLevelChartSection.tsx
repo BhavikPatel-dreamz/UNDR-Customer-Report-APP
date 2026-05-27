@@ -70,6 +70,11 @@ const ChartGroup = ({ maxVal, rows, scaleLabels }: ChartGroupProps) => (
       </div>
       <div className="scale_placeholder_right"></div>
     </div>
+    <div className="chart_axis_label_row">
+      <div className="scale_placeholder_left"></div>
+      <p className="chart_axis_label">Heavy metal level (ppm)</p>
+      <div className="scale_placeholder_right"></div>
+    </div>
   </div>
 );
 
@@ -106,9 +111,11 @@ const MultiLevelChartSection = ({
             <ChartGroup maxVal={group2Max} rows={group2Rows} scaleLabels={group2ScaleLabels} />
 
             <div className="legend_box">
-              <div className="legend_item"><span className="color_box safe_level"></span> Safe Levels</div>
-              <div className="legend_item"><span className="color_box marginal_level"></span> Marginally Unsafe Levels</div>
-              <div className="legend_item"><span className="color_box unsafe_level"></span> Unsafe Levels</div>
+              <div className="legend_item"><span className="color_box safe_level"></span> Common
+Range</div>
+              <div className="legend_item"><span className="color_box marginal_level"></span> Elevated</div>
+              <div className="legend_item"><span className="color_box unsafe_level"></span> Above Common
+Thresholds</div>
               <div className="legend_item"><span className="color_box user_level"></span> Your Levels</div>
             </div>
           </>

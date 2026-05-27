@@ -76,8 +76,8 @@ const TraceFoundSection = ({
         ) : (
           <>
             <div className="traces_wrapper">
-              <h2 className="traces_main_title">{title}</h2>
-              <p className="traces_sub_text">{subtitle}</p>
+              {/* <h2 className="traces_main_title">{title}</h2> */}
+              {/* <p className="traces_sub_text">{subtitle}</p> */}
             </div>
 
             <div className="chart_group" data-max={max}>
@@ -96,12 +96,19 @@ const TraceFoundSection = ({
                 </div>
                 <div className="scale_placeholder_right"></div>
               </div>
+              <div className="chart_axis_label_row petroleum_axis_label_row">
+                <div className="scale_placeholder_left"></div>
+                <p className="chart_axis_label petroleum_axis_label">Total petroleum hydrocarbons (ppm)</p>
+                <div className="scale_placeholder_right"></div>
+              </div>
             </div>
 
             <div className="legend_box">
-              <div className="legend_item"><span className="color_box safe_level"></span> Safe Levels</div>
-              <div className="legend_item"><span className="color_box marginal_level"></span> Marginally Unsafe Levels</div>
-              <div className="legend_item"><span className="color_box unsafe_level"></span> Unsafe Levels</div>
+              <div className="legend_item"><span className="color_box safe_level"></span> Common
+Range</div>
+              <div className="legend_item"><span className="color_box marginal_level"></span> Elevated</div>
+              <div className="legend_item"><span className="color_box unsafe_level"></span> Above Common
+Thresholds</div>
               <div className="legend_item"><span className="color_box user_level"></span> Your Levels</div>
             </div>
           </>

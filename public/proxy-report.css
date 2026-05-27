@@ -275,6 +275,16 @@ p {
     padding-left: 40px;
 }
 
+.report_details_section .quick_look_title {
+    color: #6d7566;
+    font-family: 'Obviously', Arial, sans-serif;
+    font-size: 68px;
+    font-weight: 800;
+    line-height: 1;
+    margin: 0 0 28px;
+    letter-spacing: 0;
+}
+
 .report_details_section .report_main_heading {
     font-family: 'Obviously', Arial, sans-serif;
     font-weight: 700;
@@ -717,6 +727,11 @@ p {
         height: 400px;
     }
 
+    .report_details_section .quick_look_title {
+        font-size: 56px;
+        margin-bottom: 22px;
+    }
+
     .report_details_section .top_info_row {
         gap: 15px;
         padding-bottom: 20px;
@@ -783,6 +798,12 @@ p {
     .report_details_section .report_main_heading {
         font-size: 20px;
         margin-bottom: 20px;
+        text-align: center;
+    }
+
+    .report_details_section .quick_look_title {
+        font-size: 42px;
+        margin-bottom: 18px;
         text-align: center;
     }
 
@@ -873,11 +894,12 @@ p {
     padding: 0 20px 40px 0px;
     display: flex;
     flex-direction: column;
+    justify-content:space-between;
 }
 
 .elemental_breakdown_section .report_title {
-    font-weight: 700;
-    font-size: 64px;
+    font-weight: 600;
+    font-size: 50px;
     line-height: 68px;
     color: #8B2323;
 }
@@ -1340,6 +1362,24 @@ p {
     letter-spacing: 0;
 }
 
+.multi_level_chart_section .chart_axis_label_row {
+    display: flex;
+    align-items: flex-start;
+    margin-top: 18px;
+}
+
+.multi_level_chart_section .chart_axis_label {
+    flex-grow: 1;
+    margin: 0;
+    padding: 0 10px;
+    color: #93979a;
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1.2;
+    text-align: center;
+    letter-spacing: 0;
+}
+
 .multi_level_chart_section .spacer_div {
     height: 80px;
 }
@@ -1482,6 +1522,17 @@ p {
 
     .multi_level_chart_section .scale_labels span {
         font-size: 11px;
+    }
+
+    .multi_level_chart_section .chart_axis_label_row .scale_placeholder_left,
+    .multi_level_chart_section .chart_axis_label_row div.scale_placeholder_left {
+        display: none;
+    }
+
+    .multi_level_chart_section .chart_axis_label {
+        padding-left: 0;
+        padding-right: 60px;
+        font-size: 14px;
     }
 
     .multi_level_chart_section .spacer_div {
@@ -2606,7 +2657,7 @@ p {
 }
 
 .earth_element_breakdown_section .sub_title {
-    font-weight: 600;
+    font-weight: 500;
     font-size: 42px;
     line-height: 1.2;
     color: #E67E66;
@@ -2836,6 +2887,10 @@ p {
 .earth_element_breakdown_section .rare_earth_zero_bottom {
     position: relative;
     z-index: 1;
+}
+
+.additional_resources_intro.contaminants h3 {
+    color: #d98670;
 }
 
 @media (max-width: 1199px) {
@@ -3074,10 +3129,11 @@ p {
 
 .unique_soil_section .soil_main_heading {
     font-weight: 700;
-    font-size: 72px;
-    line-height: 80px;
+    font-size: 64px;
+    line-height: 72px;
     color: #ffffff;
     margin-bottom: 15px;
+    white-space: nowrap;
 }
 
 .unique_soil_section .soil_sub_heading {
@@ -3096,8 +3152,8 @@ p {
     }
 
     .unique_soil_section .soil_main_heading {
-        font-size: 60px;
-        line-height: 68px;
+        font-size: 54px;
+        line-height: 62px;
         margin-bottom: 12px;
     }
 
@@ -3117,8 +3173,8 @@ p {
     }
 
     .unique_soil_section .soil_main_heading {
-        font-size: 46px;
-        line-height: 56px;
+        font-size: 42px;
+        line-height: 52px;
         margin-bottom: 10px;
     }
 
@@ -3140,6 +3196,7 @@ p {
     .unique_soil_section .soil_main_heading {
         font-size: 36px;
         line-height: 42px;
+        white-space: normal;
     }
 
     .unique_soil_section .soil_sub_heading {
@@ -3273,7 +3330,16 @@ p {
     font-weight: 700;
     font-size: 48px;
     color: #8B2323;
-    margin-bottom: 25px;
+    margin-bottom: 14px;
+}
+
+.found_elements_list_section .element_click_hint {
+    color: #85878a;
+    font-size: 24px;
+    font-weight: 400;
+    line-height: 1.35;
+    margin: 0 0 12px;
+    letter-spacing: 0;
 }
 
 .found_elements_list_section .section_sub_title {
@@ -3678,7 +3744,12 @@ p {
     .found_elements_list_section .section_main_title,
     .additional_resources_intro h3 {
         font-size: 40px;
-        margin-bottom: 20px;
+        margin-bottom: 12px;
+    }
+
+    .found_elements_list_section .element_click_hint {
+        font-size: 22px;
+        margin-bottom: 10px;
     }
 
     .found_elements_list_section .section_sub_title {
@@ -3700,7 +3771,11 @@ p {
     .found_elements_list_section .section_main_title,
     .additional_resources_intro h3 {
         font-size: 32px;
-        margin-bottom: 15px;
+        margin-bottom: 10px;
+    }
+
+    .found_elements_list_section .element_click_hint {
+        font-size: 19px;
     }
 
     .found_elements_list_section .section_sub_title {
@@ -3731,6 +3806,11 @@ p {
     .found_elements_list_section .section_sub_title {
         font-size: 18px;
         line-height: 26px;
+    }
+
+    .found_elements_list_section .element_click_hint {
+        font-size: 17px;
+        line-height: 1.4;
     }
 
     .found_elements_list_section .section_main_title br,
@@ -4214,7 +4294,7 @@ p {
     font-weight: 800;
     font-size: 22px;
     line-height: 32px;
-    color: #8B2323;
+    color: #3F443A;
     margin-bottom: 14px;
 }
 

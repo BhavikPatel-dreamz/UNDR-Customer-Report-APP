@@ -23,9 +23,9 @@ const asNumber = (value: unknown): number | null => {
 };
 
 const formatPpmValue = (value: number): string => {
-  if (!Number.isFinite(value)) return "0ppm";
+  if (!Number.isFinite(value)) return "0 ppm";
   // remove unnecessary trailing zeros: 158755.00 -> 158755, 12.50 -> 12.5
-  return `${value.toFixed(2).replace(/\.?0+$/, "")}ppm`;
+  return `${value.toFixed(2).replace(/\.?0+$/, "")} ppm`;
 };
 
 const getSymbolOrNameKey = (displayName: string): string => {
@@ -90,4 +90,3 @@ export function mapHeavyMetals(rows: unknown): HeavyMetalItem[] {
 
   return top3;
 }
-

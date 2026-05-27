@@ -21,6 +21,7 @@ const FoundElementsListSection = ({ elements }: FoundElementsListSectionProps) =
     <section className="found_elements_list_section">
       <div className="container">
         <h2 className="section_main_title">Complete List of<br /> Elements in your Sample</h2>
+        <p className="element_click_hint">Click on each element for more information</p>
         <h3 className="section_sub_title">Elements Found</h3>
 
         <div className="elements_table_wrapper">

@@ -122,6 +122,7 @@ const ReportDetailsSection = ({
       <div className="container">
         <div className="report_flex_row">
           <div className="report_left_col">
+            <h1 className="quick_look_title">Quick Look</h1>
             <h2 className="report_main_heading">Element Breakdown chart</h2>
             <div className="chart_wrapper">
               <canvas id="element_layered_chart"></canvas>
