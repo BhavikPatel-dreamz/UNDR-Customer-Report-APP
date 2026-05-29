@@ -465,17 +465,16 @@
         });
 
         var canvasOptions = {
-          scale: 2,
+          scale: 1.5,
           useCORS: true,
           allowTaint: true,
           letterRendering: true,
           backgroundColor: "#ffffff",
           windowWidth: Math.max(reportElement.scrollWidth, document.documentElement.scrollWidth),
           onclone: function (clonedDocument) {
-            clonedDocument.documentElement.classList.add("pdf_render");
-            if (clonedDocument.body) {
-              clonedDocument.body.classList.add("pdf_render");
-            }
+            clonedDocument.querySelectorAll(".pdf_download_footer").forEach(function (element) {
+              element.remove();
+            });
             clonedDocument.querySelectorAll(".oil_label, .oil_found_text, .oil_ppm_value, .crude_oil_title, .crude_oil_result_status, .crude_oil_result_value").forEach(function (element) {
               element.style.color = "#ffffff";
               element.style.opacity = "1";
@@ -554,86 +553,39 @@
           pdf.setTextColor(0, 0, 0);
         }
 
-        sections.reduce(function (chain, section) {
-          return chain.then(function (items) {
-            return window.html2canvas(section, canvasOptions).then(function (canvas) {
-              if (canvas.width > 0 && canvas.height > 0) {
-                items.push({
-                  canvas: canvas,
-                  keepWithNext: false,
-                  oilTexts: [],
-                  canSplit:
-                    section.classList.contains("found_elements_list_section") ||
-                    section.classList.contains("not_found_elements_list_section") ||
-                    section.classList.contains("additional_resources_section"),
-                });
-              }
-              return items;
+        window.html2canvas(reportRoot, canvasOptions)
+          .then(function (canvas) {
+            if (!canvas.width || !canvas.height) {
+              window.print();
+              return;
+            }
+
+            var pdfWidth = 1152;
+            var pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+            var maxPdfPageHeight = 14400;
+            var pageHeight = Math.min(pdfHeight, maxPdfPageHeight);
+            var pdf = new jsPDF({
+              unit: "pt",
+              format: [pdfWidth, pageHeight],
+              orientation: "portrait",
             });
-          });
-        }, Promise.resolve([]))
-          .then(function (items) {
-            var pdf = new jsPDF({ unit: "pt", format: "a4", orientation: "portrait" });
-            var pageWidth = pdf.internal.pageSize.getWidth();
-            var pageHeight = pdf.internal.pageSize.getHeight();
-            var pagePadding = 0;
-            var availableWidth = pageWidth - (pagePadding * 2);
-            var cursorY = 0;
+            var imageData = canvas.toDataURL("image/jpeg", 0.96);
 
-            items.forEach(function (item, index) {
-              var canvas = item.canvas;
-              var imageData = canvas.toDataURL("image/jpeg", 0.98);
-              var imageHeight = (canvas.height * availableWidth) / canvas.width;
-              var remainingPageHeight = pageHeight - cursorY;
-
-              if (item.keepWithNext && index < items.length - 1 && cursorY > 0) {
-                var nextCanvas = items[index + 1].canvas;
-                var nextImageHeight = (nextCanvas.height * availableWidth) / nextCanvas.width;
-                var nextPreviewHeight = Math.min(nextImageHeight, pageHeight * 0.45);
-
-                if (cursorY + imageHeight + nextPreviewHeight > pageHeight) {
-                  pdf.addPage();
-                  cursorY = 0;
-                  remainingPageHeight = pageHeight;
-                }
-              }
-
-              if (
-                index > 0 &&
-                cursorY > 0 &&
-                cursorY + imageHeight > pageHeight &&
-                (!item.canSplit || remainingPageHeight < pageHeight * 0.25)
-              ) {
-                pdf.addPage();
-                cursorY = 0;
-                remainingPageHeight = pageHeight;
-              }
-
-              if (cursorY + imageHeight <= pageHeight) {
-                pdf.addImage(imageData, "JPEG", pagePadding, cursorY, availableWidth, imageHeight);
-                drawOilTextOnPdf(pdf, item.oilTexts, pagePadding, cursorY, availableWidth, imageHeight, canvas);
-                cursorY += imageHeight;
-                return;
-              }
-
-              var remainingHeight = imageHeight;
-              var y = cursorY;
-              var firstPageSpace = pageHeight - cursorY;
-              pdf.addImage(imageData, "JPEG", pagePadding, y, availableWidth, imageHeight);
-              drawOilTextOnPdf(pdf, item.oilTexts, pagePadding, y, availableWidth, imageHeight, canvas);
-              remainingHeight -= firstPageSpace;
+            if (pdfHeight <= maxPdfPageHeight) {
+              pdf.addImage(imageData, "JPEG", 0, 0, pdfWidth, pdfHeight);
+            } else {
+              var y = 0;
+              var remainingHeight = pdfHeight;
+              pdf.addImage(imageData, "JPEG", 0, y, pdfWidth, pdfHeight);
+              remainingHeight -= pageHeight;
 
               while (remainingHeight > 0) {
-                y = remainingHeight - imageHeight;
-                pdf.addPage();
-                pdf.addImage(imageData, "JPEG", pagePadding, y, availableWidth, imageHeight);
-                remainingHeight -= pageHeight;
+                y = remainingHeight - pdfHeight;
+                pdf.addPage([pdfWidth, Math.min(remainingHeight, maxPdfPageHeight)], "portrait");
+                pdf.addImage(imageData, "JPEG", 0, y, pdfWidth, pdfHeight);
+                remainingHeight -= maxPdfPageHeight;
               }
-
-              var usedOnLastPage = imageHeight - firstPageSpace;
-              cursorY = usedOnLastPage > 0 ? usedOnLastPage % pageHeight : imageHeight;
-              if (cursorY === 0) cursorY = pageHeight;
-            });
+            }
 
             pdf.save((customerName || "report") + "-undr-report.pdf");
           })
