@@ -435,22 +435,23 @@ export async function action({ request }: ActionFunctionArgs) {
 		orderNumber: String(formData.get("orderNumber") || ""),
 		kitRegistrationNumber: String(formData.get("kitRegistrationNumber") || ""),
 	};
-	const requireV2 = formData.get("requireV2") === "1";
-	const recaptchaToken = String(formData.get("recaptchaToken") || "");
-	const recaptchaV2Token = String(formData.get("g-recaptcha-response") || "");
-	const remoteIp = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
-	const captchaResult = requireV2
-		? await verifyRecaptchaV2Token({ token: recaptchaV2Token, remoteIp })
-		: await verifyRecaptchaToken({ token: recaptchaToken, remoteIp });
-	if (!captchaResult.ok) {
-		const data: ActionData = {
-			ok: false,
-			message: captchaResult.message,
-			requireV2: requireV2 || ("requireV2" in captchaResult ? Boolean(captchaResult.requireV2) : false),
-			form,
-		};
-		return proxyPageResponse(request, liquid, data);
-	}
+	// reCAPTCHA check disabled for now; submit continues directly to validation/save.
+	// const requireV2 = formData.get("requireV2") === "1";
+	// const recaptchaToken = String(formData.get("recaptchaToken") || "");
+	// const recaptchaV2Token = String(formData.get("g-recaptcha-response") || "");
+	// const remoteIp = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
+	// const captchaResult = requireV2
+	// 	? await verifyRecaptchaV2Token({ token: recaptchaV2Token, remoteIp })
+	// 	: await verifyRecaptchaToken({ token: recaptchaToken, remoteIp });
+	// if (!captchaResult.ok) {
+	// 	const data: ActionData = {
+	// 		ok: false,
+	// 		message: captchaResult.message,
+	// 		requireV2: requireV2 || ("requireV2" in captchaResult ? Boolean(captchaResult.requireV2) : false),
+	// 		form,
+	// 	};
+	// 	return proxyPageResponse(request, liquid, data);
+	// }
 
 	const validationErrors = validateRegistration(form);
 	if (validationErrors) {
