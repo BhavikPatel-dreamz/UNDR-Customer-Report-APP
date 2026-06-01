@@ -139,7 +139,7 @@ const Index = ({ report, appUrl = '' }: IndexProps) => {
       {shouldShowPetroleumBreakdown && (
         <>
           {/* 7. Petroleum Contaminants */}
-          <PetroleumContaminantsSection />
+          <PetroleumContaminantsSection appUrl={appUrl} />
           {/* 8. Petroleum Trace Found */}
           <TraceFoundSection
             title={report.petroleumTraceFound.title}
@@ -159,7 +159,7 @@ const Index = ({ report, appUrl = '' }: IndexProps) => {
      
 
       {/* 5. Heavy Metal Breakdown */}
-      <HeavyMetalBreakdownSection />
+  <HeavyMetalBreakdownSection appUrl={appUrl} />
       {/* 6. Multi Level Chart */}
       <MultiLevelChartSection
         group1Max={report.multiLevelCharts.group1Max}
@@ -181,7 +181,7 @@ const Index = ({ report, appUrl = '' }: IndexProps) => {
       <SoilFeatureSection items={report.soilFeatures} />
 
       {/* 16. Found Elements List */}
-      <FoundElementsListSection elements={foundElementsForList} />
+  <FoundElementsListSection elements={foundElementsForList} appUrl={appUrl} />
       {/* 17. Not Found Elements List */}
       <NotFoundElementsListSection elements={notFoundElementsForList} />
 

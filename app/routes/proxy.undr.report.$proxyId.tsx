@@ -79,13 +79,19 @@ function renderReportNotFoundPage() {
 
 function renderReportAccessDeniedPage() {
   return `
-<section style="min-height:70vh;padding:56px 20px;display:grid;place-items:center;color:#111827;">
+<section class="ar_section" style="min-height:70vh;padding:56px 20px;display:grid;place-items:center;color:#111827;">
   <!-- Background intentionally disabled: background:linear-gradient(180deg,#faf9f5 0%,#f4f1ea 100%); -->
-  <div style="width:100%;max-width:560px;border:1px solid rgba(17,24,39,0.12);border-radius:18px;background:#ffffff;box-shadow:0 18px 45px rgba(17,24,39,0.08);padding:34px 30px;text-align:center;">
-    <div style="width:54px;height:54px;border-radius:999px;background:#fff7ed;border:1px solid #fed7aa;display:grid;place-items:center;margin:0 auto 18px;color:#c2410c;font-size:26px;font-weight:800;">!</div>
-    <p style="margin:0 0 8px;font-size:12px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#6b7280;">Access restricted</p>
-    <h1 style="margin:0 0 12px;font-size:clamp(26px,5vw,36px);line-height:1.12;color:#111827;">You do not have access to this report</h1>
-    <p style="margin:0 auto 24px;font-size:16px;line-height:1.7;color:#4b5563;max-width:440px;">This report is linked to a different customer account. Please log in with the account used for this kit.</p>
+  
+  <div class="ar_wrapper" style="width:100%;max-width:560px;border:1px solid rgba(17,24,39,0.12);border-radius:18px;background:#ffffff;box-shadow:0 18px 45px rgba(17,24,39,0.08);padding:34px 30px;text-align:center;">
+    
+  <div class="ar_icon" style="width:54px;height:54px;border-radius:999px;background:#fff7ed;border:1px solid #fed7aa;display:grid;place-items:center;margin:0 auto 20px;color:#c2410c;font-size:26px;font-weight:800;">!</div>
+    
+  <p class="ar_note" style="margin:0 0 10px;font-size:13px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#6b7280;">Access restricted</p>
+    
+  <h1 class="ar_heading" style="font-family: 'Obviously', Arial, sans-serif; margin:0 0 15px;font-size:clamp(26px,5vw,36px);line-height:1.12;color:#111827;">You do not have access to this report</h1>
+    
+  <p class="ar_para" style="margin:0 ;font-size:16px;line-height:1.7;color:#4b5563;">This report is linked to a different customer account. Please log in with the account used for this kit.</p>
+    
     <!-- Action buttons intentionally hidden for now.
       <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
         <a href="#" style="display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:0 20px;border-radius:999px;background:#111827;color:#fff;font-size:14px;font-weight:700;text-decoration:none;">Log in with another account</a>

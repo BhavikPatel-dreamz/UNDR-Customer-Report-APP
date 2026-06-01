@@ -1,4 +1,8 @@
-const PetroleumContaminantsSection = () => {
+type PetroleumContaminantsSectionProps = {
+  appUrl?: string;
+};
+
+const PetroleumContaminantsSection = ({ appUrl = '' }: PetroleumContaminantsSectionProps) => {
   return (
     <section className="heavy_metal_breakdown_section petroleum_contaminants_section">
       <div className="container">
@@ -8,6 +12,10 @@ const PetroleumContaminantsSection = () => {
           </div>
         </div>
       </div>
+
+  {/* appUrl defaults to '' so this resolves to '/images/pc-icon.svg' when empty */}
+  <img src={`${appUrl}/images/pc-icon.svg`} className="pc_icon" alt="Icon" />
+
     </section>
   );
 };

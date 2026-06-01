@@ -12,9 +12,10 @@ interface ElementItem {
 
 type FoundElementsListSectionProps = {
   elements: ElementItem[];
+  appUrl?: string;
 };
 
-const FoundElementsListSection = ({ elements }: FoundElementsListSectionProps) => {
+const FoundElementsListSection = ({ elements, appUrl = '' }: FoundElementsListSectionProps) => {
   const elementBlurbsJson = JSON.stringify(ELEMENT_BLURBS_BY_SYMBOL).replaceAll("<", "\\u003c");
 
   return (
@@ -56,6 +57,13 @@ const FoundElementsListSection = ({ elements }: FoundElementsListSectionProps) =
           ))}
         </div>
       </div>
+
+  {/* appUrl defaults to '' so this resolves to '/images/found-icon.svg' when empty */}
+  <img src={`${appUrl}/images/found-icon.svg`} className="found_icon" alt="Icon" />
+
+  <img src={`${appUrl}/images/not-found-icon.svg`} className="not_found_icon" alt="Icon" />
+        
+
       <script
         id="element-blurbs-data"
         type="application/json"

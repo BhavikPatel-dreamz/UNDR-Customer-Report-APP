@@ -409,7 +409,7 @@ p {
     border-radius: 5px 0 0 0;
     margin-right: 10px;
     letter-spacing: 0;
-    font-size: 16px;
+    font-size: 15px;
 }
 
 .report_details_section .metal_txt {
@@ -1174,6 +1174,10 @@ p {
     margin-top: 80px;
 }
 
+.heavy_metal_breakdown_section.half {
+    position: relative;
+}
+
 .heavy_metal_breakdown_section .heavy_metal_inner_wrapper {
     display: flex;
     justify-content: space-between;
@@ -1181,6 +1185,10 @@ p {
 }
 
 .heavy_metal_breakdown_section .heavy_metal_content_left {
+    flex-basis: 100%;
+}
+
+.heavy_metal_breakdown_section.half .heavy_metal_content_left {
     flex-basis: 50%;
 }
 
@@ -1270,6 +1278,14 @@ p {
     .heavy_metal_breakdown_section {
         border-bottom-right-radius: 70px;
         padding: 40px 0;
+    }
+
+    .heavy_metal_breakdown_section.half .heavy_metal_content_left {
+        flex-basis: 100%;
+    }
+
+    .heavy_metal_breakdown_section .heavy_metal_content_right {
+        flex-basis: 100%;
     }
 }
 
@@ -1400,10 +1416,11 @@ p {
     flex-grow: 1;
     margin: 0;
     padding: 0 10px;
-    color: #93979a;
+    /* color: #93979a; */
+    color: #939598;
     font-size: 18px;
-    font-weight: 700;
-    line-height: 1.2;
+    font-weight: 500;
+    line-height: 26px;
     text-align: center;
     letter-spacing: 0;
 }
@@ -1753,6 +1770,7 @@ p {
         padding-left: 0;
         padding-right: 60px;
         font-size: 14px;
+        line-height: 20px;
     }
 
     .multi_level_chart_section .spacer_div {
@@ -2151,6 +2169,7 @@ p {
 .petroleum_contaminants_section {
     background-color: #8fbdbd;
     margin-top: 80px;
+    position: relative;
 }
 
 @media (max-width: 1199px) {
@@ -3426,18 +3445,18 @@ p {
 }
 
 .unique_soil_section .soil_main_heading {
-    font-weight: 700;
-    font-size: 64px;
-    line-height: 72px;
+    font-weight: 600;
+    font-size: 48px;
+    line-height: 58px;
     color: #ffffff;
     margin-bottom: 15px;
 }
 
 .unique_soil_section .soil_sub_heading {
     font-weight: 300;
-    font-size: 38px;
-    line-height: 46px;
-    color: #e5b567;
+    font-size: 32px;
+    line-height: 42px;
+    color: #D8816C;
 }
 
 @media (max-width: 1199px) {
@@ -3449,14 +3468,14 @@ p {
     }
 
     .unique_soil_section .soil_main_heading {
-        font-size: 54px;
-        line-height: 62px;
+        font-size: 40px;
+        line-height: 50px;
         margin-bottom: 12px;
     }
 
     .unique_soil_section .soil_sub_heading {
-        font-size: 32px;
-        line-height: 40px;
+        font-size: 28px;
+        line-height: 38px;
     }
 
 }
@@ -3470,14 +3489,14 @@ p {
     }
 
     .unique_soil_section .soil_main_heading {
-        font-size: 42px;
-        line-height: 52px;
+        font-size: 28px;
+        line-height: 38px;
         margin-bottom: 10px;
     }
 
     .unique_soil_section .soil_sub_heading {
-        font-size: 28px;
-        line-height: 36px;
+        font-size: 20px;
+        line-height: 30px;
     }
 
 }
@@ -3490,15 +3509,9 @@ p {
         padding: 40px 0px;
     }
 
-    .unique_soil_section .soil_main_heading {
-        font-size: 36px;
-        line-height: 42px;
-        white-space: normal;
-    }
-
     .unique_soil_section .soil_sub_heading {
-        font-size: 22px;
-        line-height: 28px;
+        font-size: 18px;
+        line-height: 26px;
     }
 
 }
@@ -3622,12 +3635,21 @@ p {
 
 /* Found Elements List Section CSS */
 
+.found_elements_list_section {
+    position: relative;
+    overflow: hidden;
+}
+
 .found_elements_list_section .section_main_title,
 .additional_resources_intro h3 {
-    font-weight: 700;
+    font-weight: 600;
     font-size: 48px;
     color: #8B2323;
     margin-bottom: 14px;
+}
+
+.additional_resources_intro h3 {
+    font-weight: 500;
 }
 
 .found_elements_list_section .element_click_hint {
@@ -3811,6 +3833,7 @@ p {
 .element_blurb_dialog {
     position: relative;
     width: min(620px, calc(100vw - 48px));
+    width: min(800px, calc(100vw - 48px));
     max-height: min(78vh, 760px);
     overflow: hidden;
     padding: 34px 30px 0;
@@ -3840,7 +3863,7 @@ p {
     color: #e67e66;
     font-size: 13px;
     line-height: 1.3;
-    font-weight: 800;
+    font-weight: 500;
     letter-spacing: 0.08em;
     text-transform: uppercase;
 }
@@ -3850,7 +3873,7 @@ p {
     color: #8b2323;
     font-size: 34px;
     line-height: 1.08;
-    font-weight: 800;
+    font-weight: 500;
     letter-spacing: 0;
 }
 
@@ -3892,7 +3915,7 @@ p {
     color: #a82822;
     font-size: 15px;
     line-height: 1.35;
-    font-weight: 800;
+    font-weight: 500;
     letter-spacing: 0;
 }
 
@@ -4568,7 +4591,7 @@ p {
 }
 
 .additional_resource_item h4 {
-    font-weight: 800;
+    font-weight: 500;
     font-size: 22px;
     line-height: 32px;
     color: #8B2323;
@@ -4583,14 +4606,19 @@ p {
     color: #555555;
 }
 
+.additional_resources_disclaimer p {
+    font-size: 18px;
+    line-height: 26px;
+}
+
 .additional_resources_disclaimer {
     margin-top: 70px;
 }
 
 .additional_resources_disclaimer h3 {
-    font-weight: 800;
-    font-size: 22px;
-    line-height: 32px;
+    font-weight: 500;
+    font-size: 20px;
+    line-height: 30px;
     color: #3F443A;
     margin-bottom: 14px;
 }
@@ -4691,10 +4719,14 @@ p {
         line-height: 26px;
     }
 
-    .additional_resource_item p,
-    .additional_resources_disclaimer p {
+    .additional_resource_item p {
         font-size: 18px;
         line-height: 26px;
+    }
+
+    .additional_resources_disclaimer p {
+        font-size: 16px;
+        line-height: 24px;
     }
 
     .additional_resources_list {
@@ -4822,6 +4854,30 @@ p {
     left: 40%;
 }
 
+.pc_icon {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+}
+
+.hmbh_icon {
+    position: absolute;
+    bottom: 0;
+    left: 45%;
+}
+
+.found_icon {
+    position: absolute;
+    top: 15%;
+    right: 0;
+}
+
+.not_found_icon {
+    position: absolute;
+    bottom: -65px;
+    right: 0;
+}
+
 @media (max-width: 1399px) {
     .other_trace_icon {
         top: 49%;
@@ -4838,9 +4894,21 @@ p {
     .rare_earth_breakdown_icon {
         right: 20%;
     }
+
+    .pc_icon {
+        left: 55%;
+    }
+
+    .hmbh_icon {
+        width: 150px;
+    }
 }
 
 @media (max-width: 1199px) {
+    .report_details_section .val_box {
+        font-size: 14px;
+    }
+
     .other_trace_icon {
         top: 46%;
         width: 90px;
@@ -4889,6 +4957,27 @@ p {
         width: 110px;
         left: 50%;
     }
+
+    .pc_icon {
+        width: 110px;
+        left: 60%;
+    }
+
+    .hmbh_icon {
+        width: 110px;
+        left: 42%;
+    }
+
+    .found_icon {
+        width: 90px;
+        right: -50px;
+    }
+
+    .not_found_icon {
+        width: 90px;
+        bottom: 0;
+        right: -50px;
+    }
 }
 
 @media (max-width: 767px) {
@@ -4900,7 +4989,70 @@ p {
     .pmp_star_icon,
     .pmp_round_icon,
     .rare_earth_breakdown_icon,
-    .crude_oil_icon {
+    .crude_oil_icon,
+    .pc_icon,
+    .hmbh_icon,
+    .found_icon,
+    .not_found_icon {
         display: none;
     }
+}
+
+/* AR Section */
+
+.ar_section {
+    min-height: 70vh;
+    padding: 56px 20px;
+    display: grid;
+    place-items: center;
+    color: #111827;
+}
+
+.ar_wrapper {
+    width: 100%;
+    max-width: 560px;
+    border: 1px solid rgba(17, 24, 39, 0.12);
+    border-radius: 18px;
+    background: #ffffff;
+    box-shadow: 0 18px 45px rgba(17, 24, 39, 0.08);
+    padding: 34px 30px;
+    text-align: center;
+}
+
+.ar_icon {
+    width: 54px;
+    height: 54px;
+    border-radius: 999px;
+    background: #fff7ed;
+    border: 1px solid #fed7aa;
+    display: grid;
+    place-items: center;
+    margin: 0 auto 18px;
+    color: #c2410c;
+    font-size: 26px;
+    font-weight: 800;
+}
+
+.ar_note {
+    margin: 0 0 8px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #6b7280;
+}
+
+.ar_heading {
+    margin: 0 0 12px;
+    font-size: clamp(26px, 5vw, 36px);
+    line-height: 1.12;
+    color: #111827;
+}
+
+.ar_para {
+    margin: 0 auto 24px;
+    font-size: 16px;
+    line-height: 1.7;
+    color: #4b5563;
+    max-width: 440px;
 }

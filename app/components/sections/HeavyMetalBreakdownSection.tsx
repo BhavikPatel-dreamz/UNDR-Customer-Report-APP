@@ -1,6 +1,10 @@
-const HeavyMetalBreakdownSection = () => {
+type HeavyMetalBreakdownSectionProps = {
+  appUrl?: string;
+};
+
+const HeavyMetalBreakdownSection = ({ appUrl = '' }: HeavyMetalBreakdownSectionProps) => {
   return (
-    <section className="heavy_metal_breakdown_section">
+    <section className="heavy_metal_breakdown_section half">
       <div className="container">
         <div className="heavy_metal_inner_wrapper">
           <div className="heavy_metal_content_left">
@@ -14,6 +18,10 @@ const HeavyMetalBreakdownSection = () => {
           </div>
         </div>
       </div>
+
+  {/* appUrl defaults to '' so this resolves to '/images/quick-look-icon.svg' when empty */}
+  <img src={`${appUrl}/images/hmbh-icon.svg`} className="hmbh_icon" alt="Icon" />
+
     </section>
   );
 };
