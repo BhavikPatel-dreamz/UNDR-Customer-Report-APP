@@ -1,6 +1,7 @@
 export type BreakdownBarItem = {
   name: string;
   percentage: number;
+  ppm?: string;
   color: string;
   fixedLast?: boolean;
 };

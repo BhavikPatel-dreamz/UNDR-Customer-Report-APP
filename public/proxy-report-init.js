@@ -33,7 +33,17 @@
       bar.style.minHeight = minHeight + "px";
       bar.style.flex = (item.percentage + 2) + " 0 auto";
       bar.style.backgroundColor = item.color;
-      bar.innerText = item.name;
+
+      var name = document.createElement("span");
+      name.className = "element_bar_name";
+      name.innerText = item.name;
+
+      var value = document.createElement("span");
+      value.className = "element_bar_value";
+      value.innerText = item.ppm || "0ppm";
+
+      bar.appendChild(name);
+      bar.appendChild(value);
       chartBox.appendChild(bar);
     });
 
@@ -141,7 +151,7 @@
 
     sorted.forEach(function (item) {
       var heightPercent = (item.ppm / maxPpm) * 100;
-            // if (heightPercent < 18) heightPercent = 18;
+      // if (heightPercent < 18) heightPercent = 18;
       if (heightPercent < 8 && item.ppm > 0) heightPercent = 8;
 
 
@@ -216,19 +226,19 @@
     var reportChartData = (reportData.reportDetails && reportData.reportDetails.reportChart) || null;
     var chartInput = hasLayeredChartData(reportChartData)
       ? {
-          labels: reportChartData.elementNames || [],
-          belowData: reportChartData.belowData || [],
-          refData: reportChartData.refData || [],
-          aboveData: reportChartData.aboveData || [],
-          calculations: reportChartData.calculations || []
-        }
+        labels: reportChartData.elementNames || [],
+        belowData: reportChartData.belowData || [],
+        refData: reportChartData.refData || [],
+        aboveData: reportChartData.aboveData || [],
+        calculations: reportChartData.calculations || []
+      }
       : {
-          labels: [],
-          belowData: [],
-          refData: [],
-          aboveData: [],
-          calculations: []
-        };
+        labels: [],
+        belowData: [],
+        refData: [],
+        aboveData: [],
+        calculations: []
+      };
 
     var chartRows = (chartInput.labels || []).map(function (label, index) {
       var below = normalizeNumber((chartInput.belowData || [])[index]);

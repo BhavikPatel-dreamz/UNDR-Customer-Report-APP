@@ -776,6 +776,12 @@ function getPetroleumChartMax(ppmValue: number) {
   return Math.ceil(ppmValue / 100) * 100;
 }
 
+function formatBreakdownPpm(value: number) {
+  if (!Number.isFinite(value)) return "0ppm";
+  const rounded = value >= 10 ? Math.round(value) : Number(value.toFixed(2));
+  return `${rounded}ppm`;
+}
+
 function createEmptyProxyReportData(customerName: string, kitNumber: string): ProxyReportData {
   return {
     banner: {
@@ -977,6 +983,7 @@ base.foundElements = found.slice(0, 60)
       (r): BreakdownBarItem => ({
         name: formatElementName(r.element),
         percentage: totalPpm > 0 ? Math.round((r.ppmValue / totalPpm) * 100) : 0,
+        ppm: formatBreakdownPpm(r.ppmValue),
         color: (ELEMENT_COLOR_MAP[r.element.trim().toLowerCase()] ?? ELEMENT_COLOR_MAP.default).bg,
       }),
     );
@@ -985,6 +992,7 @@ base.foundElements = found.slice(0, 60)
       breakdownItems.push({
         name: "Other Trace Elements",
         percentage: totalPpm > 0 ? Math.round((otherTraceTotalPpm / totalPpm) * 100) : 0,
+        ppm: "", // no ppm shown for Other Trace Elements
         color: ELEMENT_COLOR_MAP.default.bg,
         fixedLast: true,
       });
@@ -1099,6 +1107,7 @@ base.foundElements = found.slice(0, 60)
           otherTraceTotalPpm > 0
             ? Math.round((r.ppmValue / otherTraceTotalPpm) * 100)
             : 0,
+        ppm: formatBreakdownPpm(r.ppmValue),
         color: (ELEMENT_COLOR_MAP[r.element.trim().toLowerCase()] ?? ELEMENT_COLOR_MAP.default).bg,
       }),
     );
