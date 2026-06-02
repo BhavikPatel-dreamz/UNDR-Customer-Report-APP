@@ -59,6 +59,7 @@
     margin: 0px;
     padding: 0px;
     box-sizing: border-box;
+    letter-spacing: 0;
 }
 
 
@@ -515,6 +516,7 @@ p {
     font-size: 23px;
     font-weight: 400;
     line-height: 1.02;
+    letter-spacing:0;
 }
 
 .report_details_section .petroleum_indicator_card strong {
