@@ -273,6 +273,7 @@ p {
 .report_details_section .report_right_col {
     flex: 0 0 50%;
     padding-left: 40px;
+    position: relative;
 }
 
 .report_details_section .quick_look_title {
@@ -355,6 +356,7 @@ p {
     font-size: 14px;
     line-height: 20px;
     color: #000;
+    color: #869B9B;
     letter-spacing: 0;
 }
 
@@ -446,7 +448,7 @@ p {
     font-family: 'Obviously', Arial, sans-serif;
     padding: 10px 15px;
     color: #fff;
-    font-weight: 600;
+    font-weight: 500;
     border-radius: 6px;
     margin-bottom: 10px;
     font-size: 14px;
@@ -511,16 +513,17 @@ p {
     color: #ffffff;
     font-family: 'Obviously', Arial, sans-serif;
     font-size: 23px;
-    font-weight: 500;
+    font-weight: 400;
     line-height: 1.02;
 }
 
 .report_details_section .petroleum_indicator_card strong {
     color: #ffffff;
     font-size: 21px;
-    font-weight: 500;
+    font-weight: 400;
     line-height: 1.05;
     text-align: left;
+    width: min-content;
 }
 
 .report_details_section .info_block {
@@ -694,7 +697,7 @@ p {
     font-family: 'Obviously', Arial, sans-serif;
     color: #8b231a;
     font-size: 18px;
-    font-weight: 600;
+    font-weight: 400;
     margin-bottom: 10px;
 }
 
@@ -874,6 +877,8 @@ p {
 
     .report_details_section .petroleum_indicator_card strong {
         font-size: 19px;
+        width: 100%;
+        text-align: center;
     }
 
 }
@@ -899,7 +904,7 @@ p {
 }
 
 .elemental_breakdown_section .report_title {
-    font-weight: 700;
+    font-weight: 600;
     font-size: 60px;
     line-height: 70px;
     color: #8B2323;
@@ -915,7 +920,7 @@ p {
 }
 
 .elemental_breakdown_section .report_subtitle {
-    font-weight: 400;
+    font-weight: 500;
     font-size: 32px;
     line-height: 42px;
     color: #E29578;
@@ -942,7 +947,7 @@ p {
 }
 
 .elemental_breakdown_section .detailed_summary_btn {
-    font-weight: 600;
+    font-weight: 500;
     font-size: 22px;
     color: #555555;
 }
@@ -1321,6 +1326,7 @@ p {
 
 .multi_level_chart_section {
     padding: 80px 0;
+    overflow: hidden;
 }
 
 .multi_level_chart_section .chart_row {
@@ -1330,6 +1336,7 @@ p {
 }
 
 .multi_level_chart_section .label_col {
+    font-family: 'Obviously', Arial, sans-serif;
     font-weight: 500;
     font-size: 20px;
     color: #93979a;
@@ -1378,6 +1385,7 @@ p {
 }
 
 .multi_level_chart_section .value_col {
+    font-family: 'Obviously', Arial, sans-serif;
     font-weight: 500;
     font-size: 18px;
     color: #93979a;
@@ -1418,6 +1426,7 @@ p {
 }
 
 .multi_level_chart_section .scale_labels span {
+    font-family: 'Obviously', Arial, sans-serif;
     font-size: 14px;
     color: #93979a;
     width: 20px;
@@ -1458,6 +1467,7 @@ p {
 }
 
 .multi_level_chart_section .legend_item {
+    font-family: 'Obviously', Arial, sans-serif;
     display: flex;
     align-items: center;
     font-weight: 500;
@@ -2010,7 +2020,7 @@ p {
 .oil_contaminants_section .crude_oil_result_status,
 .oil_contaminants_section .crude_oil_result_value {
     display: inline-block;
-    font-weight: 600;
+    font-weight: 500;
     font-size: 48px;
     line-height: 1.12;
     color: #ffffff;
@@ -2450,6 +2460,7 @@ p {
 }
 
 .precious_metal_present_section .ppm_value {
+    font-family: 'Obviously', Arial, sans-serif;
     font-weight: 500;
     font-size: 22px;
     color: #ffffff;
@@ -2464,6 +2475,7 @@ p {
 
 .precious_metal_present_section .metal_full_name,
 .precious_metal_present_section .metal_short_symbol {
+    font-family: 'Obviously', Arial, sans-serif;
     display: block;
     font-weight: 500;
     font-size: 16px;
@@ -2963,6 +2975,7 @@ p {
 
 .earth_element_breakdown_section {
     padding-top: 0;
+    overflow: hidden;
 }
 
 .earth_element_breakdown_section .earth_element_header_band {
@@ -3569,7 +3582,7 @@ p {
 }
 
 .soil_feature_section .soil_title {
-    font-weight: 600;
+    font-weight: 500;
     font-size: 28px;
     line-height: 38px;
     color: #FFFFFF;
@@ -3748,6 +3761,7 @@ p {
 }
 
 .found_elements_list_section .element_symbol_box {
+    font-family: 'Obviously', Arial, sans-serif;
     width: 60px;
     height: 40px;
     display: flex;
@@ -4205,7 +4219,7 @@ p {
 }
 
 .not_found_elements_list_section .section_title {
-    font-weight: 600;
+    font-weight: 500;
     font-size: 24px;
     line-height: 34px;
     color: #E67E66;
@@ -4216,6 +4230,7 @@ p {
     display: flex;
     flex-wrap: wrap;
     gap: 40px;
+    font-family: 'Obviously', Arial, sans-serif;
 }
 
 .not_found_elements_list_section .element_column {
@@ -4237,14 +4252,14 @@ p {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: 600;
+    font-weight: 500;
     font-size: 16px;
     color: #ffffff;
     border-radius: 5px 0 0 0;
 }
 
 .not_found_elements_list_section .element_label {
-    font-weight: 600;
+    font-weight: 500;
     font-size: 20px;
     letter-spacing: 0;
 }
@@ -4427,7 +4442,8 @@ p {
 }
 
 .precious_metals_section .bar_label {
-    font-weight: 600;
+    font-family: 'Obviously', Arial, sans-serif;
+    font-weight: 500;
     font-size: 16px;
     color: #666666;
     text-align: center;
@@ -4436,7 +4452,7 @@ p {
 
 .precious_metals_section .bar_label span {
     display: block;
-    font-weight: 400;
+    font-weight: 500;
     letter-spacing: 0;
 }
 
@@ -4951,6 +4967,10 @@ p {
         width: 170px;
         right: 15%;
     }
+
+    .quick_look_icon {
+        width: 100px;
+    }
 }
 
 @media (max-width: 991px) {
@@ -5077,4 +5097,51 @@ p {
     line-height: 1.7;
     color: #4b5563;
     max-width: 440px;
+}
+
+/* ================================================= */
+
+.report_details_section.treasure_base .info_block {
+    padding-top: 0;
+}
+
+.report_details_section.treasure_base .quick_look_icon,
+.report_details_section.treasure_plus .treasure_icon,
+.report_details_section.hs_base .quick_look_icon,
+.report_details_section.hs_plus .treasure_icon,
+ .report_details_section.premium .treasure_icon{
+    display: none;
+}
+
+.treasure_icon {
+    position: absolute;
+    bottom: 0;
+    left: -3%;
+}
+
+@media (max-width: 991px) {
+    .treasure_icon {
+        display: none;
+    }
+    .report_details_section .quick_look_title {
+        text-align: center;
+    }
+    .report_details_section.hs_plus .metal_list_item_wrapper,
+    .report_details_section.hs_base .metal_list_item_wrapper {
+        width: fit-content;
+        margin: 0 auto;
+    }
+    .report_details_section.hs_plus .petroleum_indicator_card {
+        margin: 0 auto;
+    }
+    .report_details_section.treasure_plus .oil_indicator_buttons {
+        text-align: center;
+    }
+
+}
+
+@media (max-width: 767px) {
+    .report_details_section.hs_plus .petroleum_indicator_card {
+        text-align: center;
+    }
 }

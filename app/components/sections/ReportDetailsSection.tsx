@@ -43,6 +43,7 @@ const ReportDetailsSection = ({
   rareEarthElements,
   appUrl = '',
 }: ReportDetailsSectionProps) => {
+  
   const showHeavyMetals = quickViewPackage === "premium" || quickViewPackage === "hs_base" || quickViewPackage === "hs_plus";
   const showOilIndicator = quickViewPackage === "premium" || quickViewPackage === "treasure_plus" || quickViewPackage === "hs_plus";
   const showPreciousMetals =
@@ -120,11 +121,12 @@ const ReportDetailsSection = ({
   );
   
   return (
-    <section className="report_details_section quick_look_section">
+    <section className={`report_details_section quick_look_section ${((quickViewPackage || "").toLowerCase().replace(/\s+/g, "_"))}`}>
       <div className="container">
         <div className="report_flex_row">
           <div className="report_left_col">
             <h1 className="quick_look_title">Quick Look</h1>
+            {/* name and package label removed per request */}
             <h2 className="report_main_heading">Element Breakdown Fingerprint</h2>
             <div className="chart_wrapper">
               <canvas id="element_layered_chart"></canvas>
@@ -151,6 +153,7 @@ const ReportDetailsSection = ({
                 {showHeavyMetals && showOilIndicator && quickViewPackage === "premium" && <div className="vertical_divider"></div>}
                 {showOilIndicator && quickViewPackage === "premium" && renderOilIndicator()}
                 {showOilIndicator && quickViewPackage === "treasure_plus" && renderCrudeOilIndicator()}
+                <img src={`${appUrl ? appUrl : ''}/images/treasure-icon.svg`} className="treasure_icon" alt="Icon" />
               </div>
             )}
 
@@ -176,6 +179,7 @@ const ReportDetailsSection = ({
                     </div>
                   ))}
                 </div>
+                <img src={`${appUrl ? appUrl : ''}/images/treasure-icon.svg`} className="treasure_icon" alt="Icon" />
               </div>
             )}
 
@@ -195,7 +199,11 @@ const ReportDetailsSection = ({
                     </div>
                   ))}
                 </div>
+                <img src={`${appUrl ? appUrl : ''}/images/treasure-icon.svg`} className="treasure_icon" alt="Icon" />
               </div>
+
+              
+
             )}
           </div>
         </div>
@@ -206,7 +214,10 @@ const ReportDetailsSection = ({
         </div>
       </div>
   
-  <img src={`${appUrl ? appUrl : ''}/images/quick-look-icon.svg`} className="quick_look_icon" alt="Quick look icon" />
+      <img src={`${appUrl ? appUrl : ''}/images/quick-look-icon.svg`} className="quick_look_icon" alt="Quick look icon" />
+
+      
+
     </section>
   );
 };
