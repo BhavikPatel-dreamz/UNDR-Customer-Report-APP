@@ -59,7 +59,7 @@
     margin: 0px;
     padding: 0px;
     box-sizing: border-box;
-    letter-spacing: 0;
+    letter-spacing: 0 !important;
 }
 
 
