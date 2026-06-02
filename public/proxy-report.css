@@ -2405,14 +2405,14 @@ p {
 }
 
 .precious_metal_present_section .main_title {
-    font-weight: 900;
+    font-weight: 600;
     font-size: 48px;
     color: #8B2323;
     margin-bottom: 10px;
 }
 
 .precious_metal_present_section .sub_text {
-    font-weight: 600;
+    font-weight: 500;
     font-size: 24px;
     line-height: 34px;
     color: #E67E66;
@@ -2450,9 +2450,10 @@ p {
 }
 
 .precious_metal_present_section .ppm_value {
-    font-weight: 600;
+    font-weight: 500;
     font-size: 22px;
     color: #ffffff;
+    letter-spacing: 0;
 }
 
 .precious_metal_present_section .label_container {
@@ -2464,9 +2465,10 @@ p {
 .precious_metal_present_section .metal_full_name,
 .precious_metal_present_section .metal_short_symbol {
     display: block;
-    font-weight: 600;
+    font-weight: 500;
     font-size: 16px;
     color: #777777;
+    letter-spacing: 0;
 }
 
 .precious_metal_present_section .report_details_section {

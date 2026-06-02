@@ -67,6 +67,13 @@ export const action = async ({ params, request }: ActionFunctionArgs) => {
       return { error: "Could not update report package.", intent: "package_config" as const };
     }
 
+    // Auto-sync quickViewPackage to the same value as reportPackage
+    await updateRegistrationQuickViewPackageById({
+      registrationId: registration.id,
+      shop: session.shop,
+      quickViewPackage: selectedPackage,
+    });
+
     return { success: true, message: "Report package updated.", intent: "package_config" as const };
   }
 
@@ -574,81 +581,10 @@ export default function RegistrationDetail() {
         </div>
       </s-section>
 
-      <s-section heading="Quick view package setup">
-        {quickViewConfigData && "error" in quickViewConfigData && (
-          <div
-            style={{
-              marginBottom: "16px",
-              padding: "12px 16px",
-              borderRadius: "10px",
-              background: "#fef2f2",
-              color: "#b91c1c",
-              fontSize: "14px",
-            }}
-          >
-            {quickViewConfigData.error}
-          </div>
-        )}
-        {quickViewConfigData && "success" in quickViewConfigData && (
-          <div
-            style={{
-              marginBottom: "16px",
-              padding: "12px 16px",
-              borderRadius: "10px",
-              background: "#ecfdf3",
-              color: "#065f46",
-              fontSize: "14px",
-              fontWeight: 600,
-            }}
-          >
-            ✓ {quickViewConfigData.message}
-          </div>
-        )}
-
-        <div style={{ display: "grid", gap: "10px", maxWidth: "400px" }}>
-          <label style={{ display: "grid", gap: "6px" }}>
-            <span style={{ fontSize: "13px", fontWeight: 600 }}>Select package for Quick view</span>
-            <select
-              name="quickViewPackage"
-              value={selectedQuickViewPackage}
-              onChange={(event) => {
-                const nextValue = event.currentTarget.value;
-                if (isReportPackage(nextValue)) {
-                  setSelectedQuickViewPackage(nextValue);
-                }
-              }}
-              disabled={isUploading || isSavingQuickViewPackage}
-              style={{ minHeight: "36px", borderRadius: "8px", border: "1px solid #d1d5db", padding: "0 10px" }}
-            >
-              <option value="premium">Premium Kit</option>
-              <option value="treasure_base">Treasure Hunting Kit</option>
-              <option value="treasure_plus">Treasure Hunting Plus Kit</option>
-              <option value="hs_base">Health & Safety Kit</option>
-              <option value="hs_plus">Health & Safety Plus Kit</option>
-            </select>
-          </label>
-          <div>
-            <button
-              type="button"
-              onClick={saveQuickViewPackage}
-              disabled={isUploading || isSavingQuickViewPackage}
-              style={{
-                minHeight: "38px",
-                padding: "0 16px",
-                border: 0,
-                borderRadius: "999px",
-                background: isUploading || isSavingQuickViewPackage ? "#9ca3af" : "#1f2937",
-                color: "#fff",
-                fontSize: "13px",
-                fontWeight: 600,
-                cursor: isUploading || isSavingQuickViewPackage ? "default" : "pointer",
-              }}
-            >
-              {isSavingQuickViewPackage ? "Saving..." : "Save Quick view package"}
-            </button>
-          </div>
-        </div>
-      </s-section>
+      {/* Quick view package setup — hidden from UI; quickViewPackage is auto-synced
+          from reportPackage on the server when "Save package" is clicked.
+          Mapping: treasure_base→Treasure Hunting Kit, treasure_plus→Treasure Hunting Plus Kit,
+                   hs_base→Health & Safety Kit, hs_plus→Health & Safety Plus Kit, premium→Premium Kit */}
 
       {/* ── Report link ── */}
       {report?.status === "uploaded" && (

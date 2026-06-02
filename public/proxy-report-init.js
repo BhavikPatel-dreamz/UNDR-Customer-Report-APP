@@ -40,7 +40,7 @@
 
       var value = document.createElement("span");
       value.className = "element_bar_value";
-      value.innerText = item.ppm || "0ppm";
+      value.innerText = item.ppm != null && item.ppm !== "" ? item.ppm : "";
 
       bar.appendChild(name);
       bar.appendChild(value);
@@ -446,7 +446,7 @@
     var text = node.append("text")
       .attr("text-anchor", "middle")
       .attr("fill", "#ffffff")
-      .style("font-family", "Arial, sans-serif")
+      .style("font-family", "'Obviously', Arial, sans-serif")
       .style("pointer-events", "none");
 
     text.append("tspan")
