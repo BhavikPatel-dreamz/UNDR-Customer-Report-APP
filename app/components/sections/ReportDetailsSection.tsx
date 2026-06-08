@@ -48,7 +48,7 @@ const ReportDetailsSection = ({
   const showOilIndicator = quickViewPackage === "premium" || quickViewPackage === "treasure_plus" || quickViewPackage === "hs_plus";
   const showPreciousMetals =
     quickViewPackage === "premium" || quickViewPackage === "treasure_base" || quickViewPackage === "treasure_plus";
-  const showRareEarthElements = quickViewPackage === "premium" || quickViewPackage === "treasure_plus";
+  const showRareEarthElements = (quickViewPackage === "premium" || quickViewPackage === "treasure_plus") && rareEarthElements.length > 0;
   const hasTopRow = showHeavyMetals || (showOilIndicator && quickViewPackage !== "hs_plus");
   const showOilAsInfoBlock = showOilIndicator && quickViewPackage === "hs_plus";
   const topInfoRowHasBorder = showOilAsInfoBlock || showPreciousMetals || showRareEarthElements;
