@@ -2978,6 +2978,7 @@ p {
 .earth_element_breakdown_section {
     padding-top: 0;
     overflow: hidden;
+    position: relative;
 }
 
 .earth_element_breakdown_section .earth_element_header_band {
@@ -5153,5 +5154,29 @@ p {
 @media (max-width: 767px) {
     .report_details_section.hs_plus .petroleum_indicator_card {
         text-align: center;
+    }
+}
+
+.rare_earth_star_icon {
+    position: absolute;
+    top: -10%;
+    right: 0;
+}
+
+@media (max-width: 1199px) {
+    .rare_earth_star_icon {
+        width: 120px;
+    }
+}
+
+@media (max-width: 991px) {
+    .rare_earth_star_icon {
+        width: 100px;
+    }
+}
+
+@media (max-width: 767px) {
+     .rare_earth_star_icon {
+        display: none;
     }
 }

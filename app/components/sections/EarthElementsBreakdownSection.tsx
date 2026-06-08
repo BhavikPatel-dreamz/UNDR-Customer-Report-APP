@@ -87,9 +87,11 @@ const EarthElementsBreakdownSection = ({
           <div id="chart_wrapper" className="chart_wrapper"></div>
         )}
       </div>
-      <span className="rare_earth_zero_sparkle large" aria-hidden="true" />
-      <span className="rare_earth_zero_sparkle small" aria-hidden="true" />
+
+      <img src={`${appUrl}/images/rare_earth_star_icon.svg`} className="rare_earth_star_icon" alt="Icon" />
+      
       </div>
+      
     </section>
   );
 };
