@@ -217,9 +217,8 @@ function renderGuestSection(state: DashboardState) {
 	`;
 }
 
-function renderDashboardTemplate(state: DashboardState, cssHref = "/proxy-report.css") {
+function renderDashboardTemplate(state: DashboardState) {
 	return `
-<link rel="stylesheet" href="${cssHref}" />
 <div style="background:radial-gradient(circle at top left, rgba(255,244,214,0.8), transparent 34%), linear-gradient(180deg, #fcfbf8 0%, #f7f4ee 100%); min-height:100vh;">
 	<div style="max-width:980px;margin:0 auto;padding:48px 20px 72px;color:#111827;display:grid;gap:26px;">
 		${state.loggedInCustomerId ? renderLoggedInSection(state) : renderGuestSection(state)}
@@ -255,10 +254,7 @@ async function renderDashboardPage(
 	const state = await buildDashboardState(request, overrides);
 	const { liquid } = await authenticate.public.appProxy(request);
 	const embed = isEmbedMode(new URL(request.url));
-	// Build an absolute URL for the stylesheet so the app-proxy can fetch it correctly
-	const origin = new URL(request.url).origin;
-	const cssHref = `${origin}/proxy-report.css`;
-	return liquid(renderDashboardTemplate(state, cssHref), { layout: !embed });
+	return liquid(renderDashboardTemplate(state), { layout: !embed });
 }
 
 export async function loader({ request }: LoaderFunctionArgs) {
