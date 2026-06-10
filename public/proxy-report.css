@@ -5286,6 +5286,128 @@ p {
     width: fit-content;
 }
 
+/*  */
+
+/* .customer_dashboard_section .kit_item {
+    padding: 20px;
+    border: 1px solid rgba(15, 23, 42, 0.1);
+    border-radius: 18px;
+    background: #fff;
+    display: grid;
+    gap: 12px;
+}
+
+.customer_dashboard_section .kit_top_part {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: flex-start;
+}
+
+.customer_dashboard_section .kit_label {
+    margin: 0 0 6px;
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #6b7280;
+}
+
+.customer_dashboard_section .kit_number {
+    margin: 0;
+    font-size: 22px;
+    line-height: 1.2;
+}
+
+.customer_dashboard_section .kit_status {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: #f3f4f6;
+    color: #4b5563;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.customer_dashboard_section .kit_middle_part {
+    display: grid;
+    gap: 6px;
+    color: #4b5563;
+    font-size: 14px;
+}
+
+.customer_dashboard_section .kit_order_number strong {
+    color: #111827;
+}
+
+.customer_dashboard_section .kit_register_date strong {
+    color: #111827;
+}
+
+.customer_dashboard_section .kit_bottom_part {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.customer_dashboard_section .kit_register_new_btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 0 18px;
+    border-radius: 999px;
+    border: 1px solid rgba(15, 23, 42, 0.14);
+    color: #111827;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.customer_dashboard_section .kit_report_pending_btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 0 18px;
+    border-radius: 999px;
+    background: #e5e7eb;
+    color: #6b7280;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    pointer-events: none;
+} */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 @media (max-width: 1199px) {
     .customer_dashboard_section .top_sub_title {
         font-size: 20px;

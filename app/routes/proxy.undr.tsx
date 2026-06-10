@@ -106,29 +106,27 @@ function renderLoggedInSection(state: DashboardState) {
 						: "#";
 
 					return `
-						<article class="kit_item" style="padding:20px;border:1px solid rgba(15,23,42,0.1);border-radius:18px;background:#fff;display:grid;gap:12px;">
+						<article class="kit_item">
 
-							<div class="kit_top_part" style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:flex-start;">
+							<div class="kit_top_part">
 								<div class="kit_top_column kit_top_left_column">
-									<p class="kit_label" style="margin:0 0 6px;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;color:#6b7280;">Kit</p>
-									<h3 class="kit_number" style="margin:0;font-size:22px;line-height:1.2;">${escapeHtml(registration.kitRegistrationNumber)}</h3>
+									<p class="kit_label">Kit</p>
+									<h3 class="kit_number">${escapeHtml(registration.kitRegistrationNumber)}</h3>
 								</div>
 								<div class="kit_top_column kit_top_right_column">
-									<span class="kit_status" style="display:inline-flex;align-items:center;padding:6px 12px;border-radius:999px;background:${reportReady ? "#ecfdf3" : "#f3f4f6"};color:${reportReady ? "#027a48" : "#4b5563"};font-size:12px;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;">
-										${reportReady ? "Report ready" : "Pending"}
+									<span class="kit_status" style="background:${reportReady ? "#ecfdf3" : "#f3f4f6"};color:${reportReady ? "#027a48" : "#4b5563"};">${reportReady ? "Report ready" : "Pending"}
 									</span>
 								</div>
 							</div>
 
-							<div class="kit_middle_part" style="display:grid;gap:6px;color:#4b5563;font-size:14px;">
-								<div class="kit_order_number"><strong style="color:#111827;">Order:</strong> ${escapeHtml(registration.orderNumber)}</div>
-								<div class="kit_register_date"><strong style="color:#111827;">Registered:</strong> ${escapeHtml(new Date(registration.createdAt).toLocaleDateString())}</div>
+							<div class="kit_middle_part">
+								<div class="kit_order_number"><strong>Order:</strong> ${escapeHtml(registration.orderNumber)}</div>
+								<div class="kit_register_date"><strong>Registered:</strong> ${escapeHtml(new Date(registration.createdAt).toLocaleDateString())}</div>
 							</div>
 
-							<div class="kit_bottom_part" style="display:flex;gap:12px;flex-wrap:wrap;">
-								<a class="kit_register_new_btn" href="/apps/undr/submit" style="display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 18px;border-radius:999px;border:1px solid rgba(15,23,42,0.14);color:#111827;font-size:14px;font-weight:600;text-decoration:none;">Register new kit</a>
-								<a class="kit_report_pending_btn" href="${actionHref}" style="display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 18px;border-radius:999px;background:${reportReady ? "#111827" : "#e5e7eb"};color:${reportReady ? "#fff" : "#6b7280"};font-size:14px;font-weight:600;text-decoration:none;pointer-events:${reportReady ? "auto" : "none"};">
-									${actionLabel}
+							<div class="kit_bottom_part">
+								<a class="kit_register_new_btn" href="/apps/undr/submit" >Register new kit</a>
+								<a class="kit_report_pending_btn" href="${actionHref}" style="background:${reportReady ? "#111827" : "#e5e7eb"};color:${reportReady ? "#fff" : "#6b7280"};pointer-events:${reportReady ? "auto" : "none"};">${actionLabel}
 								</a>
 							</div>
 
