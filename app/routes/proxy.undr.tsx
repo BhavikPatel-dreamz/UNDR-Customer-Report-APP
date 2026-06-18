@@ -99,11 +99,24 @@ function renderLoggedInSection(state: DashboardState) {
 	const registrationsMarkup = state.registrations.length
 		? state.registrations
 				.map((registration) => {
-					const reportReady = registration.report?.status === "report_generated" || registration.report?.status === "uploaded";
-					const actionLabel = reportReady ? "View report" : "Report pending";
-					const actionHref = reportReady
-						? buildReportPath(registration.kitRegistrationNumber)
-						: "#";
+								const status = registration.report?.status;
+										const reportReady = status === "report_generated" || status === "uploaded";
+										let statusLabel = reportReady ? "Report ready" : "Pending";
+										let actionLabel = reportReady ? "View report" : "Report pending";
+										let actionHref = reportReady ? buildReportPath(registration.kitRegistrationNumber) : "#";
+										let actionEnabled = reportReady;
+
+										if (status === 'kit_generated') {
+											statusLabel = 'Registration pending';
+											actionLabel = 'Register';
+											actionHref = `/apps/undr/submit?kit=${encodeURIComponent(registration.kitRegistrationNumber)}`;
+											actionEnabled = true;
+										} else if (status === 'register_submitted') {
+											statusLabel = 'Registration submitted';
+											actionLabel = 'Registration submitted';
+											actionHref = '#';
+											actionEnabled = false;
+										}
 
 					return `
 						<article class="kit_item">
@@ -114,7 +127,7 @@ function renderLoggedInSection(state: DashboardState) {
 									<h3 class="kit_number">${escapeHtml(registration.kitRegistrationNumber)}</h3>
 								</div>
 								<div class="kit_top_column kit_top_right_column">
-									<span class="kit_status" style="background:${reportReady ? "#ecfdf3" : "#f3f4f6"};color:${reportReady ? "#027a48" : "#4b5563"};">${reportReady ? "Report ready" : "Pending"}
+									<span class="kit_status" style="background:${statusLabel === 'Report ready' ? "#ecfdf3" : "#f3f4f6"};color:${statusLabel === 'Report ready' ? "#027a48" : "#4b5563"};">${escapeHtml(statusLabel)}
 									</span>
 								</div>
 							</div>
@@ -126,7 +139,7 @@ function renderLoggedInSection(state: DashboardState) {
 
 							<div class="kit_bottom_part">
 								<a class="kit_register_new_btn" href="/apps/undr/submit" >Register new kit</a>
-								<a class="kit_report_pending_btn" href="${actionHref}" style="background:${reportReady ? "#111827" : "#e5e7eb"};color:${reportReady ? "#fff" : "#6b7280"};pointer-events:${reportReady ? "auto" : "none"};">${actionLabel}
+								<a class="kit_report_pending_btn" href="${actionHref}" ${actionEnabled && actionHref !== '#' ? 'target="_blank" rel="noopener noreferrer"' : ''} style="background:${actionEnabled ? "#111827" : "#e5e7eb"};color:${actionEnabled ? "#fff" : "#6b7280"};pointer-events:${actionEnabled ? "auto" : "none"};">${escapeHtml(actionLabel)}
 								</a>
 							</div>
 

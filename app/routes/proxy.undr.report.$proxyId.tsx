@@ -194,7 +194,7 @@ function createEmptyReport(
 }
 
 export const loader = async ({ params, request }: LoaderFunctionArgs) => {
-  const { liquid, session } = await authenticate.public.appProxy(request);
+  const { liquid, session, admin } = await authenticate.public.appProxy(request);
   const url = new URL(request.url);
   const embed = isEmbedMode(url);
   const proxyId = params.proxyId || "";
@@ -204,7 +204,7 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
   const rawLoggedInCustomerId = resolveLoggedInCustomerId(url);
   const loggedInCustomerId = normalizeShopifyCustomerId(rawLoggedInCustomerId);
 
-  if (!loggedInCustomerId) {
+  if (!loggedInCustomerId && !admin) {
     return customerLoginRedirectResponse(proxyId);
   }
 
@@ -222,7 +222,7 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
 
   const reportCustomerId = normalizeShopifyCustomerId(registration.shopifyCustomerId);
 
-  if (!reportCustomerId || loggedInCustomerId !== reportCustomerId) {
+  if (!reportCustomerId || (!admin && loggedInCustomerId !== reportCustomerId)) {
     return liquid(renderReportAccessDeniedPage(), { layout: !embed });
   }
 

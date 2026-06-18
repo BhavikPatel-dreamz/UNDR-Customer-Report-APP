@@ -14,7 +14,7 @@ const TARGET = 'customer-account.order-status.cart-line-item.render-after' as co
 type StatusMap = Record<string, { status?: string; reportUrl?: string }>;
 
 
-const orderDataCache = new Map<string, Promise<{ kitMap: Record<string, string>; statusMap: StatusMap }>>();
+const orderDataCache = new Map<string, Promise<{ kitMap: Record<string, string>; statusMap: StatusMap; customerMap: Record<string, { name?: string; email?: string; phone?: string }> }>>();
 
 function deriveOriginFromReferrer() {
   if (typeof document !== 'undefined' && document.referrer) {
@@ -70,7 +70,7 @@ async function fetchOrderData(orderId: string, api: any) {
       const kitData = kitRes?.ok ? await kitRes.json().catch(() => null) : null;
       const statusData = statusRes?.ok ? await statusRes.json().catch(() => null) : null;
 
-      return { kitMap: kitData?.kitMap ?? {}, statusMap: statusData?.statusMap ?? {} };
+      return { kitMap: kitData?.kitMap ?? {}, statusMap: statusData?.statusMap ?? {}, customerMap: kitData?.customerMap ?? {} };
     } catch (e) {
       return { kitMap: {}, statusMap: {} };
     }
@@ -125,7 +125,7 @@ export default extension(TARGET, async (root, api) => {
   const lineItemId: string = (api as any)?.target?.current?.id ?? '';
   if (!orderId || !lineItemId) return;
 
-  const { kitMap, statusMap } = await fetchOrderData(orderId, api);
+  const { kitMap, statusMap, customerMap } = await fetchOrderData(orderId, api);
   if (!kitMap || !Object.keys(kitMap).length) return;
 
   const extractId = (gid: string) => (String(gid).split('/').pop() || gid);
@@ -212,7 +212,18 @@ export default extension(TARGET, async (root, api) => {
     else if (myshop) origin = `https://${myshop}`;
     else origin = deriveOriginFromReferrer() || (typeof window !== 'undefined' ? (window.location.origin || `${window.location.protocol}//${window.location.hostname}`) : '');
 
-    const rel = `/apps/undr/submit?kit=${encodeURIComponent(kitNumber)}`;
+    const params = new URLSearchParams();
+    params.set('kit', String(kitNumber));
+
+    // Prefer customer details returned from the server (database) for this line item
+    const dbCustomer = customerMap?.[foundKey || ''];
+    if (dbCustomer) {
+      if (dbCustomer.name) params.set('name', String(dbCustomer.name));
+      if (dbCustomer.email) params.set('email', String(dbCustomer.email));
+      if (dbCustomer.phone) params.set('phone', String(dbCustomer.phone));
+    }
+
+    const rel = `/apps/undr/submit?${params.toString()}`;
     const registerUrl = origin ? `${origin}${rel}` : rel;
 
     const navigateToRegister = () => {

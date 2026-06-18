@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import type { HeadersFunction, LoaderFunctionArgs } from "react-router";
+import type { HeadersFunction, LoaderFunctionArgs, ActionFunctionArgs } from "react-router";
+import { redirect } from "react-router";
 import { useLoaderData, useNavigate, useSearchParams, Form } from "react-router";
 import { Link } from "react-router";
 import { authenticate } from "../shopify.server";
@@ -22,6 +23,29 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     shop: session.shop,
   });
   return { ...result, query, sort };
+};
+
+export const action = async ({ request }: ActionFunctionArgs) => {
+  const { session } = await authenticate.admin(request);
+  if (!session) return Response.json({ error: "Unauthorized" }, { status: 401 });
+
+  const form = await request.formData();
+  const act = String(form.get("_action") || "");
+  if (act === "delete") {
+    const id = String(form.get("id") || "");
+    if (id) {
+      try {
+        const { deleteRegistrationById } = await import("../models/registration.server");
+        await deleteRegistrationById(id, session.shop);
+      } catch (err) {
+        console.error("[app._index] could not delete registration", err);
+      }
+    }
+  }
+
+  const url = new URL(request.url);
+  // redirect back to same page (preserve query)
+  return redirect(url.pathname + url.search);
 };
 
 export const headers: HeadersFunction = (headersArgs) =>
@@ -168,12 +192,12 @@ export default function RegistrationsIndex() {
           <table style={{ width: "100%", tableLayout: "fixed", borderCollapse: "collapse", fontSize: "14px" }}>
             <colgroup>
               <col style={{ width: "18%" }} />
-              <col style={{ width: "18%" }} />
               <col style={{ width: "16%" }} />
-              <col style={{ width: "22%" }} />
+              <col style={{ width: "12%" }} />
+              <col style={{ width: "18%" }} />
               <col style={{ width: "10%" }} />
               <col style={{ width: "10%" }} />
-              <col style={{ width: "6%" }} />
+              <col style={{ width: "16%" }} />
             </colgroup>
             <thead>
               <tr style={{ borderBottom: "2px solid #e5e7eb", textAlign: "left" }}>
@@ -232,25 +256,58 @@ export default function RegistrationsIndex() {
                       {new Date(reg.createdAt).toLocaleDateString()}
                     </td>
                     <td style={{ padding: "12px" }}>
-                      <Link
-                        to={`/app/registrations/${reg.id}`}
-                        onClick={(e) => e.stopPropagation()}
-                        style={{
-                          display: "inline-flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          minHeight: "30px",
-                          padding: "0 10px",
-                          borderRadius: "8px",
-                          border: "1px solid rgba(15,23,42,0.14)",
-                          color: "#111827",
-                          fontWeight: 600,
-                          textDecoration: "none",
-                          fontSize: "13px",
-                        }}
-                      >
-                        View
-                      </Link>
+                        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                          <Link
+                            to={`/app/registrations/${reg.id}`}
+                            onClick={(e) => e.stopPropagation()}
+                            style={{
+                              display: "inline-flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              minHeight: "30px",
+                              padding: "0 10px",
+                              borderRadius: "8px",
+                              border: "1px solid rgba(15,23,42,0.14)",
+                              color: "#111827",
+                              fontWeight: 600,
+                              textDecoration: "none",
+                              fontSize: "13px",
+                            }}
+                          >
+                            View
+                          </Link>
+                          <Form
+                            method="post"
+                            onSubmit={(e) => {
+                              // prevent row click navigation
+                              e.stopPropagation();
+                              if (!confirm('Delete this registration?')) {
+                                e.preventDefault();
+                              }
+                            }}
+                            style={{ margin: 0 }}
+                          >
+                            <input type="hidden" name="_action" value="delete" />
+                            <input type="hidden" name="id" value={reg.id} />
+                            <button
+                              type="submit"
+                              onClick={(e) => e.stopPropagation()}
+                              style={{
+                                minHeight: "30px",
+                                padding: "0 10px",
+                                borderRadius: "8px",
+                                border: "1px solid rgba(245,101,101,0.18)",
+                                background: "#fff",
+                                color: "#b42318",
+                                fontWeight: 600,
+                                cursor: "pointer",
+                                fontSize: "13px",
+                              }}
+                            >
+                              Delete
+                            </button>
+                          </Form>
+                        </div>
                     </td>
                   </tr>
                 ))

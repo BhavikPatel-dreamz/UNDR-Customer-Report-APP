@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "react-router";
 
 import {
@@ -346,6 +347,16 @@ function renderRegistrationPage(state: ActionData | LoaderData) {
 </script>`;
 	}
 
+	let instructionsLinkHtml = "";
+	let redirectScript = "";
+	if (ok) {
+		const firstName = String(form.name || "").split(" ")[0] || "";
+		const encoded = encodeURIComponent(firstName);
+		const target = `/apps/undr/instructions?showPopup=1&name=${encoded}`;
+		instructionsLinkHtml = `<div style="margin-bottom:8px;font-size:14px;"><a href="${escapeHtml(target)}" style="color:#065f46;font-weight:600;text-decoration:none;">See sampling instructions now</a></div>`;
+		redirectScript = `<script>(function(){try{setTimeout(function(){window.location.href='${escapeJsString(target)}';},5000);}catch(e){console.error(e);}})();</script>`;
+	}
+
 	return `
 	<div style="max-width:760px;margin:0 auto;padding:48px 20px 72px;color:#111827;">
 	<div style="margin-bottom:28px;">
@@ -393,9 +404,12 @@ function renderRegistrationPage(state: ActionData | LoaderData) {
 		<button type="submit" style="min-height:44px;padding:0 24px;border:none;border-radius:999px;background:#111827;color:#fff;font-size:15px;font-weight:600;cursor:pointer;">Register Kit</button>
 	</form>
 	${recaptchaScript}
+	${instructionsLinkHtml}
+	${redirectScript}
 </div>
 `;
 }
+
 
 function isEmbedMode(url: URL) {
 	const embed = url.searchParams.get("embed")?.trim().toLowerCase();
@@ -414,9 +428,15 @@ async function proxyPageResponse(
 export async function loader({ request }: LoaderFunctionArgs) {
 	const { liquid } = await authenticate.public.appProxy(request);
 
-	const data: LoaderData = {
-		form: getRegistrationDefaults(),
-	};
+	const url = new URL(request.url);
+	const defaults = getRegistrationDefaults();
+	// Prefill from query params if provided (kit, name, email, phone)
+	defaults.kitRegistrationNumber = String(url.searchParams.get('kit') || url.searchParams.get('kitRegistrationNumber') || '');
+	defaults.name = String(url.searchParams.get('name') || '');
+	defaults.email = String(url.searchParams.get('email') || '');
+	defaults.phone = String(url.searchParams.get('phone') || '');
+
+	const data: LoaderData = { form: defaults };
 
 	return proxyPageResponse(request, liquid, data);
 }
@@ -489,7 +509,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
 			const data: ActionData = {
 				ok: true,
-				message: "This kit was already registered — we've updated the registration and submitted it.",
+				message: `Thanks, ${String(form.name || '').split(' ')[0] || 'there'}! Your kit has been successfully registered. Let\u2019s get digging! Click here to see a quick sampling instruction video or stay on this page to be automatically redirected.`,
 				form: getRegistrationDefaults(),
 			};
 			return proxyPageResponse(request, liquid, data);
@@ -560,7 +580,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
 	const data: ActionData = {
 		ok: true,
-		message: "Your kit has been successfully registered.",
+		message: `Thanks, ${String(form.name || '').split(' ')[0] || 'there'}! Your kit has been successfully registered. Let\u2019s get digging! Click here to see a quick sampling instruction video or stay on this page to be automatically redirected.`,
 		form: getRegistrationDefaults(),
 	};
 	return proxyPageResponse(request, liquid, data);

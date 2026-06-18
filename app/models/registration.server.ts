@@ -293,6 +293,15 @@ export async function getRegistrationsByShopifyOrderId(shopifyOrderId: string) {
   });
 }
 
+export async function deleteRegistrationById(id: string, shop?: string) {
+  if (!id) return null;
+  // Use deleteMany to ensure shop constraint when provided
+  const where: any = { id };
+  if (shop) where.shop = shop;
+  const result = await prisma.registration.deleteMany({ where });
+  return result.count > 0;
+}
+
 export async function setQrForLineItem(params: {
   orderId: string;
   qrUrl: string | null;
