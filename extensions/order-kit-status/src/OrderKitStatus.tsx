@@ -11,7 +11,7 @@ import {
 
 const TARGET = 'customer-account.order-status.cart-line-item.render-after' as const;
 
-type StatusMap = Record<string, { status?: string; reportUrl?: string }>;
+type StatusMap = Record<string, { status?: string; reportUrl?: string; reportLinkEnabled?: boolean }>;
 
 
 const orderDataCache = new Map<string, Promise<{ kitMap: Record<string, string>; statusMap: StatusMap; customerMap: Record<string, { name?: string; email?: string; phone?: string }> }>>();
@@ -199,7 +199,17 @@ export default extension(TARGET, async (root, api) => {
   root.appendChild(root.createComponent(Divider, {}));
   const row = root.createComponent(InlineStack, { spacing: 'base', blockAlignment: 'center' });
   row.appendChild(labeledText(root, 'Kit number', kitNumber, true));
-  row.appendChild(labeledText(root, 'Status', formatStatus(status)));
+  // Custom status block so we can render the status text and the View button inline.
+  const statusBlock = root.createComponent(BlockStack, { spacing: 'none' });
+  const statusLabel = root.createComponent(Text, { size: 'small', appearance: 'subdued' });
+  statusLabel.appendChild(root.createText('Status'));
+  statusBlock.appendChild(statusLabel);
+  const statusValueInline = root.createComponent(InlineStack, { spacing: 'tight', blockAlignment: 'center' });
+  const statusValueText = root.createComponent(Text, { size: 'small', emphasis: 'bold' });
+  statusValueText.appendChild(root.createText(formatStatus(status)));
+  statusValueInline.appendChild(statusValueText);
+  statusBlock.appendChild(statusValueInline);
+  row.appendChild(statusBlock);
 
   // If not already registered/submitted, show a Register button that opens the public registration page.
   const showRegisterButton = !(status === 'register_submitted' || status === 'registered' || status === 'report_generated');
@@ -244,7 +254,14 @@ export default extension(TARGET, async (root, api) => {
   }
 
   if (status === 'report_generated' && reportUrl) {
-    const navigateTo = () => {
+      const navigateTo = () => {
+      const reportEnabled = statusMap[foundKey]?.reportLinkEnabled !== false;
+      if (!reportEnabled) {
+        if (typeof window !== 'undefined' && typeof window.alert === 'function') {
+          window.alert('Report access is disabled by the store.');
+        }
+        return;
+      }
       const nav = (api as any)?.navigation;
       const tryUrl = fullReportUrl || reportUrl;
 
@@ -268,7 +285,15 @@ export default extension(TARGET, async (root, api) => {
     };
 
     const btn = smallButton(root, 'View report', navigateTo);
-    row.appendChild(btn);
+    // Place button and optional note inline so the button stays on the same line as Status.
+    const inline = root.createComponent(InlineStack, { spacing: 'tight', blockAlignment: 'center' });
+    inline.appendChild(btn);
+    if (statusMap[foundKey]?.reportLinkEnabled === false) {
+      const note = root.createComponent(Text, { size: 'small', appearance: 'subdued' });
+      note.appendChild(root.createText('Report access is disabled by the store.'));
+      inline.appendChild(note);
+    }
+    row.appendChild(inline);
   }
 
   root.appendChild(row);

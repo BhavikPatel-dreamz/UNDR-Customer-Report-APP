@@ -139,7 +139,7 @@ export async function getRegistrationByKitNumber(kitRegistrationNumber: string) 
   }
 }
 
-export async function updateRegistrationFieldsById(id: string, data: Partial<{ name: string; email: string; phone: string; orderNumber: string; shopifyCustomerId: string | null; shop?: string; agreedToTerms?: boolean }>) {
+export async function updateRegistrationFieldsById(id: string, data: Partial<{ name: string; email: string; phone: string; orderNumber: string; shopifyCustomerId: string | null; shop?: string; agreedToTerms?: boolean; reportLinkEnabled?: boolean }>) {
   const updateData: any = {};
   if (data.name !== undefined) updateData.name = data.name.trim();
   if (data.email !== undefined) updateData.email = data.email.trim();
@@ -147,6 +147,7 @@ export async function updateRegistrationFieldsById(id: string, data: Partial<{ n
   if (data.orderNumber !== undefined) updateData.orderNumber = data.orderNumber.trim();
   if (data.shopifyCustomerId !== undefined) updateData.shopifyCustomerId = data.shopifyCustomerId ?? null;
   if (data.shop !== undefined) updateData.shop = data.shop;
+  if (data.reportLinkEnabled !== undefined) updateData.reportLinkEnabled = data.reportLinkEnabled;
   if (data.agreedToTerms !== undefined) updateData.agreedToTerms = data.agreedToTerms;
 
   return prisma.registration.update({ where: { id }, data: updateData });

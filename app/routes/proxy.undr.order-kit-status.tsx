@@ -30,9 +30,11 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   for (const reg of registrations) {
     if (!reg.lineItemId) continue;
     const status = reg.report?.status ?? undefined;
+    // Include report URL and admin-controlled flag. The client will decide how to behave.
     const relative = reg.kitRegistrationNumber ? buildReportPath(reg.kitRegistrationNumber) : undefined;
     const reportUrl = relative ? (origin ? `${origin}${relative}` : relative) : undefined;
-    statusMap[reg.lineItemId] = { status, reportUrl };
+    const reportLinkEnabled = reg.reportLinkEnabled !== false;
+    statusMap[reg.lineItemId] = { status, ...(reportUrl ? { reportUrl } : {}), reportLinkEnabled };
   }
 
   return Response.json({ statusMap }, { headers: CORS_HEADERS });

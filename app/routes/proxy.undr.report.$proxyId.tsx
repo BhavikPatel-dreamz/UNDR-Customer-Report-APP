@@ -220,6 +220,11 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
     return liquid(renderReportNotFoundPage(), { layout: !embed });
   }
 
+  // If the admin has disabled the public report link, deny access for non-admin requests.
+  if (!admin && (registration as any).reportLinkEnabled === false) {
+    return liquid(renderReportAccessDeniedPage(), { layout: !embed });
+  }
+
   const reportCustomerId = normalizeShopifyCustomerId(registration.shopifyCustomerId);
 
   if (!reportCustomerId || (!admin && loggedInCustomerId !== reportCustomerId)) {
