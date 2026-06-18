@@ -314,6 +314,11 @@ function renderRegistrationPage(state: ActionData | LoaderData) {
 	const recaptchaSiteKeyJs = escapeJsString(recaptchaSiteKey);
 	const recaptchaActionJs = escapeJsString(RECAPTCHA_ACTION);
 
+	// Use the shop domain dynamically for policy links when available,
+	// otherwise fall back to undrco.com
+	const shopHost = String(form.shopDomain || "").replace(/^https?:\/\//, "").replace(/\/$/, "");
+	const storeBase = shopHost ? `https://${shopHost}` : "https://undrco.com";
+
 	let recaptchaScript = "";
 	if (requireV2 && recaptchaV2SiteKey) {
 		// v2 checkbox widget — api.js auto-renders divs with class g-recaptcha
@@ -402,7 +407,7 @@ function renderRegistrationPage(state: ActionData | LoaderData) {
 
 		<label style="display:flex;align-items:center;gap:10px;">
 			<input type="checkbox" name="agreeTerms" value="1" ${form.agreedToTerms ? 'checked' : ''} />
-			<span style="font-size:13px;line-height:1.2;">I agree to the <a href="${escapeHtml((form.shopDomain || 'undrco.com'))}/pages/terms-of-service" style="color:#065f46;text-decoration:underline;">Terms of Service</a>, <a href="${escapeHtml((form.shopDomain || 'undrco.com'))}/pages/terms-of-use" style="color:#065f46;text-decoration:underline;">Terms of Use</a>, and the <a href="${escapeHtml((form.shopDomain || 'undrco.com'))}/pages/master-disclaimer-and-limitation-of-liability" style="color:#065f46;text-decoration:underline;">Disclaimer</a>.</span>
+			<span style="font-size:13px;line-height:1.2;">I agree to the <a href="${escapeHtml(storeBase)}/pages/terms-of-service" style="color:#065f46;text-decoration:underline;">Terms of Service</a>, <a href="${escapeHtml(storeBase)}/pages/terms-of-use" style="color:#065f46;text-decoration:underline;">Terms of Use</a>, and the <a href="${escapeHtml(storeBase)}/pages/master-disclaimer-and-limitation-of-liability" style="color:#065f46;text-decoration:underline;">Disclaimer</a>.</span>
 		</label>
 
 		${requireV2 && recaptchaV2SiteKey ? `<div class="g-recaptcha" data-sitekey="${recaptchaV2SiteKeyHtml}" style="margin-top:4px;"></div>` : ""}
