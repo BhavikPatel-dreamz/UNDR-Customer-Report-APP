@@ -4,6 +4,16 @@ import { getRegistrationsByShopifyOrderId } from '../models/registration.server'
 import { buildReportPath } from '../lib/report-url';
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
+  // CORS support for cross-origin requests from Shopify extensions
+  const CORS_HEADERS = {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type,Authorization",
+  } as const;
+
+  if (request.method === "OPTIONS") {
+    return new Response(null, { status: 204, headers: CORS_HEADERS });
+  }
   const { session } = await authenticate.public.appProxy(request);
   if (!session) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
@@ -25,5 +35,5 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     statusMap[reg.lineItemId] = { status, reportUrl };
   }
 
-  return Response.json({ statusMap });
+  return Response.json({ statusMap }, { headers: CORS_HEADERS });
 };
