@@ -1,0 +1,16 @@
+api_version = "2025-07"
+
+[[extensions]]
+name = "Order Registration QR"
+handle = "order-reg-qr"
+uid = "aa42df70-2ae8-1d95-b13a-61ad333a2b6356899c61"
+type = "ui_extension"
+
+[[extensions.targeting]]
+target = "admin.order-details.block.render"
+module = "./src/OrderRegQR.tsx"
+
+[extensions.capabilities]
+network_access = true
+block_progress = false
+api_access = true

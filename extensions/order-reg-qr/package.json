@@ -1,0 +1,21 @@
+{
+  "name": "order-reg-qr",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "shopify app build",
+    "dev": "shopify app dev"
+  },
+  "dependencies": {
+    "qrcode": "^1.5.1"
+  ,
+    "react-reconciler": "^0.28.0"
+  },
+  "devDependencies": {
+    "@shopify/ui-extensions": "2025.8.0",
+    "@shopify/ui-extensions-react": "2026.0.0",
+    "@types/react": "^18.2.0",
+    "react": "^18.2.0",
+    "typescript": "^5.4.0"
+  }
+}

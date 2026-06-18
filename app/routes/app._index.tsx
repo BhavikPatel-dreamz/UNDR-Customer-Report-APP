@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { HeadersFunction, LoaderFunctionArgs } from "react-router";
 import { useLoaderData, useNavigate, useSearchParams, Form } from "react-router";
 import { Link } from "react-router";
@@ -30,18 +31,50 @@ type LoaderData = Awaited<ReturnType<typeof loader>>;
 
 import type { CSSProperties } from "react";
 
-const statusStyle = (status: string | undefined): CSSProperties => ({
-  display: "inline-block",
-  padding: "2px 10px",
-  borderRadius: "999px",
-  background: status === "uploaded" ? "#d1fae5" : "#f3f4f6",
-  color: status === "uploaded" ? "#065f46" : "#6b7280",
-  fontSize: "12px",
-  fontWeight: 600,
-});
+const statusStyle = (reg: any): CSSProperties => {
+  const status = reg?.report?.status;
+  const isReportGenerated = status === "report_generated" || status === "uploaded";
+  const isSubmitted = status === "register_submitted";
+  const isKit = !!reg?.kitRegistrationNumber || status === "kit_generated";
 
-const statusLabel = (status: string | undefined) =>
-  status === "uploaded" ? "Report uploaded" : "Pending";
+  let background = "#f3f4f6";
+  let color = "#6b7280";
+
+  if (isReportGenerated) {
+    background = "#d1fae5";
+    color = "#065f46";
+  } else if (isSubmitted) {
+    background = "#fff7ed"; // amber-ish
+    color = "#92400e";
+  } else if (isKit) {
+    background = "#d1fae5";
+    color = "#065f46";
+  }
+
+  return {
+    display: "inline-block",
+    padding: "2px 10px",
+    borderRadius: "999px",
+    background,
+    color,
+    fontSize: "12px",
+    fontWeight: 600,
+  };
+};
+
+const statusLabel = (reg: any) => {
+  const status = reg?.report?.status;
+  if (status === "report_generated" || status === "uploaded") return "Report generated";
+  if (status === "register_submitted") return "Registration submitted";
+  if (status === "kit_generated" || reg?.kitRegistrationNumber) return "Registration pending";
+  return "Pending";
+};
+
+function displayNumericShopifyId(value?: string | null) {
+  if (!value) return "-";
+  const match = String(value).match(/(\d+)$/);
+  return match ? match[1] : value;
+}
 
 export default function RegistrationsIndex() {
   const { items, total, page, totalPages, query, sort } =
@@ -170,23 +203,29 @@ export default function RegistrationsIndex() {
                     style={{ borderBottom: "1px solid #f3f4f6", cursor: "pointer" }}
                     onClick={() => navigate(`/app/registrations/${reg.id}`)}
                   >
-                    <td style={{ padding: "12px", fontWeight: 600, wordBreak: "break-word" }}>{reg.name}</td>
-                    <td style={{ padding: "12px", color: "#6b7280", wordBreak: "break-word" }}>{reg.email}</td>
+                    <td style={{ padding: "12px", fontWeight: 600, wordBreak: "break-word" }}>
+                      {reg.name || (reg.shopifyCustomerId ? `Shopify: ${reg.shopifyCustomerId}` : "-")}
+                    </td>
+                    <td style={{ padding: "12px", color: "#6b7280", wordBreak: "break-word" }}>
+                      {reg.email || reg.phone || "-"}
+                    </td>
                     <td style={{ padding: "12px", wordBreak: "break-word" }}>
-                      <div style={{ fontWeight: 600, color: "#111827" }}>#{reg.orderNumber}</div>
+                      <div style={{ fontWeight: 600, color: "#111827" }}>
+                        {reg.orderNumber ? `#${String(reg.orderNumber).replace(/^#/, '')}` : ''}
+                      </div>
                       <div style={{ marginTop: "2px", color: "#6b7280", fontFamily: "monospace", fontSize: "12px" }}>
                         {reg.kitRegistrationNumber}
                       </div>
                     </td>
                     <td style={{ padding: "12px", color: "#6b7280", wordBreak: "break-word" }}>
-                      <div style={{ fontFamily: "monospace", fontSize: "12px" }}>O: {reg.shopifyOrderId || "-"}</div>
+                      <div style={{ fontFamily: "monospace", fontSize: "12px" }}>O: {displayNumericShopifyId(reg.shopifyOrderId)}</div>
                       <div style={{ marginTop: "2px", fontFamily: "monospace", fontSize: "12px" }}>
-                        C: {reg.shopifyCustomerId || "-"}
+                        C: {displayNumericShopifyId(reg.shopifyCustomerId)}
                       </div>
                     </td>
                     <td style={{ padding: "12px" }}>
-                      <span style={statusStyle(reg.report?.status)}>
-                        {statusLabel(reg.report?.status)}
+                      <span style={statusStyle(reg)}>
+                        {statusLabel(reg)}
                       </span>
                     </td>
                     <td style={{ padding: "12px", color: "#9ca3af", fontSize: "13px" }}>

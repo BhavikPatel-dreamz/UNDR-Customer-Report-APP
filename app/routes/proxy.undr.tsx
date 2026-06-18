@@ -99,7 +99,7 @@ function renderLoggedInSection(state: DashboardState) {
 	const registrationsMarkup = state.registrations.length
 		? state.registrations
 				.map((registration) => {
-					const reportReady = registration.report?.status === "uploaded";
+					const reportReady = registration.report?.status === "report_generated" || registration.report?.status === "uploaded";
 					const actionLabel = reportReady ? "View report" : "Report pending";
 					const actionHref = reportReady
 						? buildReportPath(registration.kitRegistrationNumber)
@@ -303,12 +303,12 @@ export async function action({ request }: ActionFunctionArgs) {
 		});
 	}
 
-	return renderDashboardPage(request, {
+		return renderDashboardPage(request, {
 		guestForm,
 		guestLookupResult: {
 			kitRegistrationNumber: registration.kitRegistrationNumber,
 			orderNumber: registration.orderNumber,
-			reportReady: registration.report?.status === "uploaded",
+					reportReady: registration.report?.status === "report_generated" || registration.report?.status === "uploaded",
 		},
 	});
 }

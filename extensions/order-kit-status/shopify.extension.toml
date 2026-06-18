@@ -1,0 +1,15 @@
+api_version = "2025-07"
+
+[[extensions]]
+name = "Order Kit Status"
+handle = "order-kit-status"
+uid = "8b1f6f2a-4c9d-4a7e-9f2e-2d9b5d2a7f3e"
+type = "ui_extension"
+
+[[extensions.targeting]]
+target = "customer-account.order-status.cart-line-item.render-after"
+module = "./src/OrderKitStatus.tsx"
+
+[extensions.capabilities]
+network_access = true
+api_access = true

@@ -311,6 +311,8 @@ export default function RegistrationDetail() {
   const isSavingReportRow = reportRowFetcher.state !== "idle";
   const isSavingPackage = packageConfigFetcher.state !== "idle";
   const isSavingQuickViewPackage = quickViewConfigFetcher.state !== "idle";
+  // referenced intentionally to satisfy TypeScript/ESLint when variable is unused
+  void isSavingQuickViewPackage;
   const packageConfigData =
     packageConfigFetcher.data && packageConfigFetcher.data.intent === "package_config"
       ? packageConfigFetcher.data
@@ -455,6 +457,9 @@ export default function RegistrationDetail() {
     quickViewConfigFetcher.submit(formData, { method: "post" });
   };
 
+  // mark as referenced to satisfy TypeScript/ESLint when function is intentionally unused
+  void saveQuickViewPackage;
+
   const appUrl = (typeof process !== "undefined" ? process.env.SHOPIFY_APP_URL : "") || "";
   const normalizedShopDomain = String(shopDomain || "")
     .replace(/^https?:\/\//, "")
@@ -501,8 +506,8 @@ export default function RegistrationDetail() {
         <InfoRow label="Registered on" value={new Date(registration.createdAt).toLocaleString()} />
         <div style={{ paddingTop: "12px" }}>
           <Badge
-            label={report?.status === "uploaded" ? "Report uploaded" : "Pending report"}
-            variant={report?.status === "uploaded" ? "success" : "neutral"}
+            label={report?.status === "report_generated" || report?.status === "uploaded" ? "Report generated" : "Pending report"}
+            variant={report?.status === "report_generated" || report?.status === "uploaded" ? "success" : "neutral"}
           />
         </div>
       </s-section>
@@ -589,7 +594,7 @@ export default function RegistrationDetail() {
                    hs_base→Health & Safety Kit, hs_plus→Health & Safety Plus Kit, premium→Premium Kit */}
 
       {/* ── Report link ── */}
-      {report?.status === "uploaded" && (
+      {(report?.status === "report_generated" || report?.status === "uploaded") && (
         <s-section heading="Customer report link">
           <p style={{ margin: "0 0 8px", fontSize: "14px", color: "#6b7280" }}>
             Share this URL with the customer via email or QR code:
@@ -606,7 +611,7 @@ export default function RegistrationDetail() {
       )}
 
       {/* ── CSV Upload ── */}
-      <s-section heading={report?.status === "uploaded" ? "Replace CSV report" : "Upload CSV report"}>
+      <s-section heading={(report?.status === "report_generated" || report?.status === "uploaded") ? "Replace CSV report" : "Upload CSV report"}>
         {uploadFetcher.data && uploadFetcher.data.intent === "upload_csv" && "error" in uploadFetcher.data && (
           <div
             style={{
@@ -655,7 +660,7 @@ export default function RegistrationDetail() {
             />
           </label>
           <div>
-            <button
+                <button
               type="button"
               disabled={isUploading}
               onClick={() => {
@@ -678,7 +683,7 @@ export default function RegistrationDetail() {
                 cursor: isUploading ? "default" : "pointer",
               }}
             >
-              {isUploading ? "Processing…" : report?.status === "uploaded" ? "Replace report" : "Upload report"}
+              {isUploading ? "Processing…" : (report?.status === "report_generated" || report?.status === "uploaded") ? "Replace report" : "Upload report"}
             </button>
           </div>
         </div>

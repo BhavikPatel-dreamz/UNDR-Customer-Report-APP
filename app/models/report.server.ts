@@ -1694,7 +1694,7 @@ export async function upsertReport(
       where: { id: existing.id },
       data: {
         csvFileName,
-        status: "uploaded",
+        status: "report_generated",
         updatedAt: new Date(),
       },
     });
@@ -1711,12 +1711,26 @@ export async function upsertReport(
     data: {
       registrationId,
       csvFileName,
-      status: "uploaded",
+      status: "report_generated",
       rows: {
         createMany: { data: rows.map((r) => ({ ...r })) },
       },
     },
     include: { rows: true },
+  });
+}
+
+export async function setReportStatusByRegistrationId(registrationId: string, status: string) {
+  const existing = await prisma.report.findUnique({ where: { registrationId } });
+  if (existing) {
+    return prisma.report.update({
+      where: { id: existing.id },
+      data: { status, updatedAt: new Date() },
+    });
+  }
+
+  return prisma.report.create({
+    data: { registrationId, status },
   });
 }
 

@@ -1,5 +1,8 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import prisma from "../db.server";
-import { REPORT_PACKAGES, type ReportPackage, isReportPackage } from "../lib/report-packages";
+import { setReportStatusByRegistrationId } from "./report.server";
+import { isReportPackage } from "../lib/report-packages";
+import { generateKitNumber } from "../utils/generateKitNumber";
 
 function isMissingUnlockTableError(error: unknown) {
   return (
@@ -76,9 +79,7 @@ export function validateRegistration(
     errors.phone = "Phone is required.";
   }
 
-  if (!input.orderNumber?.trim()) {
-    errors.orderNumber = "Order number is required.";
-  }
+  // Order number is optional (removed from public form); do not require it.
 
   if (!input.kitRegistrationNumber?.trim()) {
     errors.kitRegistrationNumber = "Kit registration number is required.";
@@ -121,6 +122,18 @@ export async function getRegistrationByKitNumber(kitRegistrationNumber: string) 
       include: { report: { include: { rows: true } } },
     });
   }
+}
+
+export async function updateRegistrationFieldsById(id: string, data: Partial<{ name: string; email: string; phone: string; orderNumber: string; shopifyCustomerId: string | null; shop?: string }>) {
+  const updateData: any = {};
+  if (data.name !== undefined) updateData.name = data.name.trim();
+  if (data.email !== undefined) updateData.email = data.email.trim();
+  if (data.phone !== undefined) updateData.phone = data.phone;
+  if (data.orderNumber !== undefined) updateData.orderNumber = data.orderNumber.trim();
+  if (data.shopifyCustomerId !== undefined) updateData.shopifyCustomerId = data.shopifyCustomerId ?? null;
+  if (data.shop !== undefined) updateData.shop = data.shop;
+
+  return prisma.registration.update({ where: { id }, data: updateData });
 }
 
 export async function getRegistrationByKitRegistrationNumber(
@@ -257,4 +270,144 @@ export async function updateRegistrationQuickViewPackageById(input: {
     where: { id: input.registrationId, shop: input.shop },
     data: { quickViewPackage: normalizedPackage },
   });
+}
+
+export async function getRegistrationsByShopifyOrderId(shopifyOrderId: string) {
+  if (!shopifyOrderId) return [];
+
+  // Support several stored formats: full GraphQL gid (gid://shopify/Order/123),
+  // numeric id (123), or a stored orderNumber (with or without leading '#').
+  const numeric = normalizeNumericShopifyId(shopifyOrderId) ?? shopifyOrderId;
+  const withoutHash = String(shopifyOrderId).replace(/^#/, '');
+
+  return prisma.registration.findMany({
+    where: {
+      OR: [
+        { shopifyOrderId: shopifyOrderId },
+        { shopifyOrderId: numeric },
+        { orderNumber: { equals: shopifyOrderId, mode: 'insensitive' as const } },
+        { orderNumber: { equals: withoutHash, mode: 'insensitive' as const } },
+      ],
+    },
+    include: { report: { select: { id: true, status: true } } },
+  });
+}
+
+export async function setQrForLineItem(params: {
+  orderId: string;
+  qrUrl: string | null;
+}) {
+  const { orderId, qrUrl } = params;
+
+  // Persist QR at the order level: only update existing registrations for
+  // this shopify order. If there are no registrations (i.e. no kit yet),
+  // return null so the caller can surface an error.
+  const any = await prisma.registration.findFirst({ where: { shopifyOrderId: orderId } });
+  if (!any) return null;
+
+  await prisma.registration.updateMany({
+    where: { shopifyOrderId: orderId },
+    data: { qrUrl },
+  });
+
+  return prisma.registration.findFirst({ where: { shopifyOrderId: orderId } });
+}
+
+export async function upsertKitForLineItem(params: {
+  shop: string;
+  orderId: string;
+  orderNumber: string;
+  lineItemId: string;
+  lineItemTitle: string;
+  registrationNumber: string;
+  shopifyCustomerId?: string;
+  customerName?: string;
+  customerEmail?: string;
+}) {
+  const { shop, orderId, orderNumber, lineItemId, registrationNumber } = params;
+  const kitRegistrationNumber = generateKitNumber(registrationNumber);
+
+  const existing = await prisma.registration.findFirst({
+    where: { shopifyOrderId: orderId, lineItemId },
+  });
+
+  if (existing) {
+    const updated = await prisma.registration.update({
+      where: { id: existing.id },
+      data: {
+        kitRegistrationNumber,
+        ...(params.shopifyCustomerId ? { shopifyCustomerId: params.shopifyCustomerId } : {}),
+        ...(params.customerName ? { name: params.customerName.trim() } : {}),
+        ...(params.customerEmail ? { email: params.customerEmail.trim() } : {}),
+      },
+    });
+    // mark as kit_generated
+    try {
+      await setReportStatusByRegistrationId(updated.id, "kit_generated");
+    } catch (err) {
+      console.error("[upsertKitForLineItem] could not set kit_generated status", err);
+    }
+    return updated;
+  }
+
+  // Fallback: try to find an existing registration for this shop/order
+  // that may have been created manually (no lineItemId). Prefer matching
+  // by `shopifyOrderId`, then by `orderNumber` (try with and without leading '#').
+  const normalizedOrderNumber = String(orderNumber || "").trim();
+  const withoutHash = normalizedOrderNumber.replace(/^#/, "");
+
+  const fallback = await prisma.registration.findFirst({
+    where: {
+      shop,
+      // only match registrations that are not yet tied to a specific line item
+      lineItemId: null,
+      OR: [
+        { shopifyOrderId: orderId },
+        { orderNumber: { equals: normalizedOrderNumber, mode: "insensitive" as const } },
+        ...(withoutHash && withoutHash !== normalizedOrderNumber
+          ? [{ orderNumber: { equals: withoutHash, mode: "insensitive" as const } }]
+          : []),
+      ],
+    },
+  });
+
+  if (fallback) {
+    const updated = await prisma.registration.update({
+      where: { id: fallback.id },
+      data: {
+        kitRegistrationNumber,
+        lineItemId,
+        shopifyOrderId: orderId || fallback.shopifyOrderId,
+        ...(params.shopifyCustomerId ? { shopifyCustomerId: params.shopifyCustomerId } : {}),
+        ...(params.customerName ? { name: params.customerName.trim() } : {}),
+        ...(params.customerEmail ? { email: params.customerEmail.trim() } : {}),
+      },
+    });
+    try {
+      await setReportStatusByRegistrationId(updated.id, "kit_generated");
+    } catch (err) {
+      console.error("[upsertKitForLineItem] could not set kit_generated status", err);
+    }
+    return updated;
+  }
+
+  const created = await prisma.registration.create({
+    data: {
+      shop,
+      name: params.customerName?.trim() || "",
+      email: params.customerEmail?.trim() || "",
+      phone: "",
+      orderNumber: orderNumber || "",
+      shopifyOrderId: orderId || null,
+      shopifyCustomerId: params.shopifyCustomerId ?? null,
+      lineItemId,
+      kitRegistrationNumber,
+    },
+  });
+  try {
+    await setReportStatusByRegistrationId(created.id, "kit_generated");
+  } catch (err) {
+    console.error("[upsertKitForLineItem] could not set kit_generated status", err);
+  }
+  return created;
 }

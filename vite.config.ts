@@ -37,11 +37,11 @@ if (host === "localhost") {
 
 export default defineConfig({
   server: {
-    allowedHosts: [host],
+    allowedHosts: true,        // ← changed from [host] to true
     cors: true,
     headers: {
       "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "GET, OPTIONS",
+      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",   // ← added POST
       "Access-Control-Allow-Headers": "Origin, Content-Type, Accept",
     },
     port: Number(process.env.PORT || 3000),

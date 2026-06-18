@@ -8,6 +8,8 @@ import {
 	type RegistrationFormErrors,
 	type RegistrationFormState,
 } from "../models/registration.server";
+import { updateRegistrationFieldsById } from "../models/registration.server";
+import { setReportStatusByRegistrationId } from "../models/report.server";
 import { authenticate } from "../shopify.server";
 
 type LoaderData = {
@@ -79,7 +81,7 @@ function escapeJsString(value: string) {
 		.replaceAll("\r", "\\r");
 }
 
-async function verifyRecaptchaV2Token(params: {
+export async function verifyRecaptchaV2Token(params: {
 	token: string;
 	remoteIp?: string;
 }): Promise<{ ok: true } | { ok: false; message: string }> {
@@ -133,7 +135,7 @@ async function verifyRecaptchaV2Token(params: {
 	}
 }
 
-async function verifyRecaptchaToken(params: {
+export async function verifyRecaptchaToken(params: {
 	token: string;
 	remoteIp?: string;
 }): Promise<{ ok: true } | { ok: false; requireV2?: boolean; message: string }> {
@@ -379,11 +381,7 @@ function renderRegistrationPage(state: ActionData | LoaderData) {
 			${renderError(errors?.phone)}
 		</label>
 
-		<label style="display:grid;gap:5px;">
-			<span style="font-size:14px;font-weight:600;">Order Number</span>
-			<input name="orderNumber" value="${escapeHtml(form.orderNumber)}" autocomplete="off" style="min-height:44px;padding:10px 14px;border-radius:10px;border:1px solid rgba(15,23,42,0.2);font-size:15px;box-sizing:border-box;width:100%;" />
-			${renderError(errors?.orderNumber)}
-		</label>
+
 
 		<label style="display:grid;gap:5px;">
 			<span style="font-size:14px;font-weight:600;">Kit Registration Number</span>
@@ -464,19 +462,46 @@ export async function action({ request }: ActionFunctionArgs) {
 		return proxyPageResponse(request, liquid, data);
 	}
 
-	const existing = await getRegistrationByKitRegistrationNumber(
-		form.kitRegistrationNumber,
-	);
+	const existing = await getRegistrationByKitRegistrationNumber(form.kitRegistrationNumber);
+	const shop = session?.shop || url.searchParams.get("shop")?.trim() || "";
 	if (existing) {
-		const data: ActionData = {
-			ok: false,
-			message: "This kit registration number is already registered. Please add a different kit number.",
-			errors: {
-				kitRegistrationNumber: "Already used. Please enter a different kit registration number.",
-			},
-			form,
-		};
-		return proxyPageResponse(request, liquid, data);
+		// Update existing registration with latest submitter info and mark as submitted
+		try {
+			const updateData: any = {
+				name: form.name,
+				email: form.email,
+				phone: form.phone,
+				shopifyCustomerId: normalizeCustomerId(getLoggedInCustomerId(url)) || undefined,
+				shop,
+			};
+			// Only overwrite orderNumber if the submitter provided a non-empty value
+			if (String(form.orderNumber || '').trim()) {
+				updateData.orderNumber = form.orderNumber;
+			}
+
+			await updateRegistrationFieldsById(existing.id, updateData);
+
+			try {
+				await setReportStatusByRegistrationId(existing.id, "register_submitted");
+			} catch (err) {
+				console.error("[proxy.undr.submit] could not set report status for existing registration", err);
+			}
+
+			const data: ActionData = {
+				ok: true,
+				message: "This kit was already registered — we've updated the registration and submitted it.",
+				form: getRegistrationDefaults(),
+			};
+			return proxyPageResponse(request, liquid, data);
+		} catch (err) {
+			console.error("[proxy.undr.submit] could not update existing registration", err);
+			const data: ActionData = {
+				ok: false,
+				message: "Could not update the existing registration. Please try again.",
+				form,
+			};
+			return proxyPageResponse(request, liquid, data);
+		}
 	}
 
 	const rawLoggedInCustomerId = getLoggedInCustomerId(url);
@@ -491,10 +516,22 @@ export async function action({ request }: ActionFunctionArgs) {
 		});
 	}
 
+	// For security and consistency: only allow submitting a registration for
+	// a kit number that already exists in the system. Do not create new
+	// registrations for arbitrary kit numbers via the public form.
+	if (!existing) {
+		const data: ActionData = {
+			ok: false,
+			message: "Kit number not recognized. Please check your kit number or contact support.",
+			form,
+		};
+		return proxyPageResponse(request, liquid, data);
+	}
+
 	try {
 		const shop = session?.shop || url.searchParams.get("shop")?.trim() || "";
 
-		await saveRegistration({
+		const saved = await saveRegistration({
 			shop,
 			name: form.name,
 			email: form.email,
@@ -504,8 +541,15 @@ export async function action({ request }: ActionFunctionArgs) {
 			shopifyOrderId: null,
 			shopifyCustomerId,
 		});
+
+		// Mark registration as submitted so UI shows `register_submitted` status
+		try {
+			await setReportStatusByRegistrationId(saved.id, "register_submitted");
+		} catch (err) {
+			// Non-fatal: proceed even if status update fails
+			console.error("[proxy.undr.submit] could not set report status", err);
+		}
 	} catch (error) {
-		
 		const data: ActionData = {
 			ok: false,
 			message: "Could not save registration right now. Please try again.",

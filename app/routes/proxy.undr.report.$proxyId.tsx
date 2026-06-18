@@ -237,7 +237,7 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
 
   let report: ProxyReportData | null = null;
 
-  if (registration?.report?.status === "uploaded") {
+  if (registration?.report?.status === "report_generated" || registration?.report?.status === "uploaded") {
     
     if (registration.report.rows && registration.report.rows.length > 0) {
       report = buildReportDataFromRows(                                                                                                       
