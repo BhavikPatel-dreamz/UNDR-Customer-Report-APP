@@ -6,24 +6,8 @@ import {
 } from "../models/registration.server";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
-  // Handle CORS preflight quickly without running auth (avoid redirects)
-  if (request.method === 'OPTIONS') {
-    const origin = request.headers.get('origin') || '*';
-    return new Response(null, {
-      status: 204,
-      headers: {
-        'Access-Control-Allow-Origin': origin,
-        'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type,Authorization',
-        'Access-Control-Allow-Credentials': 'true',
-      },
-    });
-  }
   const { session } = await authenticate.public.appProxy(request);
-  if (!session) return Response.json({ error: "Unauthorized" }, { status: 401, headers: {
-    'Access-Control-Allow-Origin': request.headers.get('origin') || '*',
-    'Access-Control-Allow-Credentials': 'true',
-  } });
+  if (!session) return Response.json({ error: "Unauthorized" }, { status: 401 });
 
   const url = new URL(request.url);
   const orderId = url.searchParams.get("orderId") || "";
@@ -46,31 +30,12 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     }
   }
 
-  return Response.json({ kitMap, customerMap }, { headers: {
-    'Access-Control-Allow-Origin': request.headers.get('origin') || '*',
-    'Access-Control-Allow-Credentials': 'true',
-  } });
+  return Response.json({ kitMap, customerMap });
 };
 
 export const action = async ({ request }: ActionFunctionArgs) => {
-  // Handle CORS preflight quickly without running auth (avoid redirects)
-  if (request.method === 'OPTIONS') {
-    const origin = request.headers.get('origin') || '*';
-    return new Response(null, {
-      status: 204,
-      headers: {
-        'Access-Control-Allow-Origin': origin,
-        'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type,Authorization',
-        'Access-Control-Allow-Credentials': 'true',
-      },
-    });
-  }
   const { session } = await authenticate.public.appProxy(request);
-  if (!session) return Response.json({ error: "Unauthorized" }, { status: 401, headers: {
-    'Access-Control-Allow-Origin': request.headers.get('origin') || '*',
-    'Access-Control-Allow-Credentials': 'true',
-  } });
+  if (!session) return Response.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await request.json();
   const { orderId, orderNumber, lineItemId, lineItemTitle, registrationNumber, shopifyCustomerId, customerName, customerEmail } = body;
@@ -94,8 +59,5 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   return Response.json({
     kitRegistrationNumber: registration.kitRegistrationNumber,
     registrationId: registration.id,
-  }, { headers: {
-    'Access-Control-Allow-Origin': request.headers.get('origin') || '*',
-    'Access-Control-Allow-Credentials': 'true',
-  } });
+  });
 };
