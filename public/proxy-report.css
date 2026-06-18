@@ -194,6 +194,17 @@ p {
     text-transform: capitalize;
 }
 
+/* Hide last name text by default while keeping it in the DOM so it can be
+   re-enabled later by removing this rule. */
+.main_banner_section .banner_title .last-name {
+    display: none;
+}
+
+/* Helper: add `show-last-name` on the .main_banner_section to reveal last name */
+.main_banner_section.show-last-name .banner_title .last-name {
+    display: inline;
+}
+
 .main_banner_section .banner_subtitle {
     font-family: 'Obviously', Arial, sans-serif;
     font-weight: 400;
@@ -415,6 +426,10 @@ p {
     font-size: 15px;
 }
 
+.report_details_section .val_box .not-detected {
+    font-size: 11px;
+}
+
 .report_details_section .metal_txt {
     font-weight: 600;
     letter-spacing: 0;
@@ -488,6 +503,10 @@ p {
 .report_details_section .btn_gray {
     background: #6d7566;
     border-radius: 0 0 0 10px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-wrap: wrap;
 }
 
 .report_details_section .btn_red_curved {
@@ -1398,11 +1417,18 @@ p {
 .multi_level_chart_section .value_col {
     font-family: 'Obviously', Arial, sans-serif;
     font-weight: 500;
-    font-size: 18px;
+    font-size: 14px;
     color: #93979a;
     width: 70px;
-    text-align: right;
+    text-align: left;
     letter-spacing: 0;
+}
+
+/* When a value is 'Not detected' we display it smaller and left-aligned */
+.multi_level_chart_section .value_col .not-detected {
+    display: inline-block;
+    font-size: 11px;
+    text-align: left;
 }
 
 .multi_level_chart_section .scale_container {
@@ -1782,7 +1808,7 @@ p {
 
     .multi_level_chart_section .value_col {
         width: 60px;
-        font-size: 16px;
+        font-size: 12px;
     }
 
     .multi_level_chart_section .scale_placeholder_left,

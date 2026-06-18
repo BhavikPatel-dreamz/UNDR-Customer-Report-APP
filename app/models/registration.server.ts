@@ -78,6 +78,15 @@ export function validateRegistration(
   if (!input.phone?.trim()) {
     errors.phone = "Phone is required.";
   }
+  else {
+    // Require a full U.S. phone number with country code +1 and 10 digits.
+    // Accept common separators and parentheses, e.g. +1 (555) 555-5555, +1-555-555-5555, +1 555 555 5555
+    const phone = String(input.phone || '').trim();
+    const usPhoneRegex = /^\+1\s*\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}$/;
+    if (!usPhoneRegex.test(phone)) {
+      errors.phone = "Phone must be a full U.S. number, e.g. +1 (555) 555-5555.";
+    }
+  }
 
   // Order number is optional (removed from public form); do not require it.
 

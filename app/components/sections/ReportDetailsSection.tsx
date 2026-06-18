@@ -53,6 +53,60 @@ const ReportDetailsSection = ({
   const showOilAsInfoBlock = showOilIndicator && quickViewPackage === "hs_plus";
   const topInfoRowHasBorder = showOilAsInfoBlock || showPreciousMetals || showRareEarthElements;
 
+  const formatHeavyMetalValue = (val: string) => {
+    if (!val) return '';
+    const cleaned = val.replace(/\s+/g, '');
+    const m = cleaned.match(/-?\d+(?:\.\d+)?/);
+    if (!m) return cleaned.replace('ppm', ' ppm');
+    const num = Number(m[0]);
+    if (Number.isNaN(num)) return cleaned.replace('ppm', ' ppm');
+    if (num === 0) return <span className="not-detected">Not detected</span>;
+    if (Number.isInteger(num)) return `${num} ppm`;
+    return `${parseFloat(num.toFixed(2)).toString()} ppm`;
+  };
+
+  // Plain-text formatter for use in inline labels/buttons (no JSX span)
+  const formatHeavyMetalValueText = (val: string) => {
+    if (!val) return '';
+    const cleaned = val.replace(/\s+/g, '');
+    const m = cleaned.match(/-?\d+(?:\.\d+)?/);
+    if (!m) return cleaned.replace('ppm', ' ppm');
+    const num = Number(m[0]);
+    if (Number.isNaN(num)) return cleaned.replace('ppm', ' ppm');
+    if (num === 0) return 'not detected';
+    if (Number.isInteger(num)) return `${num} ppm`;
+    return `${parseFloat(num.toFixed(2)).toString()} ppm`;
+  };
+
+  const formatOilText = (txt: string): React.ReactNode => {
+    if (!txt) return '';
+    // If label:value format, keep label and format the value separately
+    const parts = txt.match(/^([^:]+):\s*(.+)$/);
+    if (parts) {
+      // For oil buttons we prefer plain text for reliability inside button containers
+      return (
+        <>
+          <span className="oil_btn_label">{parts[1]} :</span>
+          <span className="oil_btn_value">{formatHeavyMetalValueText(parts[2])}</span>
+        </>
+      );
+    }
+
+    // Otherwise try to find a numeric value inside the string and replace it
+    const m = txt.match(/-?\d+(?:\.\d+)?/);
+    if (!m) return txt;
+    const idx = txt.indexOf(m[0]);
+    const before = txt.slice(0, idx);
+    const after = txt.slice(idx + m[0].length);
+    return (
+      <>
+        {before}
+        {formatHeavyMetalValueText(m[0])}
+        {after}
+      </>
+    );
+  };
+
   const renderHeavyMetals = () => (
     <div className="heavy_metals_block">
       <h2 className="report_main_heading">Heavy Metals</h2>
@@ -60,7 +114,7 @@ const ReportDetailsSection = ({
         {heavyMetals.map((item) => (
           <div className="metal_list_item" key={item.name}>
             <span className={`val_box ${item.valueClassName}`} style={{ backgroundColor: item.valueStyle?.backgroundColor }}>
-              {item.value}
+              {formatHeavyMetalValue(item.value)}
             </span>{" "}
             <span className={`metal_txt ${item.textClassName}`} style={{ color: item.valueStyle?.color }}>
               {item.name}
@@ -72,25 +126,42 @@ const ReportDetailsSection = ({
   );
 
   const renderSplitOilButton = (text: string, className: string) => {
-    const parts = text.match(/^([^:]+):\s*(.+)$/);
+    const formatOilText = (txt: string) => {
+      // If label:value format, keep label and format the value separately
+      const parts = txt.match(/^([^:]+):\s*(.+)$/);
+      if (parts) {
+        return (
+          <>
+            <span className="oil_btn_label">{parts[1]} :</span>
+            <span className="oil_btn_value">{formatHeavyMetalValue(parts[2])}</span>
+          </>
+        );
+      }
 
-    if (!parts) {
-      return <div className={`oil_btn ${className}`}>{text}</div>;
-    }
+      // Otherwise try to find a numeric value inside the string and replace it
+      const m = txt.match(/-?\d+(?:\.\d+)?/);
+      if (!m) return txt;
+      const idx = txt.indexOf(m[0]);
+      const before = txt.slice(0, idx);
+      const after = txt.slice(idx + m[0].length);
+      return (
+        <>
+          {before}
+          {formatHeavyMetalValue(m[0])}
+          {after}
+        </>
+      );
+    };
 
-    return (
-      <div className={`oil_btn oil_btn_split btn_red_curved ${className}`}>
-        <span className="oil_btn_label">{parts[1]} :</span>
-        <span className="oil_btn_value">{parts[2]}</span>
-      </div>
-    );
+    // Use the same container for both simple and split displays so styling remains consistent
+    return <div className={`oil_btn ${className}`}>{formatOilText(text)}</div>;
   };
 
   const renderOilIndicator = () => (
     <div className="oil_indicator_block">
       <h2 className="report_main_heading">Oil Indicator</h2>
-      <div className="oil_indicator_buttons">
-        <div className={`oil_btn ${oilIndicator.crudeOilClassName}`}>{oilIndicator.crudeOil}</div>
+        <div className="oil_indicator_buttons">
+        <div className={`oil_btn ${oilIndicator.crudeOilClassName}`}>{formatOilText(oilIndicator.crudeOil)}</div>
         {renderSplitOilButton(oilIndicator.petroleum, oilIndicator.petroleumClassName)}
       </div>
     </div>
@@ -99,8 +170,8 @@ const ReportDetailsSection = ({
   const renderCrudeOilIndicator = () => (
     <div className="oil_indicator_block oil_indicator_block_crude_only">
       <h2 className="report_main_heading">Oil Indicator</h2>
-      <div className="oil_indicator_buttons">
-        <div className={`oil_btn ${oilIndicator.crudeOilClassName}`}>{oilIndicator.crudeOil}</div>
+        <div className="oil_indicator_buttons">
+        <div className={`oil_btn ${oilIndicator.crudeOilClassName}`}>{formatOilText(oilIndicator.crudeOil)}</div>
       </div>
     </div>
   );
@@ -175,7 +246,7 @@ const ReportDetailsSection = ({
                     >
                       {item.name}
                       <br />
-                      <span>{item.ppm}</span>
+                      <span>{formatHeavyMetalValue(item.ppm)}</span>
                     </div>
                   ))}
                 </div>
@@ -195,7 +266,7 @@ const ReportDetailsSection = ({
                     >
                       {item.name}
                       <br />
-                      <span>{item.ppm}</span>
+                      <span>{formatHeavyMetalValue(item.ppm)}</span>
                     </div>
                   ))}
                 </div>

@@ -346,10 +346,41 @@ function renderRegistrationPage(state: ActionData | LoaderData) {
 </script>`;
 	}
 
+	// Phone input mask (progressive enhancement) using IMask from CDN.
+	const maskScript = `
+<script src="https://unpkg.com/imask@6.4.2/dist/imask.min.js"></script>
+<script>
+  (function(){
+	function initPhoneMask(){
+	  try {
+		var el = document.querySelector('input[name="phone"]');
+		if (!el || typeof IMask === 'undefined') return;
+		// Remove any visual placeholder so nothing appears before typing
+		el.placeholder = '';
+		// Initialize IMask with a fixed +1 prefix and a lazy mask so prefix is hidden until typing
+		IMask(el, {
+		  mask: '+1 (000) 000-0000',
+		  lazy: true,
+		});
+	  } catch (e) {
+		// Fail silently; formatting is progressive enhancement only
+		console.error('Phone mask init error', e);
+	  }
+	}
+
+	if (document.readyState === 'complete' || document.readyState === 'interactive'){
+	  setTimeout(initPhoneMask, 0);
+	} else {
+	  document.addEventListener('DOMContentLoaded', initPhoneMask);
+	}
+  })();
+</script>
+`;
+
 	return `
 	<div style="max-width:760px;margin:0 auto;padding:48px 20px 72px;color:#111827;">
 	<div style="margin-bottom:28px;">
-		<p style="margin:0 0 8px;font-size:12px;letter-spacing:0.16em;text-transform:uppercase;opacity:0.6;">UNDR</p>
+		<p style="margin:0 0 8px;font-size:12px;letter-spacing:0.16em;text-transform:uppercase;opacity:0.6;">UNDR CO</p>
 		<h1 style="margin:0 0 10px;font-size:clamp(26px,5vw,42px);font-weight:700;line-height:1.1;">Register your test kit</h1>
 		<p style="margin:0;font-size:16px;line-height:1.7;opacity:0.8;">Enter your details below to register your kit.</p>
 	</div>
@@ -375,11 +406,16 @@ function renderRegistrationPage(state: ActionData | LoaderData) {
 			${renderError(errors?.email)}
 		</label>
 
-		<label style="display:grid;gap:5px;">
-			<span style="font-size:14px;font-weight:600;">Phone</span>
-			<input name="phone" type="tel" value="${escapeHtml(form.phone)}" autocomplete="tel" style="min-height:44px;padding:10px 14px;border-radius:10px;border:1px solid rgba(15,23,42,0.2);font-size:15px;box-sizing:border-box;width:100%;" />
-			${renderError(errors?.phone)}
-		</label>
+					<label style="display:grid;gap:5px;">
+						<span style="font-size:14px;font-weight:600;">Phone</span>
+						<input name="phone" type="tel" value="${escapeHtml(form.phone)}" autocomplete="tel"
+							required
+							pattern="^\+1\s*\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}$"
+							title="Please enter a full U.S. phone number, e.g. +1 (555) 555-5555"
+							inputmode="tel"
+							style="min-height:44px;padding:10px 14px;border-radius:10px;border:1px solid rgba(15,23,42,0.2);font-size:15px;box-sizing:border-box;width:100%;" />
+						${renderError(errors?.phone)}
+					</label>
 
 
 
@@ -391,8 +427,9 @@ function renderRegistrationPage(state: ActionData | LoaderData) {
 
 		${requireV2 && recaptchaV2SiteKey ? `<div class="g-recaptcha" data-sitekey="${recaptchaV2SiteKeyHtml}" style="margin-top:4px;"></div>` : ""}
 		<button type="submit" style="min-height:44px;padding:0 24px;border:none;border-radius:999px;background:#111827;color:#fff;font-size:15px;font-weight:600;cursor:pointer;">Register Kit</button>
-	</form>
-	${recaptchaScript}
+</form>
+${recaptchaScript}
+${maskScript}
 </div>
 `;
 }

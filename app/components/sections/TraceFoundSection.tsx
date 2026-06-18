@@ -29,7 +29,22 @@ const ChartRow = ({ row, maxVal }: { row: ChartRowData; maxVal: number }) => {
   if (userPos > 100) userPos = 100;
   if (userPos < 0) userPos = 0;
 
-  
+  const formatPpm = (val: string) => {
+    if (!val) return '';
+    // normalize and extract number
+    const cleaned = val.replace(/\s+/g, '');
+    const m = cleaned.match(/-?\d+(?:\.\d+)?/);
+    if (!m) return cleaned.replace('ppm', ' ppm');
+    const num = Number(m[0]);
+    if (Number.isNaN(num)) return cleaned.replace('ppm', ' ppm');
+    if (num === 0) return <span className="not-detected">Not detected</span>;
+    // show integer when possible, otherwise keep up to 2 decimals but trim trailing zeros
+    let formatted: string;
+    if (Number.isInteger(num)) formatted = num.toString();
+    else formatted = parseFloat(num.toFixed(2)).toString();
+    return `${formatted} ppm`;
+  };
+
   return (
     <div className="chart_row">
       <div className="label_col">{row.label}</div>
@@ -42,7 +57,7 @@ const ChartRow = ({ row, maxVal }: { row: ChartRowData; maxVal: number }) => {
           <div className="user_marker" style={{ left: `calc(${userPos}% + 6px)` }}></div>
         </div>
       </div>
-      <div className="value_col">{row.displayVal.replace('ppm',' ppm')}</div>
+      <div className="value_col">{formatPpm(row.displayVal)}</div>
     </div>
   );
 };
