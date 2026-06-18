@@ -126,16 +126,21 @@ function App() {
         setLineItems(resolvedItems);
 
         try {
-          const shopRes = await (query as any)(`query { shop { myshopifyDomain } }`);
-          const shopDomain = shopRes?.data?.shop?.myshopifyDomain;
-          const storeOrigin = shopDomain
-            ? `https://${shopDomain}`
-            : (typeof window !== 'undefined' && (window.location.origin || `${window.location.protocol}//${window.location.hostname}`)) || '';
+          const shopRes = await (query as any)(`query { shop { myshopifyDomain storefrontUrl } }`);
+          const shopData = shopRes?.data?.shop;
+          const storefrontUrl = shopData?.storefrontUrl;
+          const shopDomain = shopData?.myshopifyDomain;
+          const storeOrigin = storefrontUrl
+            ? String(storefrontUrl).replace(/\/$/, '')
+            : shopDomain
+              ? `https://${shopDomain}`
+              : (typeof window !== 'undefined' && (window.location.origin || `${window.location.protocol}//${window.location.hostname}`)) || '';
           const base = `${storeOrigin}/apps/undr`;
           setProxyBase(base);
 
           const kitRes = await fetch(
-            `${base}/order-kit?orderId=${encodeURIComponent(orderId)}`
+            `${base}/order-kit/?orderId=${encodeURIComponent(orderId)}`,
+            { credentials: 'include' }
           ).catch(() => null);
           if (kitRes?.ok) {
             const r = await kitRes.json().catch(() => null);
@@ -148,7 +153,7 @@ function App() {
           }
 
           try {
-            const qrRes = await fetch(`${base}/order-kit-qr?orderId=${encodeURIComponent(orderId)}`).catch(() => null);
+            const qrRes = await fetch(`${base}/order-kit-qr/?orderId=${encodeURIComponent(orderId)}`, { credentials: 'include' }).catch(() => null);
             if (qrRes?.ok) {
               const jr = await qrRes.json().catch(() => null);
               if (jr?.qrMap) {
@@ -210,7 +215,7 @@ function App() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ orderId, qrUrl, lineItemId: item.id }),
-      }).catch(() => null);
+      }, { credentials: 'include' }).catch(() => null);
 
       const body = res ? await res.json().catch(() => null) : null;
       if (!res || !res.ok) {
@@ -254,7 +259,7 @@ function App() {
       const base = proxyBase || (typeof window !== 'undefined' && (window.location.origin || `${window.location.protocol}//${window.location.hostname}`)) || '';
 
       // Fetch existing kit numbers for this order to avoid persisting duplicates.
-      const existingRes = await fetch(`${base}/order-kit?orderId=${encodeURIComponent(orderId)}`).catch(() => null);
+      const existingRes = await fetch(`${base}/order-kit/?orderId=${encodeURIComponent(orderId)}`, { credentials: 'include' }).catch(() => null);
       const existingJson = existingRes?.ok ? await existingRes.json().catch(() => null) : null;
       const existingKitMap: { [id: string]: string } = existingJson?.kitMap || {};
       const existingNumbers = new Set(Object.values(existingKitMap).filter(Boolean));
@@ -274,7 +279,7 @@ function App() {
         }
 
         try {
-          const res = await fetch(`${base}/apps/undr/order-kit`.replace(/\/apps\/undr\/apps\/undr/, '/apps/undr'), {
+          const res = await fetch(`${base}/apps/undr/order-kit/`.replace(/\/apps\/undr\/apps\/undr/, '/apps/undr'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -287,7 +292,7 @@ function App() {
               customerName,
               customerEmail,
             }),
-          }).catch(() => null);
+          }, { credentials: 'include' }).catch(() => null);
           if (!res || !res.ok) {
             const body = await res?.json().catch(() => ({}));
             throw new Error((body as any)?.error || 'Failed to save kit.');

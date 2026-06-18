@@ -59,12 +59,12 @@ async function fetchOrderData(orderId: string, api: any) {
 
       const base = origin ? `${origin}/apps/undr` : `/apps/undr`;
 
-      const kitUrl = `${base}/order-kit?orderId=${encodeURIComponent(orderId)}`;
-      const statusUrl = `${base}/order-kit-status?orderId=${encodeURIComponent(orderId)}`;
+      const kitUrl = `${base}/order-kit/?orderId=${encodeURIComponent(orderId)}`;
+      const statusUrl = `${base}/order-kit-status/?orderId=${encodeURIComponent(orderId)}`;
 
       const [kitRes, statusRes] = await Promise.all([
-        fetch(kitUrl).catch(() => null),
-        fetch(statusUrl).catch(() => null),
+        fetch(kitUrl, { credentials: 'include' }).catch(() => null),
+        fetch(statusUrl, { credentials: 'include' }).catch(() => null),
       ]);
 
       const kitData = kitRes?.ok ? await kitRes.json().catch(() => null) : null;
