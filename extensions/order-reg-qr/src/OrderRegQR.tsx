@@ -196,11 +196,11 @@ function App() {
     }
   }
 
-  async function handleGenerateQr(item: LineItem) {
+  async function handleGenerateQr(item: LineItem, explicitKitNumber?: string) {
     setQrLoading(prev => ({ ...prev, [item.id]: true }));
     setQrErrors(prev => ({ ...prev, [item.id]: '' }));
     try {
-      const kitNumber = kitMap[item.id];
+      const kitNumber = explicitKitNumber || kitMap[item.id];
       if (!kitNumber) throw new Error('No kit number available to generate QR.');
       // QR should open the public registration page with the kit prefilled
       const link = `https://undrco.com/apps/undr/submit?kit=${encodeURIComponent(kitNumber)}`;
@@ -415,7 +415,7 @@ function App() {
                     </Button>
                   ) : (
                     <Button
-                      onPress={() => handleGenerateQr(item)}
+                      onPress={() => handleGenerateQr(item, kitMap[item.id])}
                       disabled={qrLoading[item.id] || !kitMap[item.id]}
                       style={{ marginLeft: 8 }}
                     >

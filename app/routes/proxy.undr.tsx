@@ -30,6 +30,9 @@ type DashboardState = {
 		orderNumber: string;
 		createdAt: Date;
 		report?: { status: string } | null;
+		name?: string | null;
+		email?: string | null;
+		phone?: string | null;
 	}>;
 	guestForm: GuestLookupFormState;
 	guestErrors?: GuestLookupErrors;
@@ -109,7 +112,14 @@ function renderLoggedInSection(state: DashboardState) {
 										if (status === 'kit_generated') {
 											statusLabel = 'Registration pending';
 											actionLabel = 'Register';
-											actionHref = `/apps/undr/submit?kit=${encodeURIComponent(registration.kitRegistrationNumber)}`;
+											{
+												const params = new URLSearchParams();
+												params.set('kit', String(registration.kitRegistrationNumber));
+												if (registration.name) params.set('name', String(registration.name));
+												if (registration.email) params.set('email', String(registration.email));
+												if (registration.phone) params.set('phone', String(registration.phone));
+												actionHref = `/apps/undr/submit?${params.toString()}`;
+											}
 											actionEnabled = true;
 										} else if (status === 'register_submitted') {
 											statusLabel = 'Registration submitted';
@@ -138,7 +148,6 @@ function renderLoggedInSection(state: DashboardState) {
 							</div>
 
 							<div class="kit_bottom_part">
-								<a class="kit_register_new_btn" href="/apps/undr/submit" >Register new kit</a>
 								<a class="kit_report_pending_btn" href="${actionHref}" ${actionEnabled && actionHref !== '#' ? 'target="_blank" rel="noopener noreferrer"' : ''} style="background:${actionEnabled ? "#111827" : "#e5e7eb"};color:${actionEnabled ? "#fff" : "#6b7280"};pointer-events:${actionEnabled ? "auto" : "none"};">${escapeHtml(actionLabel)}
 								</a>
 							</div>
