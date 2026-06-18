@@ -400,6 +400,11 @@ function renderRegistrationPage(state: ActionData | LoaderData) {
 			${renderError(errors?.kitRegistrationNumber)}
 		</label>
 
+		<label style="display:flex;align-items:center;gap:10px;">
+			<input type="checkbox" name="agreeTerms" value="1" ${form.agreedToTerms ? 'checked' : ''} />
+			<span style="font-size:13px;line-height:1.2;">I agree to the <a href="${escapeHtml((form.shopDomain || 'undrco.com'))}/pages/terms-of-service" style="color:#065f46;text-decoration:underline;">Terms of Service</a>, <a href="${escapeHtml((form.shopDomain || 'undrco.com'))}/pages/terms-of-use" style="color:#065f46;text-decoration:underline;">Terms of Use</a>, and the <a href="${escapeHtml((form.shopDomain || 'undrco.com'))}/pages/master-disclaimer-and-limitation-of-liability" style="color:#065f46;text-decoration:underline;">Disclaimer</a>.</span>
+		</label>
+
 		${requireV2 && recaptchaV2SiteKey ? `<div class="g-recaptcha" data-sitekey="${recaptchaV2SiteKeyHtml}" style="margin-top:4px;"></div>` : ""}
 		<button type="submit" style="min-height:44px;padding:0 24px;border:none;border-radius:999px;background:#111827;color:#fff;font-size:15px;font-weight:600;cursor:pointer;">Register Kit</button>
 	</form>
@@ -425,8 +430,9 @@ async function proxyPageResponse(
 	return liquid(renderRegistrationPage(state), { layout: !embed });
 }
 
+
 export async function loader({ request }: LoaderFunctionArgs) {
-	const { liquid } = await authenticate.public.appProxy(request);
+	const { liquid, session } = await authenticate.public.appProxy(request);
 
 	const url = new URL(request.url);
 	const defaults = getRegistrationDefaults();
@@ -435,6 +441,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 	defaults.name = String(url.searchParams.get('name') || '');
 	defaults.email = String(url.searchParams.get('email') || '');
 	defaults.phone = String(url.searchParams.get('phone') || '');
+	defaults.shopDomain = session?.shop || String(url.searchParams.get('shop') || '');
 
 	const data: LoaderData = { form: defaults };
 
@@ -452,6 +459,7 @@ export async function action({ request }: ActionFunctionArgs) {
 		phone: String(formData.get("phone") || ""),
 		orderNumber: String(formData.get("orderNumber") || ""),
 		kitRegistrationNumber: String(formData.get("kitRegistrationNumber") || ""),
+		agreedToTerms: Boolean(String(formData.get("agreeTerms") || "") === "1" || String(formData.get("agreeTerms") || "") === "on"),
 	};
 	// reCAPTCHA check disabled for now; submit continues directly to validation/save.
 	// const requireV2 = formData.get("requireV2") === "1";
@@ -499,6 +507,11 @@ export async function action({ request }: ActionFunctionArgs) {
 				updateData.orderNumber = form.orderNumber;
 			}
 
+			// Persist that the user agreed to terms if they checked the box
+			if (form.agreedToTerms) {
+				updateData.agreedToTerms = true;
+			}
+
 			await updateRegistrationFieldsById(existing.id, updateData);
 
 			try {
@@ -510,7 +523,7 @@ export async function action({ request }: ActionFunctionArgs) {
 			const data: ActionData = {
 				ok: true,
 				message: `Thanks, ${String(form.name || '').split(' ')[0] || 'there'}! Your kit has been successfully registered. Let\u2019s get digging! Click here to see a quick sampling instruction video or stay on this page to be automatically redirected.`,
-				form: getRegistrationDefaults(),
+				form: Object.assign(getRegistrationDefaults(), { shopDomain: shop }),
 			};
 			return proxyPageResponse(request, liquid, data);
 		} catch (err) {
@@ -558,6 +571,7 @@ export async function action({ request }: ActionFunctionArgs) {
 			phone: form.phone,
 			orderNumber: form.orderNumber,
 			kitRegistrationNumber: form.kitRegistrationNumber,
+			agreedToTerms: Boolean(form.agreedToTerms),
 			shopifyOrderId: null,
 			shopifyCustomerId,
 		});
@@ -581,7 +595,7 @@ export async function action({ request }: ActionFunctionArgs) {
 	const data: ActionData = {
 		ok: true,
 		message: `Thanks, ${String(form.name || '').split(' ')[0] || 'there'}! Your kit has been successfully registered. Let\u2019s get digging! Click here to see a quick sampling instruction video or stay on this page to be automatically redirected.`,
-		form: getRegistrationDefaults(),
+		form: Object.assign(getRegistrationDefaults(), { shopDomain: session?.shop || url.searchParams.get('shop')?.trim() || '' }),
 	};
 	return proxyPageResponse(request, liquid, data);
 }

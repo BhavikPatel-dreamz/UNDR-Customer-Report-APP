@@ -32,6 +32,7 @@ export type RegistrationInput = {
   kitRegistrationNumber: string;
   shopifyOrderId?: string | null;
   shopifyCustomerId?: string | null;
+  agreedToTerms?: boolean;
 };
 
 export type RegistrationFormState = {
@@ -40,6 +41,8 @@ export type RegistrationFormState = {
   phone: string;
   orderNumber: string;
   kitRegistrationNumber: string;
+  agreedToTerms?: boolean;
+  shopDomain?: string;
 };
 
 export type RegistrationFormErrors = Partial<Record<keyof RegistrationFormState, string>>;
@@ -59,6 +62,8 @@ export function getRegistrationDefaults(): RegistrationFormState {
     phone: "",
     orderNumber: "",
     kitRegistrationNumber: "",
+    agreedToTerms: false,
+    shopDomain: "",
   };
 }
 
@@ -97,6 +102,7 @@ export async function saveRegistration(input: RegistrationInput) {
       phone: input.phone.trim(),
       orderNumber: input.orderNumber.trim(),
       kitRegistrationNumber: input.kitRegistrationNumber.trim(),
+      agreedToTerms: input.agreedToTerms ?? false,
       shopifyOrderId: input.shopifyOrderId ?? null,
       shopifyCustomerId: input.shopifyCustomerId ?? null,
     },
@@ -124,7 +130,7 @@ export async function getRegistrationByKitNumber(kitRegistrationNumber: string) 
   }
 }
 
-export async function updateRegistrationFieldsById(id: string, data: Partial<{ name: string; email: string; phone: string; orderNumber: string; shopifyCustomerId: string | null; shop?: string }>) {
+export async function updateRegistrationFieldsById(id: string, data: Partial<{ name: string; email: string; phone: string; orderNumber: string; shopifyCustomerId: string | null; shop?: string; agreedToTerms?: boolean }>) {
   const updateData: any = {};
   if (data.name !== undefined) updateData.name = data.name.trim();
   if (data.email !== undefined) updateData.email = data.email.trim();
@@ -132,6 +138,7 @@ export async function updateRegistrationFieldsById(id: string, data: Partial<{ n
   if (data.orderNumber !== undefined) updateData.orderNumber = data.orderNumber.trim();
   if (data.shopifyCustomerId !== undefined) updateData.shopifyCustomerId = data.shopifyCustomerId ?? null;
   if (data.shop !== undefined) updateData.shop = data.shop;
+  if (data.agreedToTerms !== undefined) updateData.agreedToTerms = data.agreedToTerms;
 
   return prisma.registration.update({ where: { id }, data: updateData });
 }

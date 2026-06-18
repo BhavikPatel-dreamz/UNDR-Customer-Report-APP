@@ -45,6 +45,7 @@ model Registration {
   shopifyOrderId        String?
   shopifyCustomerId     String?
   qrUrl                 String?
+  agreedToTerms         Boolean  @default(false)
   kitRegistrationNumber String
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
