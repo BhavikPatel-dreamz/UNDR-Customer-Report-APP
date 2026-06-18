@@ -130,11 +130,18 @@ function App() {
           const shopData = shopRes?.data?.shop;
           const storefrontUrl = shopData?.storefrontUrl;
           const shopDomain = shopData?.myshopifyDomain;
-          const storeOrigin = storefrontUrl
-            ? String(storefrontUrl).replace(/\/$/, '')
-            : shopDomain
-              ? `https://${shopDomain}`
-              : (typeof window !== 'undefined' && (window.location.origin || `${window.location.protocol}//${window.location.hostname}`)) || '';
+                  let storeOrigin = '';
+                  if (storefrontUrl) {
+                    try {
+                      storeOrigin = new URL(String(storefrontUrl)).origin;
+                    } catch (e) {
+                      storeOrigin = String(storefrontUrl).replace(/\/$/, '');
+                    }
+                  } else if (shopDomain) {
+                    storeOrigin = `https://${shopDomain}`;
+                  } else if (typeof window !== 'undefined') {
+                    storeOrigin = window.location.origin || `${window.location.protocol}//${window.location.hostname}`;
+                  }
           const base = `${storeOrigin}/apps/undr`;
           setProxyBase(base);
 
