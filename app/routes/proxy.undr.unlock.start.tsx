@@ -4,14 +4,6 @@ import { getRegistrationByKitNumber } from "../models/registration.server";
 import { authenticate } from "../shopify.server";
 import { getUnlockOffer, isReportPackage, isUnlockModule } from "../lib/report-packages";
 
-function encodeCartProperties(properties: Record<string, string>) {
-  return Buffer.from(JSON.stringify(properties))
-    .toString("base64")
-    .replaceAll("+", "-")
-    .replaceAll("/", "_")
-    .replace(/=+$/, "");
-}
-
 function buildCartUrl(input: {
   shop: string;
   variantId: string;
@@ -21,15 +13,12 @@ function buildCartUrl(input: {
   reportPackage: string;
 }) {
   const url = new URL(`/cart/${input.variantId}:1`, `https://${input.shop}`);
-  url.searchParams.set(
-    "properties",
-    encodeCartProperties({
-      _undr_kit: input.kitRegistrationNumber,
-      _undr_registration_id: input.registrationId,
-      _undr_unlock: input.module,
-      _undr_report_package: input.reportPackage,
-    }),
-  );
+  // Use standard Shopify cart query params for line item properties so they
+  // are persisted on the created order as `line_items[].properties`.
+  url.searchParams.set("properties[_undr_kit]", input.kitRegistrationNumber);
+  url.searchParams.set("properties[_undr_registration_id]", input.registrationId);
+  url.searchParams.set("properties[_undr_unlock]", input.module);
+  url.searchParams.set("properties[_undr_report_package]", input.reportPackage);
   return url.toString();
 }
 
