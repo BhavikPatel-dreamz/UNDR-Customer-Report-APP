@@ -1014,6 +1014,7 @@ p {
     gap: 16px;
     padding: 0 22px 0 20px;
     letter-spacing: 0;
+    min-width: 350px;
 }
 
 .elemental_breakdown_section .element_bar_name,
