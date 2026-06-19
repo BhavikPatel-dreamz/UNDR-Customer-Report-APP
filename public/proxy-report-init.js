@@ -260,11 +260,11 @@
 
     sorted.forEach(function (item) {
       var ppm = Number(item.ppm) || 0;
+      // Skip zero-value items so they are not displayed
+      if (ppm <= 0) return;
+
       var heightPercent;
-      if (ppm <= 0) {
-        // 0ppm bars: fixed small flat chip
-        heightPercent = 8;
-      } else if (minNonZeroPpm === maxPpm) {
+      if (minNonZeroPpm === maxPpm) {
         // Only one unique non-zero value → give it full height
         heightPercent = MAX_BAR_HEIGHT;
       } else {
@@ -272,7 +272,6 @@
         // so every distinct non-zero value has a unique proportional height
         heightPercent = MIN_BAR_HEIGHT + ((ppm - minNonZeroPpm) / (maxPpm - minNonZeroPpm)) * (MAX_BAR_HEIGHT - MIN_BAR_HEIGHT);
       }
-
 
       var barWrapper = document.createElement("div");
       barWrapper.className = "graph_bar_wrapper";

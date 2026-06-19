@@ -19,12 +19,21 @@ const PreciousMetalsSection = ({ items }: PreciousMetalsSectionProps) => {
   const colorBySymbol = new Map(
     items.map((item) => [item.symbol.trim().toLowerCase(), item.color]),
   );
+  // Only show metals that were detected (ppm > 0). If none detected, fall back
+  // to the default three: gold, silver, platinum.
+  const detectedSymbols = new Set(
+    items.filter((it) => Number(it.ppm) > 0).map((it) => it.symbol.trim().toLowerCase()),
+  );
+  const metalsToShow =
+    detectedSymbols.size > 0
+      ? metals.filter((m) => detectedSymbols.has(m.symbol.toLowerCase()))
+      : metals.filter((m) => ['gold', 'silver', 'platinum'].includes(m.key));
 
   return (
     <section className="precious_metals_section">
       <div className="container">
         <div className="top_shapes_wrapper">
-          {metals.map((m) => {
+          {metalsToShow.map((m) => {
             const color = colorBySymbol.get(m.symbol.toLowerCase());
             return (
               <div className="shape_column" key={`shape-${m.key}`}>
@@ -45,7 +54,7 @@ const PreciousMetalsSection = ({ items }: PreciousMetalsSectionProps) => {
         </div> */}
 
         <div className="bottom_bars_wrapper">
-          {metals.map((m) => {
+          {metalsToShow.map((m) => {
             const color = colorBySymbol.get(m.symbol.toLowerCase());
             return (
               <div className="bar_column" key={`bar-${m.key}`}>

@@ -111,16 +111,46 @@ const ReportDetailsSection = ({
     <div className="heavy_metals_block">
       <h2 className="report_main_heading">Heavy Metals</h2>
       <div className="metal_list_item_wrapper">
-        {heavyMetals.map((item) => (
-          <div className="metal_list_item" key={item.name}>
-            <span className={`val_box ${item.valueClassName}`} style={{ backgroundColor: item.valueStyle?.backgroundColor }}>
-              {formatHeavyMetalValue(item.value)}
-            </span>{" "}
-            <span className={`metal_txt ${item.textClassName}`} style={{ color: item.valueStyle?.color }}>
-              {item.name}
-            </span>
-          </div>
-        ))}
+        {
+          // Only show heavy metals that have a numeric ppm > 0. If none detected,
+          // fall back to showing Arsenic, Lead, and Uranium.
+          (() => {
+            const nonZero = heavyMetals.filter((item) => {
+              const m = (item.value || '').replace(/\s+/g, '').match(/-?\d+(?:\.\d+)?/);
+              return !!m && Number(m[0]) > 0;
+            });
+            let metalsToShow = [];
+            if (nonZero.length > 0) {
+              metalsToShow = nonZero;
+            } else {
+              // Ensure the default three appear: Arsenic, Lead, Uranium.
+              const defaults = ['Arsenic', 'Lead', 'Uranium'];
+              metalsToShow = defaults.map((name) => {
+                const found = heavyMetals.find((h) => h.name === name);
+                if (found) return found;
+                // placeholder for missing default: will render as "Not detected"
+                return {
+                  name,
+                  value: '0.000 ppm',
+                  valueClassName: '',
+                  valueStyle: {},
+                  textClassName: '',
+                } as any;
+              });
+            }
+
+            return metalsToShow.map((item) => (
+              <div className="metal_list_item" key={item.name}>
+                <span className={`val_box ${item.valueClassName}`} style={{ backgroundColor: item.valueStyle?.backgroundColor }}>
+                  {formatHeavyMetalValue(item.value)}
+                </span>{" "}
+                <span className={`metal_txt ${item.textClassName}`} style={{ color: item.valueStyle?.color }}>
+                  {item.name}
+                </span>
+              </div>
+            ));
+          })()
+        }
       </div>
     </div>
   );
