@@ -1009,11 +1009,13 @@ base.foundElements = found.slice(0, 60)
   // --- Element Breakdown (top elements plus one aggregate trace bucket)
   const sorted = [...found].sort((a, b) => b.ppmValue - a.ppmValue);
   const elementBreakdownRows = sorted.slice(0, 15);
-  const remainingTraceRows = sorted.filter((r) => !isPetroleumLikeRow(r)).slice(15, 30);
+  // include all remaining non-petroleum rows after the top 15 (no 30-item cap)
+  const remainingTraceRows = sorted.slice(15).filter((r) => !isPetroleumLikeRow(r));
 
   // const top8 = sorted.slice(0, 8);
   const top8 = elementBreakdownRows.slice(0, 8); // (optional, jo use hoy to)
-  const nextTraceRows = remainingTraceRows.slice(0, 15);
+  // show all remaining trace rows (no further slicing)
+  const nextTraceRows = remainingTraceRows;
   const otherTraceTotalPpm = remainingTraceRows.reduce((s, r) => s + r.ppmValue, 0);
   const totalPpm =
     elementBreakdownRows.reduce((s, r) => s + r.ppmValue, 0) + otherTraceTotalPpm;
