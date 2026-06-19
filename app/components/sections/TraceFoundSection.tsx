@@ -29,15 +29,10 @@ const ChartRow = ({ row, maxVal }: { row: ChartRowData; maxVal: number }) => {
   if (userPos > 100) userPos = 100;
   if (userPos < 0) userPos = 0;
 
-  // Compute left position string so the marker aligns at edges:
-  // - left edge (0%) => no extra positive offset
-  // - right edge (100%) => nudge left by 8px so marker stays visible
-  // - otherwise => default small positive offset to clear marker
-  const markerLeft = userPos <= 0
-    ? `calc(${userPos}% + 0px)`
-    : userPos >= 100
-      ? `calc(${userPos}% - 8px)`
-      : `calc(${userPos}% + 6px)`;
+  // Position the marker using percent-only left.
+  // If the raw user value exceeds the chart's max, pin the marker to the right
+  // edge with an 8px inset so it stays visible in the bar: `calc(100% - 8px)`.
+  const markerLeft = row.userVal >= maxVal ? 'calc(100% - 8px)' : (userPos <= 0 ? '0%' : `${userPos}%`);
 
   const formatPpm = (val: string) => {
     if (!val) return '';
@@ -63,7 +58,7 @@ const ChartRow = ({ row, maxVal }: { row: ChartRowData; maxVal: number }) => {
           <div className="segment safe_level" style={{ width: safeW + '%' }}></div>
           <div className="segment marginal_level" style={{ width: margW + '%' }}></div>
           <div className="segment unsafe_level" style={{ width: unsafeW + '%' }}></div>
-          {/* <div className="user_marker" style={{ left: `calc(${userPos}% - 4px)` }}></div> */}
+          {/* place marker using percent and center via transform */}
           <div className="user_marker" style={{ left: markerLeft }}></div>
         </div>
       </div>
