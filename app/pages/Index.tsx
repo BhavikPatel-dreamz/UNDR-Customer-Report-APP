@@ -35,7 +35,10 @@ const Index = ({ report, appUrl = '' }: IndexProps) => {
   const unlockHref = (module: UnlockModule) =>
     `/apps/undr/unlock/start?kit=${encodeURIComponent(kitRegistrationNumber)}&module=${encodeURIComponent(module)}&package=${encodeURIComponent(reportPackage)}`;
   const unlockLabel = (module: UnlockModule, title: string) => `Unlock ${title} for ${formatUnlockPrice(module)}`;
-  const premiumUnlockHref = hasReportUnlock(unlockedModules, 'premium') ? undefined : unlockHref('premium');
+  const premiumUnlockHref =
+    reportPackage === 'treasure_base' || reportPackage === 'hs_base' || hasReportUnlock(unlockedModules, 'premium')
+      ? undefined
+      : unlockHref('premium');
   const hasPreciousUnlock = hasReportUnlock(unlockedModules, 'precious_metals');
   const hasRareEarthUnlock = hasReportUnlock(unlockedModules, 'rare_earth');
   const hasCrudeOilUnlock = hasReportUnlock(unlockedModules, 'crude_oil');

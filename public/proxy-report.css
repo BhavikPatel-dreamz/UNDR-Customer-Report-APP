@@ -1007,7 +1007,7 @@ p {
     font-size: 18px;
     line-height: 26px;
     color: #ffffff;
-    width: 100%;
+    width: auto;
     display: flex;
     align-items: center;
     justify-content: space-between;

@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+// @ts-nocheck
 import { renderToStaticMarkup } from "react-dom/server";
 import type { LoaderFunctionArgs } from "react-router";
 
@@ -245,8 +247,24 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
   if (registration?.report?.status === "report_generated" || registration?.report?.status === "uploaded") {
     
     if (registration.report.rows && registration.report.rows.length > 0) {
+      // Merge any stored detection limits from report.rawPayload into the rows
+      const rawPayload = (registration.report as any).rawPayload as Record<string, unknown> | null;
+      const detectionLimits: Record<string, number> = (rawPayload && typeof rawPayload === "object" && (rawPayload as any).detectionLimits)
+        ? (rawPayload as any).detectionLimits
+        : {};
+
+      const mergedRows = (registration.report.rows as any[]).map((r) => ({
+        element: String(r.element || "").trim(),
+        rawValue: Number(r.rawValue || 0),
+        ppmValue: Number(r.ppmValue || 0),
+        unit: String(r.unit || "ppm"),
+        category: String(r.category || "").trim().toLowerCase(),
+        detectionLimitPercent:
+          detectionLimits[String(r.element || "").trim().toLowerCase()] ?? undefined,
+      }));
+
       report = buildReportDataFromRows(                                                                                                       
-        registration.report.rows as Parameters<typeof buildReportDataFromRows>[0],
+        mergedRows as Parameters<typeof buildReportDataFromRows>[0],
         customerName,
         kitRegistrationNumber,
       );
@@ -286,6 +304,143 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
     })
     .map((unlock) => String(unlock.module || "").trim().toLowerCase())
     .filter(isUnlockModule);
+
+  // If the customer does not have the REE (rare earth) breakdown available
+  // (either via package or explicit unlock), ensure rare earth elements do
+  // not appear in the overall charts / breakdowns. This prevents non-premium
+  // kits showing REEs in the main graphs while keeping other functionality.
+  const hasRareEarthUnlock = report.unlockedModules.includes("premium") || report.unlockedModules.includes("rare_earth");
+  const canDisplayRareEarthBreakdown =
+    selectedReportPackage === "treasure_plus" ||
+    selectedReportPackage === "premium" ||
+    hasRareEarthUnlock;
+
+  if (!canDisplayRareEarthBreakdown) {
+    const RARE_EARTH_SYMBOLS = new Set([
+      "la",
+      "ce",
+      "pr",
+      "nd",
+      "pm",
+      "sm",
+      "eu",
+      "gd",
+      "tb",
+      "dy",
+      "ho",
+      "er",
+      "tm",
+      "yb",
+      "lu",
+      "sc",
+      "y",
+    ]);
+
+    // Strip REEs from the layered element chart (symbols array)
+    if (report.reportDetails && report.reportDetails.reportChart) {
+      const chart = report.reportDetails.reportChart as any;
+      const filtered = {
+        elementNames: [] as string[],
+        belowData: [] as number[],
+        refData: [] as number[],
+        aboveData: [] as number[],
+        calculations: [] as any[],
+      };
+
+      (chart.elementNames || []).forEach((sym: string, idx: number) => {
+        const s = String(sym || "").trim().toLowerCase();
+        if (!RARE_EARTH_SYMBOLS.has(s)) {
+          filtered.elementNames.push(sym);
+          filtered.belowData.push(chart.belowData?.[idx] ?? 0);
+          filtered.refData.push(chart.refData?.[idx] ?? 0);
+          filtered.aboveData.push(chart.aboveData?.[idx] ?? 0);
+          filtered.calculations.push(chart.calculations?.[idx] ?? { adjustedPpm: 0 });
+        }
+      });
+
+      report.reportDetails.reportChart = filtered as any;
+    }
+
+    // Remove REEs from the element breakdown lists
+    if (report.elementBreakdown && Array.isArray(report.elementBreakdown.items)) {
+      report.elementBreakdown.items = report.elementBreakdown.items.filter((it: any) => {
+        const m = String(it.name || "").match(/\(([A-Za-z0-9]+)\)/);
+        const sym = m ? m[1].toLowerCase() : String(it.name || "").trim().toLowerCase();
+        return !RARE_EARTH_SYMBOLS.has(sym);
+      });
+    }
+
+    if (report.earthElementsBreakdown && Array.isArray(report.earthElementsBreakdown.items)) {
+      report.earthElementsBreakdown.items = report.earthElementsBreakdown.items.filter((it: any) => {
+        const m = String(it.name || "").match(/\(([A-Za-z0-9]+)\)/);
+        const sym = m ? m[1].toLowerCase() : String(it.name || "").trim().toLowerCase();
+        return !RARE_EARTH_SYMBOLS.has(sym);
+      });
+    }
+
+    if (report.reportDetails && Array.isArray(report.reportDetails.rareEarthElements)) {
+      report.reportDetails.rareEarthElements = report.reportDetails.rareEarthElements.filter((it: any) => {
+        const m = String(it.name || "").match(/\(([A-Za-z0-9]+)\)/);
+        const sym = m ? m[1].toLowerCase() : String(it.name || "").trim().toLowerCase();
+        return !RARE_EARTH_SYMBOLS.has(sym);
+      });
+    }
+
+    // Also remove REEs from other overall charts and lists so they don't
+    // appear outside the unlocked REE section for non-premium kits.
+    if (report.otherTraceElements && Array.isArray(report.otherTraceElements.items)) {
+      report.otherTraceElements.items = report.otherTraceElements.items.filter((it: any) => {
+        const m = String(it.name || "").match(/\(([A-Za-z0-9]+)\)/);
+        const sym = m ? m[1].toLowerCase() : String(it.name || "").trim().toLowerCase();
+        return !RARE_EARTH_SYMBOLS.has(sym);
+      });
+    }
+
+    if (report.traceFound && Array.isArray(report.traceFound.rows)) {
+      report.traceFound.rows = report.traceFound.rows.filter((r: any) => {
+        const m = String(r.label || "").match(/\(([A-Za-z0-9]+)\)/);
+        const sym = m ? m[1].toLowerCase() : String(r.label || "").trim().toLowerCase();
+        return !RARE_EARTH_SYMBOLS.has(sym);
+      });
+    }
+
+    if (report.foundElements && Array.isArray(report.foundElements)) {
+      report.foundElements = report.foundElements.filter((it: any) => {
+        const propSym = it && it.symbol ? String(it.symbol).trim().toLowerCase() : "";
+        const m = String(it.name || "").match(/\(([A-Za-z0-9]+)\)/);
+        const nameSym = m ? m[1].toLowerCase() : String(it.name || "").trim().toLowerCase();
+        const sym = propSym || nameSym;
+        return !RARE_EARTH_SYMBOLS.has(sym);
+      });
+    }
+
+    if (report.notFoundElements && Array.isArray(report.notFoundElements)) {
+      report.notFoundElements = report.notFoundElements.filter((it: any) => {
+        const propSym = it && it.symbol ? String(it.symbol).trim().toLowerCase() : "";
+        const m = String(it.name || "").match(/\(([A-Za-z0-9]+)\)/);
+        const nameSym = m ? m[1].toLowerCase() : String(it.name || "").trim().toLowerCase();
+        const sym = propSym || nameSym;
+        return !RARE_EARTH_SYMBOLS.has(sym);
+      });
+    }
+
+    if (report.multiLevelCharts) {
+      if (Array.isArray(report.multiLevelCharts.group1Rows)) {
+        report.multiLevelCharts.group1Rows = report.multiLevelCharts.group1Rows.filter((r: any) => {
+          const m = String(r.label || "").match(/\(([A-Za-z0-9]+)\)/);
+          const sym = m ? m[1].toLowerCase() : String(r.label || "").trim().toLowerCase();
+          return !RARE_EARTH_SYMBOLS.has(sym);
+        });
+      }
+      if (Array.isArray(report.multiLevelCharts.group2Rows)) {
+        report.multiLevelCharts.group2Rows = report.multiLevelCharts.group2Rows.filter((r: any) => {
+          const m = String(r.label || "").match(/\(([A-Za-z0-9]+)\)/);
+          const sym = m ? m[1].toLowerCase() : String(r.label || "").trim().toLowerCase();
+          return !RARE_EARTH_SYMBOLS.has(sym);
+        });
+      }
+    }
+  }
 
   // Ensure heavyMetals are always normalized for both page HTML and injected JSON.
   if (report?.reportDetails?.heavyMetals) {

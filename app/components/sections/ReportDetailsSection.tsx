@@ -1,8 +1,132 @@
+import * as React from 'react';
+
 const DiveArrow = () => (
   <svg width="49" height="28" viewBox="0 0 49 28" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path d="M22.147 26.6138L0.925214 5.39201C-0.166581 4.30022 -0.309023 2.57912 0.588426 1.32269C1.18133 0.492628 2.1386 0 3.15866 0H45.3132C46.3768 0 47.3589 0.569918 47.8866 1.4934C48.5606 2.67302 48.3464 4.1599 47.3667 5.10119L24.9469 26.6418C24.1616 27.3963 22.917 27.3838 22.147 26.6138Z" fill="#99272C" />
   </svg>
 );
+
+const ShareBar = () => {
+  const [copied, setCopied] = React.useState(false);
+  const url = typeof window !== "undefined" ? window.location.href : "";
+
+  const copy = () => {
+    if (typeof navigator !== "undefined" && navigator.clipboard && url) {
+      navigator.clipboard.writeText(url).then(() => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 1800);
+      }).catch(() => {});
+    }
+  };
+
+  const encoded = encodeURIComponent(url);
+  const containerStyle: React.CSSProperties = {
+    display: "flex",
+    alignItems: "center",
+    gap: 10,
+    padding: "14px 20px",
+    margin: "0 auto",
+    width: "fit-content",
+    flexWrap: "wrap",
+  };
+
+  const labelStyle: React.CSSProperties = {
+    fontSize: 13,
+    color: "#888",
+    marginRight: 4,
+    whiteSpace: "nowrap",
+  };
+
+  const btnStyle: React.CSSProperties = {
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    width: 36,
+    height: 36,
+    borderRadius: "50%",
+    border: "1px solid rgba(0,0,0,0.15)",
+    background: "#fff",
+    color: "#333",
+    fontSize: 14,
+    fontWeight: 600,
+    textDecoration: "none",
+    cursor: "pointer",
+    fontFamily: "inherit",
+    lineHeight: 1,
+  };
+
+  const copyBtnStyle: React.CSSProperties = {
+    ...btnStyle,
+    fontSize: 16,
+    padding: 0,
+  };
+
+  const copiedStyle: React.CSSProperties = {
+    fontSize: 12,
+    color: "#2a7a2a",
+    marginLeft: 8,
+  };
+
+  return (
+    <div className="report_share_bar" style={containerStyle}>
+      <span className="share_label" style={labelStyle}>Share this report</span>
+      <a
+        className="share_btn"
+        style={btnStyle}
+        href={`https://twitter.com/intent/tweet?url=${encoded}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Share on X"
+      >
+        𝕏
+      </a>
+      <a
+        className="share_btn"
+        style={btnStyle}
+        href={`https://www.facebook.com/sharer/sharer.php?u=${encoded}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Share on Facebook"
+      >
+        f
+      </a>
+      <a
+        className="share_btn"
+        style={btnStyle}
+        href={`https://www.linkedin.com/shareArticle?mini=true&url=${encoded}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Share on LinkedIn"
+      >
+        in
+      </a>
+      <a
+        className="share_btn"
+        style={btnStyle}
+        href={`https://wa.me/?text=${encoded}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Share on WhatsApp"
+      >
+        W
+      </a>
+      <a
+        className="share_btn"
+        style={btnStyle}
+        href={`mailto:?subject=Check%20out%20this%20report&body=${encoded}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Share by email"
+      >
+        ✉
+      </a>
+      <button type="button" className="share_btn share_btn_copy" style={copyBtnStyle} onClick={copy} aria-label="Copy link">
+        🔗
+      </button>
+      {copied && <span className="share_copied" style={copiedStyle}>Link copied!</span>}
+    </div>
+  );
+};
 
 type HeavyMetalItem = {
   name: string;
@@ -56,6 +180,9 @@ const ReportDetailsSection = ({
   const formatHeavyMetalValue = (val: string) => {
     if (!val) return '';
     const cleaned = val.replace(/\s+/g, '');
+    // If the value indicates "less than" the detection limit (e.g. "<0.1"),
+    // treat as not detected and do not display a numeric value.
+    if (cleaned.includes('<')) return <span className="not-detected">Not detected</span>;
     const m = cleaned.match(/-?\d+(?:\.\d+)?/);
     if (!m) return cleaned.replace('ppm', ' ppm');
     const num = Number(m[0]);
@@ -69,6 +196,8 @@ const ReportDetailsSection = ({
   const formatHeavyMetalValueText = (val: string) => {
     if (!val) return '';
     const cleaned = val.replace(/\s+/g, '');
+    // Respect detection-limit markers ("<...") by reporting as not detected.
+    if (cleaned.includes('<')) return 'not detected';
     const m = cleaned.match(/-?\d+(?:\.\d+)?/);
     if (!m) return cleaned.replace('ppm', ' ppm');
     const num = Number(m[0]);
@@ -324,6 +453,9 @@ const ReportDetailsSection = ({
       <img src={`${appUrl ? appUrl : ''}/images/quick-look-icon.svg`} className="quick_look_icon" alt="Quick look icon" />
 
       
+
+      {/* ── social share ── */}
+      <ShareBar />
 
     </section>
   );

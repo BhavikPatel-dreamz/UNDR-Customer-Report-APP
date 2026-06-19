@@ -27,11 +27,40 @@
     });
     var minHeight = 42;
 
+    // Compute numeric ppm values from formatted `ppm` strings (e.g. "631272ppm" or "4,414ppm")
+    var numericValues = sortedData.map(function (it) {
+      if (!it.ppm) return 0;
+      var num = Number(String(it.ppm).replace(/[^0-9.\-]/g, ""));
+      return isFinite(num) ? num : 0;
+    });
+    var nonZero = numericValues.filter(function (v) { return v > 0; });
+    var minNonZero = nonZero.length ? Math.min.apply(null, nonZero) : 0;
+    var maxVal = nonZero.length ? Math.max.apply(null, nonZero) : 0;
+    var MIN_WIDTH = 30; // percent
+    var MAX_WIDTH = 100; // percent
+
+    function valueToWidth(v) {
+      if (!v || maxVal <= 0) return MIN_WIDTH;
+      if (minNonZero === maxVal) return MAX_WIDTH;
+      // log scale mapping for perceptual differences
+      var vis = Math.log10(v + 1);
+      var minVis = Math.log10(minNonZero + 1);
+      var maxVis = Math.log10(maxVal + 1);
+      var ratio = (vis - minVis) / (maxVis - minVis);
+      return Math.round(MIN_WIDTH + ratio * (MAX_WIDTH - MIN_WIDTH));
+    }
+
     sortedData.forEach(function (item) {
       var bar = document.createElement("div");
       bar.className = "element_bar";
-      bar.style.minHeight = minHeight + "px";
-      bar.style.flex = (item.percentage + 2) + " 0 auto";
+      // Fix bar height and use width to visually represent value (ppm)
+      bar.style.height = minHeight + "px";
+      var value = 0;
+      if (item.ppm) {
+        value = Number(String(item.ppm).replace(/[^0-9.\-]/g, "")) || 0;
+      }
+      var widthPct = valueToWidth(value);
+      bar.style.width = widthPct + "%";
       bar.style.backgroundColor = item.color;
 
       var name = document.createElement("span");
