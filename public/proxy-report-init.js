@@ -461,14 +461,43 @@
       .attr("viewBox", "0 0 " + width + " " + height)
       .attr("preserveAspectRatio", "xMidYMid meet");
 
-    var data = (reportData.earthElementsBreakdown.items || []).map(function (item) { return Object.assign({}, item); });
-    if (!data.length) return;
-    var minPpm = d3.min(data, function (item) { return item.ppm; }) || 2;
-    var maxPpm = d3.max(data, function (item) { return item.ppm; }) || 31;
+  var data = (reportData.earthElementsBreakdown.items || []).map(function (item) { return Object.assign({}, item); });
+  // If there are no detected items, nothing to render
+  if (!data.length) return;
+
+  // Keep original detected count (before adding placeholders)
+  var detectedCount = data.length;
+
+  var minPpm = d3.min(data, function (item) { return item.ppm; }) || 2;
+  var maxPpm = d3.max(data, function (item) { return item.ppm; }) || 31;
     var radiusScale = d3.scaleSqrt().domain([minPpm, maxPpm]).range([isMobile ? 45 : 40, isMobile ? 120 : 110]);
     function truncateLabel(text, maxChars) {
       if (!text || text.length <= maxChars) return text;
       return text.slice(0, Math.max(1, maxChars - 3)) + "...";
+    }
+
+    // If few elements detected, add unlabeled placeholder bubbles to reach a fuller-looking chart
+    if (detectedCount > 0 && detectedCount < 5) {
+      var targetTotal = 8; // desired total bubbles to display
+      var placeholdersToAdd = Math.max(0, targetTotal - detectedCount);
+      var palette = ["#a32720", "#f6b315", "#a6acb5", "#e99180", "#b46a5f", "#e8d3a5", "#c9d4e9", "#d48f7f"];
+      // Determine the smallest detected bubble radius (in px) using radiusScale so placeholders match smallest element
+      var detectedRadii = data.map(function (it) { return radiusScale(it.ppm); });
+      var smallestRadius = detectedRadii.length ? Math.min.apply(null, detectedRadii) : (isMobile ? 160 : 75);
+      // placeholderDiameter will match smallest detected bubble diameter (2 * radius)
+      var placeholderDiameterFromSmallest = Math.max(6, Math.round(smallestRadius * 2));
+
+      for (var p = 0; p < placeholdersToAdd; p += 1) {
+        // Use a small ppm value for compatibility but set placeholderDiameter from smallest real bubble
+        data.push({
+          name: "",
+          ppm: Math.max(0.5, Math.round((minPpm || 1) * 0.5)),
+          color: palette[(p + detectedCount) % palette.length],
+          isPlaceholder: true,
+          fixedLast: false,
+          placeholderDiameter: placeholderDiameterFromSmallest
+        });
+      }
     }
 
     function getCircleLabelParts(item) {
@@ -545,10 +574,16 @@
     var simulation = d3.forceSimulation(data)
       .force("x", d3.forceX(centerX).strength(0.5))
       .force("y", d3.forceY(centerY).strength(0.5))
-      .force("collide", d3.forceCollide(function (item) { return radiusScale(item.ppm) + 6; }))
+      .force("collide", d3.forceCollide(function (item) {
+        // Use fixed pixel radius for placeholders, otherwise use radiusScale
+        var r = item && item.isPlaceholder ? ((item.placeholderDiameter || 150) / 2) : radiusScale(item.ppm);
+        return r + 6;
+      }))
       .stop();
 
     for (var i = 0; i < 600; i += 1) simulation.tick();
+
+    
 
     var node = svg.selectAll(".node")
       .data(data)
@@ -557,43 +592,50 @@
       .attr("transform", function (item) { return "translate(" + item.x + "," + item.y + ")"; });
 
     node.append("circle")
-      .attr("r", function (item) { return radiusScale(item.ppm); })
+      .attr("r", function (item) {
+        if (item && item.isPlaceholder) {
+          return (item.placeholderDiameter || (isMobile ? 320 : 150)) / 2;
+        }
+        return radiusScale(item.ppm);
+      })
       .attr("fill", function (item) { return item.color; });
 
-    var text = node.append("text")
-      .attr("text-anchor", "middle")
-      .attr("fill", "#ffffff")
-      .style("font-family", "'Obviously', Arial, sans-serif")
-      .style("pointer-events", "none");
+    // Append text only for real detected elements; placeholders are intentionally unlabeled
+    node.each(function (item) {
+      if (item.isPlaceholder) return;
+      var g = d3.select(this);
+      var text = g.append("text")
+        .attr("text-anchor", "middle")
+        .attr("fill", "#ffffff")
+        .style("font-family", "'Obviously', Arial, sans-serif")
+        .style("pointer-events", "none");
 
-    // Render the symbol (or short name) first in a larger font, and optionally render the full name (rest)
-    // Render symbol and full name on the same line: symbol (larger) then a small gap then rest (smaller)
-    text.append("tspan")
-      .attr("x", 0)
-      .attr("dy", "-0.6em")
-      .style("font-size", function (item) { return getCircleLabelParts(item).symbolFont; })
-      .style("font-weight", "700")
-      .text(function (item) { return getCircleLabelParts(item).symbol; });
+      text.append("tspan")
+        .attr("x", 0)
+        .attr("dy", "-0.6em")
+        .style("font-size", function (d) { return getCircleLabelParts(d).symbolFont; })
+        .style("font-weight", "700")
+        .text(function (d) { return getCircleLabelParts(d).symbol; });
 
-    text.append("tspan")
-      // keep on same line, no vertical offset
-      .attr("dy", "0")
-      .style("font-size", function (item) { return getCircleLabelParts(item).restFont || (isMobile ? "14px" : "12px"); })
-      .style("font-weight", "600")
-      .text(function (item) { return getCircleLabelParts(item).rest || ""; });
+      text.append("tspan")
+        .attr("dy", "0")
+        .style("font-size", function (d) { return getCircleLabelParts(d).restFont || (isMobile ? "14px" : "12px"); })
+        .style("font-weight", "600")
+        .text(function (d) { return getCircleLabelParts(d).rest || ""; });
 
-    text.append("tspan")
-      .attr("x", 0)
-      .attr("dy", "1.1em")
-      .style("font-size", function (item) { return getCircleLabelParts(item).ppmFont; })
-      .style("font-weight", "bold")
-      .text(function (item) { return item.ppm; });
+      text.append("tspan")
+        .attr("x", 0)
+        .attr("dy", "1.1em")
+        .style("font-size", function (d) { return getCircleLabelParts(d).ppmFont; })
+        .style("font-weight", "bold")
+        .text(function (d) { return d.ppm; });
 
-    text.append("tspan")
-      .attr("x", 0)
-      .attr("dy", "1.2em")
-      .style("font-size", isMobile ? "16px" : "14px")
-      .text("ppm");
+      text.append("tspan")
+        .attr("x", 0)
+        .attr("dy", "1.2em")
+        .style("font-size", isMobile ? "16px" : "14px")
+        .text("ppm");
+    });
   }
 
   function initAll() {

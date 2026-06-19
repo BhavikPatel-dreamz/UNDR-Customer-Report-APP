@@ -199,9 +199,9 @@ const Index = ({ report, appUrl = '' }: IndexProps) => {
 
      
       {/* 18. Precious Metals Breakdown Heading */}
-      {canShowPreciousMetalsChart && <PreciousMetalsBreakdownHeading />}
+      {/* {canShowPreciousMetalsChart && <PreciousMetalsBreakdownHeading />} */}
       {/* 19. Precious Metals */}
-      {canShowPreciousMetalsChart && <PreciousMetalsSection items={report.preciousMetalPresent.items} />}
+      {/* {canShowPreciousMetalsChart && <PreciousMetalsSection items={report.preciousMetalPresent.items} />} */}
       {/* 20. Precious Metals Breakdown Heading Alt */}
       {/* <PreciousMetalsBreakdownHeadingAlt /> */}
       {/* 21. Precious Metals Not Present */}

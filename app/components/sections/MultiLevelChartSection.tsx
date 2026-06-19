@@ -37,6 +37,14 @@ const ChartRow = ({ row, maxVal }: { row: ChartRowData; maxVal: number }) => {
   if (userPos > 100) userPos = 100;
   if (userPos < 0) userPos = 0;
 
+  // Choose a pixel offset so the user_marker centers correctly at edges.
+  // Use the clamped percentage position (`userPos`) so the right-edge case triggers
+  // reliably (when `userPos` reaches 100%).
+  // - when at left edge (0%) use 0px offset
+  // - when at right edge (100%) use larger offset (8px)
+  // - otherwise use default 4px
+  const markerOffset = userPos <= 0 ? '0px' : userPos >= 100 ? '8px' : '4px';
+
   const formatPpm = (val: string) => {
     if (!val) return '';
     const cleaned = val.replace(/\s+/g, '');
@@ -59,7 +67,7 @@ const ChartRow = ({ row, maxVal }: { row: ChartRowData; maxVal: number }) => {
           <div className="segment safe_level" style={{ width: safeW + '%' }}></div>
           <div className="segment marginal_level" style={{ width: margW + '%' }}></div>
           <div className="segment unsafe_level" style={{ width: unsafeW + '%' }}></div>
-          <div className="user_marker" style={{ left: `calc(${userPos}% - 4px)` }}></div>
+          <div className="user_marker" style={{ left: `calc(${userPos}% - ${markerOffset})` }}></div>
         </div>
       </div>
       <div className="value_col">{formatPpm(row.displayVal)}</div>
