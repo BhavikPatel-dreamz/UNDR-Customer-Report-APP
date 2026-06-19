@@ -244,7 +244,7 @@ const ReportDetailsSection = ({
                       style={{ backgroundColor: item.valueStyle?.backgroundColor }}
                       key={item.name}
                     >
-                      {item.name}
+                      {item?.name?.length > 9 ? item.name.slice(0, 9) + ".." : item.name}
                       <br />
                       <span>{formatHeavyMetalValue(item.ppm)}</span>
                     </div>
@@ -253,6 +253,8 @@ const ReportDetailsSection = ({
                 <img src={`${appUrl ? appUrl : ''}/images/treasure-icon.svg`} className="treasure_icon" alt="Icon" />
               </div>
             )}
+
+            
 
             {showRareEarthElements && (
               <div className="info_block no_border">
@@ -264,7 +266,7 @@ const ReportDetailsSection = ({
                       style={{ backgroundColor: item.valueStyle?.backgroundColor }}
                       key={item.name}
                     >
-                      {item.name}
+                      {item?.name?.length > 9 ? item.name.slice(0, 9) + ".." : item.name}
                       <br />
                       <span>{formatHeavyMetalValue(item.ppm)}</span>
                     </div>
