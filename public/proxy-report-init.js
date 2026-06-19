@@ -20,10 +20,42 @@
     if (!chartBox || !leftContent) return;
 
     chartBox.innerHTML = "";
-    var sortedData = items.slice().sort(function (a, b) {
+    // Deduplicate items by a normalized key (prefer symbol, fallback to name).
+    // If duplicates exist, keep the item with the larger numeric value (ppm or percentage).
+    var seen = Object.create(null);
+    var deduped = [];
+    (items || []).forEach(function (it) {
+      var key = String((it.symbol || it.name) || "").trim().toLowerCase();
+      if (!key) {
+        // preserve items without a name/symbol as-is
+        deduped.push(it);
+        return;
+      }
+      var existing = seen[key];
+      if (!existing) {
+        seen[key] = it;
+        deduped.push(it);
+        return;
+      }
+      function numericScore(x) {
+        if (!x) return 0;
+        var n = Number(String(x).replace(/[^0-9.\-]/g, ""));
+        return isFinite(n) ? n : 0;
+      }
+      var curScore = numericScore(it.ppm || it.percentage);
+      var prevScore = numericScore(existing.ppm || existing.percentage);
+      if (curScore > prevScore) {
+        // replace in-place in deduped array
+        var idx = deduped.indexOf(existing);
+        if (idx !== -1) deduped[idx] = it;
+        seen[key] = it;
+      }
+    });
+
+    var sortedData = deduped.slice().sort(function (a, b) {
       if (a.fixedLast && !b.fixedLast) return 1;
       if (!a.fixedLast && b.fixedLast) return -1;
-      return b.percentage - a.percentage;
+      return (b.percentage || 0) - (a.percentage || 0);
     });
     var minHeight = 42;
 
@@ -408,6 +440,43 @@
       return row.measuredPpm > 0;
     });
 
+    // Deduplicate chartRows by label (preserve existing classification logic).
+    // If duplicates exist, merge them and prefer classification priority: above > reference > below.
+    (function dedupeChartRows() {
+      var seen = Object.create(null);
+      var unique = [];
+      chartRows.forEach(function (row) {
+        var key = String(row.label || '').trim().toLowerCase();
+        if (!key) {
+          unique.push(row);
+          return;
+        }
+        var existing = seen[key];
+        if (!existing) {
+          seen[key] = row;
+          unique.push(row);
+          return;
+        }
+        // Merge classifications with priority: above > reference > below
+        function hasAbove(r) { return Number(r.above) > 0; }
+        function hasRef(r) { return Number(r.reference) > 0; }
+        function hasBelow(r) { return Number(r.below) > 0; }
+        if (hasAbove(row) || hasAbove(existing)) {
+          existing.above = Math.max(Number(existing.above) || 0, Number(row.above) || 0);
+          existing.reference = 0;
+          existing.below = 0;
+        } else if (hasRef(row) || hasRef(existing)) {
+          existing.reference = Math.max(Number(existing.reference) || 0, Number(row.reference) || 0);
+          existing.below = 0;
+        } else {
+          existing.below = Math.max(Number(existing.below) || 0, Number(row.below) || 0);
+        }
+        // Keep measuredPpm as the max to be safe for any downstream logic
+        existing.measuredPpm = Math.max(Number(existing.measuredPpm) || 0, Number(row.measuredPpm) || 0);
+      });
+      chartRows = unique;
+    })();
+
     var visualValues = [];
     chartRows.forEach(function (row) {
       [row.below, row.reference, row.above].forEach(function (value) {
@@ -437,20 +506,137 @@
       aboveData: chartRows.map(function (row) { return toReadableElementChartVisualValue(row.above); })
     };
 
-    var chartMax = Math.max.apply(
-      null,
-      [0].concat(chartVisualInput.belowData || [], chartVisualInput.refData || [], chartVisualInput.aboveData || []).map(normalizeNumber)
-    );
-    chartMax = chartMax > 0 ? Math.ceil((chartMax * 1.1) / 10) * 10 : 100;
+    // Preserve existing category assignment logic: whichever of below/ref/above is present
+    // determines the element's category. We DO NOT scale bar length by ppm — instead
+    // place each element onto one of three fixed ring radii.
+    var INNER_RING = 33; // inner ring visual value
+    var MID_RING = 66;   // middle ring visual value
+    var OUTER_RING = 100; // outer ring visual value
+
+    for (var i = 0; i < (chartVisualInput.labels || []).length; i++) {
+      var wasAbove = Number((chartVisualInput.aboveData || [])[i]) > 0;
+      var wasRef = Number((chartVisualInput.refData || [])[i]) > 0;
+      var wasBelow = Number((chartVisualInput.belowData || [])[i]) > 0;
+      // Clear all three then set only the appropriate ring to a fixed value
+      chartVisualInput.aboveData[i] = 0;
+      chartVisualInput.refData[i] = 0;
+      chartVisualInput.belowData[i] = 0;
+      if (wasAbove) chartVisualInput.aboveData[i] = OUTER_RING;
+      else if (wasRef) chartVisualInput.refData[i] = MID_RING;
+      else if (wasBelow) chartVisualInput.belowData[i] = INNER_RING;
+    }
+
+    // Use fixed visual scale (0-100) so ring positions are absolute and not scaled by data
+    var chartMax = 100;
+
+    // UNDR palette (cycled per-element)
+    var undrPalette = [
+      '#a32720', '#f6b315', '#2f8f46', '#1f78b4', '#8b2323', '#6b7280', '#7c3aed', '#d97706'
+    ];
+
+    // Build per-element color arrays so each label/bar uses a palette color
+    var paletteForLabels = (chartVisualInput.labels || []).map(function (_lbl, idx) {
+      return undrPalette[idx % undrPalette.length];
+    });
 
     reportChart = new window.Chart(ctx, {
+      // Plugin draws concentric rings and faint radial connector lines from center to each label
+      plugins: [{
+        id: 'elementVisuals',
+        beforeDatasetsDraw: function (chart) {
+          try {
+            if (chart.config && chart.config.type !== 'polarArea') return;
+            var ctx2 = chart.ctx;
+            var scaleR = chart.scales && chart.scales.r;
+            var cx = (chart.chartArea.left + chart.chartArea.right) / 2;
+            var cy = (chart.chartArea.top + chart.chartArea.bottom) / 2;
+            var maxR = (scaleR && scaleR.drawingArea) || Math.min(chart.chartArea.width, chart.chartArea.height) / 2;
+            // Outer -> dark, middle -> medium, inner -> light
+            var outerR = maxR;
+            var midR = Math.round(maxR * 0.66);
+            var innerR = Math.round(maxR * 0.33);
+            ctx2.save();
+            // draw outer (dark grey)
+            // Outer ring (Above Average) — dark grey
+ctx2.beginPath();
+ctx2.arc(cx, cy, outerR, 0, Math.PI * 2);
+ctx2.fillStyle = 'rgba(55,65,81,0.32)';
+ctx2.fill();
+ctx2.beginPath();
+ctx2.arc(cx, cy, outerR, 0, Math.PI * 2);
+ctx2.strokeStyle = 'rgba(55,65,81,0.55)';
+ctx2.lineWidth = 1.5;
+ctx2.stroke();
+
+// Middle ring (Average) — medium grey
+ctx2.beginPath();
+ctx2.arc(cx, cy, midR, 0, Math.PI * 2);
+ctx2.fillStyle = 'rgba(148,163,184,0.22)';
+ctx2.fill();
+ctx2.beginPath();
+ctx2.arc(cx, cy, midR, 0, Math.PI * 2);
+ctx2.strokeStyle = 'rgba(100,116,139,0.50)';
+ctx2.lineWidth = 1.5;
+ctx2.stroke();
+
+// Inner ring (Below Average) — light grey
+ctx2.beginPath();
+ctx2.arc(cx, cy, innerR, 0, Math.PI * 2);
+ctx2.fillStyle = 'rgba(226,232,240,0.18)';
+ctx2.fill();
+ctx2.beginPath();
+ctx2.arc(cx, cy, innerR, 0, Math.PI * 2);
+ctx2.strokeStyle = 'rgba(148,163,184,0.45)';
+ctx2.lineWidth = 1.5;
+ctx2.stroke();
+
+ctx2.restore();
+          } catch (e) {
+            // ignore
+          }
+        },
+        afterDraw: function (chart) {
+          try {
+            if (chart.config && chart.config.type !== 'polarArea') return;
+            var meta = chart.getDatasetMeta && chart.getDatasetMeta(0);
+            if (!meta || !meta.data || !meta.data.length) return;
+            var ctx2 = chart.ctx;
+            ctx2.save();
+            ctx2.lineWidth = 1.5;
+            ctx2.strokeStyle = 'rgba(75,85,99,0.26)';
+            if (ctx2.setLineDash) ctx2.setLineDash([3,3]);
+            var scaleR = chart.scales && chart.scales.r;
+            var outerLimit = (scaleR && scaleR.drawingArea) || Math.min(chart.chartArea.width, chart.chartArea.height) / 2;
+            // labelPadding ensures lines extend beyond the drawing area to the label text
+            var labelPadding = Math.round(Math.max(24, Math.min(chart.chartArea.width, chart.chartArea.height) * 0.06));
+            meta.data.forEach(function (arc) {
+              var start = arc.startAngle;
+              var end = arc.endAngle;
+              var mid = (start + end) / 2;
+              var cx = arc.x || (chart.chartArea.left + chart.chartArea.right) / 2;
+              var cy = arc.y || (chart.chartArea.top + chart.chartArea.bottom) / 2;
+              var outer = outerLimit + labelPadding;
+              var x2 = cx + Math.cos(mid) * outer;
+              var y2 = cy + Math.sin(mid) * outer;
+              ctx2.beginPath();
+              ctx2.moveTo(cx, cy);
+              ctx2.lineTo(x2, y2);
+              ctx2.stroke();
+            });
+            if (ctx2.setLineDash) ctx2.setLineDash([]);
+            ctx2.restore();
+          } catch (e) {
+            // fail silently to avoid breaking chart
+          }
+        }
+      }],
       type: "polarArea",
       data: {
         labels: chartVisualInput.labels,
         datasets: [
-          { label: "Reference Range", data: chartVisualInput.refData, backgroundColor: "#a6acb5", borderWidth: 1, borderColor: "#ffffff", borderRadius: 6, order: 3 },
-          { label: "Below Range", data: chartVisualInput.belowData, backgroundColor: "rgba(47, 143, 70, 0.92)", borderWidth: 1, borderColor: "#ffffff", borderRadius: 6, order: 2 },
-          { label: "Above Range", data: chartVisualInput.aboveData, backgroundColor: "rgba(179, 38, 30, 0.92)", borderWidth: 1, borderColor: "#ffffff", borderRadius: 6, order: 1 }
+          { label: "Reference Range", data: chartVisualInput.refData, backgroundColor: paletteForLabels, borderWidth: 1, borderColor: "#ffffff", borderRadius: 6, order: 3 },
+          { label: "Below Range", data: chartVisualInput.belowData, backgroundColor: paletteForLabels, borderWidth: 1, borderColor: "#ffffff", borderRadius: 6, order: 2 },
+          { label: "Above Range", data: chartVisualInput.aboveData, backgroundColor: paletteForLabels, borderWidth: 1, borderColor: "#ffffff", borderRadius: 6, order: 1 }
         ]
       },
       options: {
