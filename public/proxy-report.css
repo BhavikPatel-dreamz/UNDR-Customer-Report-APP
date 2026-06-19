@@ -1472,6 +1472,14 @@ p {
     letter-spacing: 0;
 }
 
+.multi_level_chart_section  .chart_group[data-max="35"] .scale_labels span {
+    width: 20px;
+}
+
+.multi_level_chart_section  .chart_group[data-max="450"] .scale_labels span {
+    width: 30px;
+}
+
 .multi_level_chart_section .chart_axis_label_row {
     display: flex;
     align-items: flex-start;
