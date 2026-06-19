@@ -126,8 +126,8 @@ function App() {
         setLineItems(resolvedItems);
 
         try {
-          const shopRes = await (query as any)(`query { shop { myshopifyDomain } }`);
-          const shopDomain = shopRes?.data?.shop?.myshopifyDomain;
+          const shopRes = await (query as any)(`query { shop { myshopifyDomain primaryDomain { host } } }`);
+          const shopDomain = shopRes?.data?.shop?.primaryDomain?.host || shopRes?.data?.shop?.myshopifyDomain;
           const storeOrigin = shopDomain
             ? `https://${shopDomain}`
             : (typeof window !== 'undefined' && (window.location.origin || `${window.location.protocol}//${window.location.hostname}`)) || '';

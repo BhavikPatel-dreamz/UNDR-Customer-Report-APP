@@ -433,6 +433,11 @@ function renderRegistrationPage(state: ActionData | LoaderData) {
 						${renderError(errors?.phone)}
 					</label>
 
+		<label style="display:flex;align-items:center;gap:10px;">
+			<input type="checkbox" name="smsConsent" value="1" checked />
+			<span style="font-size:13px;line-height:1.2;">I agree to receive SMS messages (Shopify messaging standard).</span>
+		</label>
+
 
 
 		<label style="display:grid;gap:5px;">

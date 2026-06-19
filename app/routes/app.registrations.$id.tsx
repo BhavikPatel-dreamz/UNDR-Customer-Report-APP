@@ -8,6 +8,7 @@ import {
   getRegistrationById,
   updateRegistrationQuickViewPackageById,
   updateRegistrationReportPackageById,
+  updateRegistrationFieldsById,
 } from "../models/registration.server";
 import {
   parseCsv,
@@ -167,6 +168,19 @@ export const action = async ({ params, request }: ActionFunctionArgs) => {
     return { success: true, message: "Element values updated.", intent: "report_row_config" as const };
   }
 
+  if (intent === "toggle_report_link") {
+    const enabledRaw = String(formData.get("reportLinkEnabled") || "").trim().toLowerCase();
+    const enabled = enabledRaw === "1" || enabledRaw === "true" || enabledRaw === "on";
+
+    try {
+      await updateRegistrationFieldsById(registration.id, { reportLinkEnabled: enabled, shop: session.shop });
+    } catch (err) {
+      return { error: "Could not update report link state.", intent: "toggle_report_link" as const };
+    }
+
+    return { success: true, message: enabled ? "Report link enabled." : "Report link disabled.", intent: "toggle_report_link" as const };
+  }
+
   const file = formData.get("csv");
 
   if (!(file instanceof File) || file.size === 0) {
@@ -237,7 +251,9 @@ export const headers: HeadersFunction = (args) => boundary.headers(args);
 type LoaderData = Awaited<ReturnType<typeof loader>>;
 type ActionData =
   | { success: true; message: string; rowCount?: number; intent?: "upload_csv" | "manual_config" | "package_config" | "quick_view_config" | "report_row_config" }
-  | { error: string; intent?: "upload_csv" | "manual_config" | "package_config" | "quick_view_config" | "report_row_config" }
+  | { error: string; intent?: "upload_csv" | "manual_config" | "package_config" | "quick_view_config" | "report_row_config" | "toggle_report_link" }
+  | { success: true; message: string; intent?: "toggle_report_link" }
+  | { error: string; intent?: "toggle_report_link" }
   | undefined;
 
   const PETROLEUM_CONTAMINANTS = [
@@ -301,6 +317,7 @@ export default function RegistrationDetail() {
   const actionData = useActionData<ActionData>();
   const manualPetroleumFetcher = useFetcher<ActionData>();
   const reportRowFetcher = useFetcher<ActionData>();
+  const reportLinkFetcher = useFetcher<ActionData>();
   const packageConfigFetcher = useFetcher<ActionData>();
   const quickViewConfigFetcher = useFetcher<ActionData>();
   const uploadFetcher = useFetcher<ActionData>();
@@ -309,10 +326,12 @@ export default function RegistrationDetail() {
   const isUploading = uploadFetcher.state !== "idle" || nav.state === "submitting";
   const isSavingPetroleum = manualPetroleumFetcher.state !== "idle";
   const isSavingReportRow = reportRowFetcher.state !== "idle";
+  const isSavingReportLink = reportLinkFetcher.state !== "idle";
   const isSavingPackage = packageConfigFetcher.state !== "idle";
   const isSavingQuickViewPackage = quickViewConfigFetcher.state !== "idle";
   // referenced intentionally to satisfy TypeScript/ESLint when variable is unused
   void isSavingQuickViewPackage;
+  void isSavingReportLink;
   const packageConfigData =
     packageConfigFetcher.data && packageConfigFetcher.data.intent === "package_config"
       ? packageConfigFetcher.data
@@ -470,6 +489,9 @@ export default function RegistrationDetail() {
     : appUrl.replace(/\/$/, "");
   const reportUrl = `${reportBaseUrl}${reportPath}`;
 
+  const [reportLinkEnabled, setReportLinkEnabled] = useState(false);
+  const [reportLinkError, setReportLinkError] = useState<string | null>(null);
+
   return (
     <s-page
       heading={`Registration: ${registration.kitRegistrationNumber}`}
@@ -599,14 +621,68 @@ export default function RegistrationDetail() {
           <p style={{ margin: "0 0 8px", fontSize: "14px", color: "#6b7280" }}>
             Share this URL with the customer via email or QR code:
           </p>
+
+          <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "8px" }}>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: "10px" }}>
+              <button
+                type="button"
+                aria-pressed={reportLinkEnabled}
+                onClick={() => {
+                  const next = !reportLinkEnabled;
+                  setReportLinkEnabled(next);
+                  setReportLinkError(null);
+                  const fd = new FormData();
+                  fd.set("intent", "toggle_report_link");
+                  fd.set("reportLinkEnabled", next ? "1" : "0");
+                  reportLinkFetcher.submit(fd, { method: "post" });
+                }}
+                disabled={isSavingReportLink}
+                title={reportLinkEnabled ? "Disable report link" : "Enable report link"}
+                style={{
+                  width: "46px",
+                  height: "28px",
+                  padding: "3px",
+                  borderRadius: "999px",
+                  border: "1px solid #d1d5db",
+                  background: reportLinkEnabled ? "#6b7280" : "#9ca3af",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  cursor: isSavingReportLink ? "default" : "pointer",
+                }}
+              >
+                <span
+                  aria-hidden
+                  style={{
+                    width: "20px",
+                    height: "20px",
+                    borderRadius: "50%",
+                    background: "#ffffff",
+                    boxShadow: "0 1px 2px rgba(0,0,0,0.2)",
+                    transform: reportLinkEnabled ? "translateX(18px)" : "translateX(0)",
+                    transition: "transform 140ms ease",
+                    display: "inline-block",
+                  }}
+                />
+              </button>
+              <span style={{ fontSize: "13px", color: "#374151" }}>Enable report link</span>
+            </div>
+            <span style={{ fontSize: "12px", color: "#9ca3af" }}>(default: off)</span>
+          </div>
+
           <a
             href={reportUrl}
             target="_blank"
             rel="noreferrer"
-            style={{ fontSize: "14px", color: "#111827", fontWeight: 600, wordBreak: "break-all" }}
+            style={{ fontSize: "14px", color: "#111827", fontWeight: 600, wordBreak: "break-all", cursor: "pointer" }}
           >
             {reportUrl}
           </a>
+
+          {!reportLinkEnabled && (
+            <div style={{ marginTop: "8px", color: "#b91c1c", fontSize: "13px" }}>
+              Public access to this report is disabled. Customers will be denied access until you enable the report link.
+            </div>
+          )}
         </s-section>
       )}
 

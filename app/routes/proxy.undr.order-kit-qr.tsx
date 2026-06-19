@@ -14,11 +14,11 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     return new Response(null, { status: 204, headers: CORS_HEADERS });
   }
   const { session } = await authenticate.public.appProxy(request);
-  if (!session) return Response.json({ error: "Unauthorized" }, { status: 401 });
+  if (!session) return Response.json({ error: "Unauthorized" }, { status: 401, headers: CORS_HEADERS });
 
   const url = new URL(request.url);
   const orderId = url.searchParams.get("orderId") || "";
-  if (!orderId) return Response.json({ qrMap: {} });
+  if (!orderId) return Response.json({ qrMap: {} }, { headers: CORS_HEADERS });
 
   const registrations = await getRegistrationsByShopifyOrderId(orderId);
 
@@ -49,7 +49,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const { orderId, qrUrl } = body;
 
   if (!orderId) {
-    return Response.json({ error: "orderId is required" }, { status: 400 });
+    return Response.json({ error: "orderId is required" }, { status: 400, headers: CORS_HEADERS });
   }
 
   const registration = await setQrForLineItem({
@@ -58,7 +58,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   });
 
   if (!registration) {
-    return Response.json({ error: 'No registration found for this line item. Generate a kit first.' }, { status: 400 });
+    return Response.json({ error: 'No registration found for this line item. Generate a kit first.' }, { status: 400, headers: CORS_HEADERS });
   }
 
   return Response.json({ qrUrl: registration.qrUrl }, { headers: CORS_HEADERS });
