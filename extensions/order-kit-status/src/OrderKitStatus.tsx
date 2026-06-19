@@ -38,7 +38,7 @@ async function fetchOrderData(orderId: string, api: any) {
     try {
       const apiShop = (api as any)?.shop;
       const storefrontUrl = apiShop?.storefrontUrl;
-      const myshop = apiShop?.myshopifyDomain;
+      const myshop = apiShop?.primaryDomain?.host || apiShop?.myshopifyDomain;
 
       const deriveOriginFromReferrer = () => {
         if (typeof document !== 'undefined' && document.referrer) {
@@ -185,7 +185,7 @@ export default extension(TARGET, async (root, api) => {
     } else if (reportUrl.startsWith('/')) {
       const apiShop = (api as any)?.shop;
       const storefrontUrl = apiShop?.storefrontUrl;
-      const myshop = apiShop?.myshopifyDomain;
+      const myshop = apiShop?.primaryDomain?.host || apiShop?.myshopifyDomain;
       let origin = '';
       if (storefrontUrl) origin = String(storefrontUrl).replace(/\/$/, '');
       else if (myshop) origin = `https://${myshop}`;
@@ -216,7 +216,7 @@ export default extension(TARGET, async (root, api) => {
   if (showRegisterButton) {
     const apiShop = (api as any)?.shop;
     const storefrontUrl = apiShop?.storefrontUrl;
-    const myshop = apiShop?.myshopifyDomain;
+    const myshop = apiShop?.primaryDomain?.host || apiShop?.myshopifyDomain;
     let origin = '';
     if (storefrontUrl) origin = String(storefrontUrl).replace(/\/$/, '');
     else if (myshop) origin = `https://${myshop}`;

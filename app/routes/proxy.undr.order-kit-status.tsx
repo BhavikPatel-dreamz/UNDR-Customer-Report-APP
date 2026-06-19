@@ -15,11 +15,11 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     return new Response(null, { status: 204, headers: CORS_HEADERS });
   }
   const { session } = await authenticate.public.appProxy(request);
-  if (!session) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!session) return Response.json({ error: 'Unauthorized' }, { status: 401, headers: CORS_HEADERS });
 
   const url = new URL(request.url);
   const orderId = url.searchParams.get('orderId') || '';
-  if (!orderId) return Response.json({ statusMap: {} });
+  if (!orderId) return Response.json({ statusMap: {} }, { headers: CORS_HEADERS });
 
   const registrations = await getRegistrationsByShopifyOrderId(orderId);
 

@@ -17,11 +17,11 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     return new Response(null, { status: 204, headers: CORS_HEADERS });
   }
   const { session } = await authenticate.public.appProxy(request);
-  if (!session) return Response.json({ error: "Unauthorized" }, { status: 401 });
+  if (!session) return Response.json({ error: "Unauthorized" }, { status: 401, headers: CORS_HEADERS });
 
   const url = new URL(request.url);
   const orderId = url.searchParams.get("orderId") || "";
-  if (!orderId) return Response.json({ kitMap: {} });
+  if (!orderId) return Response.json({ kitMap: {} }, { headers: CORS_HEADERS });
 
   const registrations = await getRegistrationsByShopifyOrderId(orderId);
 
@@ -54,7 +54,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     return new Response(null, { status: 204, headers: CORS_HEADERS });
   }
   const { session } = await authenticate.public.appProxy(request);
-  if (!session) return Response.json({ error: "Unauthorized" }, { status: 401 });
+  if (!session) return Response.json({ error: "Unauthorized" }, { status: 401, headers: CORS_HEADERS });
 
   const body = await request.json();
   const { orderId, orderNumber, lineItemId, lineItemTitle, registrationNumber, shopifyCustomerId, customerName, customerEmail } = body;
