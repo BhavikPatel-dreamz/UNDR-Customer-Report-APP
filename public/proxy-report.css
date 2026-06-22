@@ -1569,7 +1569,8 @@ p {
     max-width: none;
     height: auto;
     filter: blur(5px);
-    opacity: 0.68;
+    /* opacity: 0.68; */
+    opacity: 0.18;
     transform: translate(-50%, -50%) scale(1.05);
 }
 
@@ -1996,7 +1997,8 @@ p {
 
 .oil_contaminants_section .crude_oil_result_card_locked {
     filter: blur(4px);
-    opacity: 0.72;
+    /* opacity: 0.72; */
+    opacity: 0.18;
     pointer-events: none;
     user-select: none;
 }
@@ -2562,7 +2564,8 @@ p {
     max-width: none;
     height: auto;
     filter: blur(5px);
-    opacity: 0.68;
+    /* opacity: 0.68; */
+    opacity: 0.18;
     transform: translate(-50%, -50%) scale(1.05);
 }
 
@@ -3074,6 +3077,7 @@ p {
     width: 100%;
     max-width: 900px;
     margin: 0 auto;
+    overflow: visible;
 }
 
 .earth_element_breakdown_section svg {

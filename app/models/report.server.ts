@@ -936,7 +936,7 @@ export function buildReportDataFromRows(
   const found = allElements.filter((r) => r.ppmValue > 0);
   const notFound = allElements.filter((r) => r.ppmValue === 0);
 
-base.foundElements = found.slice(0, 60)
+base.foundElements = found
 .sort((a, b) => a.element.localeCompare(b.element)) // alphabetical sort
 .map(
   (r): FoundElementItem => {
@@ -983,7 +983,7 @@ base.foundElements = found.slice(0, 60)
   //   }),
   // );
 
-  base.notFoundElements = notFound.slice(0, 60)
+  base.notFoundElements = notFound
   .sort((a, b) => a.element.localeCompare(b.element)) // alphabetical sort
   .map(
   (r): NotFoundElementItem => {

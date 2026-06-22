@@ -675,16 +675,47 @@ ctx2.restore();
       .attr("viewBox", "0 0 " + width + " " + height)
       .attr("preserveAspectRatio", "xMidYMid meet");
 
-  var data = (reportData.earthElementsBreakdown.items || []).map(function (item) { return Object.assign({}, item); });
-  // If there are no detected items, nothing to render
-  if (!data.length) return;
+    var data = (reportData.earthElementsBreakdown.items || []).map(function (item) { return Object.assign({}, item); });
+    if (!data.length) return;
 
-  // Keep original detected count (before adding placeholders)
-  var detectedCount = data.length;
+    var detectedCount = data.length;
 
-  var minPpm = d3.min(data, function (item) { return item.ppm; }) || 2;
-  var maxPpm = d3.max(data, function (item) { return item.ppm; }) || 31;
-    var radiusScale = d3.scaleSqrt().domain([minPpm, maxPpm]).range([isMobile ? 45 : 40, isMobile ? 120 : 110]);
+    function computeMaxBubbleRadius(count, layoutWidth, layoutHeight) {
+      if (count <= 0) return isMobile ? 118 : 108;
+      var sidePad = 24;
+      var labelPad = 36;
+      var minGap = 10;
+      var usableW = layoutWidth - sidePad * 2;
+      var usableH = layoutHeight - sidePad * 2 - labelPad;
+      var grid = Math.ceil(Math.sqrt(count));
+      var maxFromW = (usableW - minGap * Math.max(0, grid - 1)) / (grid * 2);
+      var maxFromH = (usableH - minGap * Math.max(0, grid - 1)) / (grid * 2);
+      var absoluteMax = isMobile ? 118 : 108;
+      var absoluteMin = isMobile ? 42 : 38;
+      var fitMax = Math.min(maxFromW, maxFromH) - minGap;
+      return Math.max(absoluteMin, Math.min(absoluteMax, fitMax));
+    }
+
+    var maxBubbleRadius = computeMaxBubbleRadius(detectedCount, width, height);
+    var minBubbleRadius = Math.max(isMobile ? 42 : 38, Math.round(maxBubbleRadius * 0.38));
+
+    var minPpm = d3.min(data, function (item) { return item.ppm; }) || 2;
+    var maxPpm = d3.max(data, function (item) { return item.ppm; }) || minPpm || 31;
+    if (minPpm >= maxPpm) {
+      minPpm = maxPpm > 0 ? maxPpm * 0.01 : 1;
+    }
+
+    var radiusScale = d3.scaleSqrt()
+      .domain([minPpm, maxPpm])
+      .range([minBubbleRadius, maxBubbleRadius]);
+
+    function getNodeRadius(item) {
+      if (item && item.isPlaceholder) {
+        return (item.placeholderDiameter || 150) / 2;
+      }
+      return radiusScale(item.ppm);
+    }
+
     function truncateLabel(text, maxChars) {
       if (!text || text.length <= maxChars) return text;
       return text.slice(0, Math.max(1, maxChars - 3)) + "...";
@@ -692,17 +723,14 @@ ctx2.restore();
 
     // If few elements detected, add unlabeled placeholder bubbles to reach a fuller-looking chart
     if (detectedCount > 0 && detectedCount < 5) {
-      var targetTotal = 8; // desired total bubbles to display
+      var targetTotal = 8;
       var placeholdersToAdd = Math.max(0, targetTotal - detectedCount);
       var palette = ["#a32720", "#f6b315", "#a6acb5", "#e99180", "#b46a5f", "#e8d3a5", "#c9d4e9", "#d48f7f"];
-      // Determine the smallest detected bubble radius (in px) using radiusScale so placeholders match smallest element
-      var detectedRadii = data.map(function (it) { return radiusScale(it.ppm); });
+      var detectedRadii = data.map(function (it) { return getNodeRadius(it); });
       var smallestRadius = detectedRadii.length ? Math.min.apply(null, detectedRadii) : (isMobile ? 160 : 75);
-      // placeholderDiameter will match smallest detected bubble diameter (2 * radius)
       var placeholderDiameterFromSmallest = Math.max(6, Math.round(smallestRadius * 2));
 
       for (var p = 0; p < placeholdersToAdd; p += 1) {
-        // Use a small ppm value for compatibility but set placeholderDiameter from smallest real bubble
         data.push({
           name: "",
           ppm: Math.max(0.5, Math.round((minPpm || 1) * 0.5)),
@@ -714,41 +742,43 @@ ctx2.restore();
       }
     }
 
+    function formatRestName(fullName, maxChars) {
+      if (!fullName) return "";
+      return "(" + truncateLabel(fullName, maxChars).toLowerCase() + ")";
+    }
+
     function getCircleLabelParts(item) {
       var rawName = String(item.name || "").trim();
       var match = rawName.match(/^(.*?)(?:\s*\(([A-Za-z0-9]{1,3})\))?$/);
       var fullName = match && match[1] ? match[1].trim() : rawName;
-      // Format the chemical symbol as Title Case (e.g., 'Nd') instead of all-caps 'ND'
       var rawSymbol = match && match[2] ? match[2].trim() : "";
       var symbol = "";
       if (rawSymbol) {
         symbol = rawSymbol.charAt(0).toUpperCase() + rawSymbol.slice(1).toLowerCase();
       }
-      var radius = radiusScale(item.ppm);
+      var radius = getNodeRadius(item);
 
-      // Defaults when there's no explicit chemical symbol
       if (!symbol) {
         if (radius <= (isMobile ? 65 : 58)) {
-          return { symbol: truncateLabel(fullName, 4), symbolFont: isMobile ? "18px" : "14px", rest: "", restFont: "", ppmFont: isMobile ? "36px" : "28px" };
+          return { symbol: truncateLabel(fullName, 4), symbolFont: isMobile ? "18px" : "14px", rest: formatRestName(fullName, 6), restFont: isMobile ? "10px" : "9px", ppmFont: isMobile ? "36px" : "28px" };
         }
         if (radius <= (isMobile ? 82 : 74)) {
-          return { symbol: truncateLabel(fullName, 6), symbolFont: isMobile ? "14px" : "10px", rest: "", restFont: "", ppmFont: isMobile ? "38px" : "30px" };
+          return { symbol: truncateLabel(fullName, 6), symbolFont: isMobile ? "14px" : "10px", rest: formatRestName(fullName, 8), restFont: isMobile ? "12px" : "10px", ppmFont: isMobile ? "38px" : "30px" };
         }
         if (radius <= (isMobile ? 100 : 90)) {
-          return { symbol: truncateLabel(fullName, 10), symbolFont: isMobile ? "16px" : "12px", rest: "", restFont: "", ppmFont: isMobile ? "40px" : "32px" };
+          return { symbol: truncateLabel(fullName, 10), symbolFont: isMobile ? "16px" : "12px", rest: formatRestName(fullName, 10), restFont: isMobile ? "14px" : "12px", ppmFont: isMobile ? "40px" : "32px" };
         }
-        return { symbol: fullName, symbolFont: isMobile ? "20px" : "16px", rest: "", restFont: "", ppmFont: isMobile ? "44px" : "36px" };
+        return { symbol: fullName, symbolFont: isMobile ? "20px" : "16px", rest: formatRestName(fullName, fullName.length), restFont: isMobile ? "16px" : "14px", ppmFont: isMobile ? "44px" : "36px" };
       }
 
-      // When a chemical symbol is available, render it prominently and show the full name smaller when space allows.
       if (radius <= (isMobile ? 65 : 58)) {
-        return { symbol: symbol, symbolFont: isMobile ? "28px" : "22px", rest: "", restFont: "", ppmFont: isMobile ? "36px" : "28px" };
+        return { symbol: symbol, symbolFont: isMobile ? "28px" : "22px", rest: formatRestName(fullName, 6), restFont: isMobile ? "10px" : "9px", ppmFont: isMobile ? "36px" : "28px" };
       }
       if (radius <= (isMobile ? 82 : 74)) {
         return {
           symbol: symbol,
           symbolFont: isMobile ? "24px" : "18px",
-          rest: "(" + truncateLabel(fullName, 6).toLowerCase() + ")",
+          rest: formatRestName(fullName, 6),
           restFont: isMobile ? "12px" : "10px",
           ppmFont: isMobile ? "38px" : "30px",
         };
@@ -757,7 +787,7 @@ ctx2.restore();
         return {
           symbol: symbol,
           symbolFont: isMobile ? "28px" : "22px",
-          rest: "(" + truncateLabel(fullName, 10).toLowerCase() + ")",
+          rest: formatRestName(fullName, 10),
           restFont: isMobile ? "14px" : "12px",
           ppmFont: isMobile ? "40px" : "32px",
         };
@@ -766,14 +796,42 @@ ctx2.restore();
       return {
         symbol: symbol,
         symbolFont: isMobile ? "34px" : "26px",
-        rest: "(" + fullName.toLowerCase() + ")",
+        rest: formatRestName(fullName, fullName.length),
         restFont: isMobile ? "16px" : "14px",
         ppmFont: isMobile ? "44px" : "36px",
       };
     }
+
+    function fitChartViewBox(items) {
+      var edgePad = 22;
+      var labelPad = 36;
+      var minX = Infinity;
+      var minY = Infinity;
+      var maxX = -Infinity;
+      var maxY = -Infinity;
+
+      items.forEach(function (item) {
+        var r = getNodeRadius(item);
+        var textPad = item.isPlaceholder ? 0 : labelPad;
+        minX = Math.min(minX, item.x - r);
+        minY = Math.min(minY, item.y - r);
+        maxX = Math.max(maxX, item.x + r);
+        maxY = Math.max(maxY, item.y + r + textPad);
+      });
+
+      if (!Number.isFinite(minX)) return;
+
+      svg.attr("viewBox", [
+        minX - edgePad,
+        minY - edgePad,
+        maxX - minX + edgePad * 2,
+        maxY - minY + edgePad * 2,
+      ].join(" "));
+    }
+
     var highest = data.reduce(function (prev, curr) { return prev.ppm > curr.ppm ? prev : curr; });
     var centerX = width / 2;
-    var centerY = isMobile ? (height / 2) + 50 : height / 2;
+    var centerY = height / 2;
 
     data.forEach(function (item) {
       if (item === highest) {
@@ -789,15 +847,13 @@ ctx2.restore();
       .force("x", d3.forceX(centerX).strength(0.5))
       .force("y", d3.forceY(centerY).strength(0.5))
       .force("collide", d3.forceCollide(function (item) {
-        // Use fixed pixel radius for placeholders, otherwise use radiusScale
-        var r = item && item.isPlaceholder ? ((item.placeholderDiameter || 150) / 2) : radiusScale(item.ppm);
-        return r + 6;
+        return getNodeRadius(item) + 6;
       }))
       .stop();
 
     for (var i = 0; i < 600; i += 1) simulation.tick();
 
-    
+    fitChartViewBox(data);
 
     var node = svg.selectAll(".node")
       .data(data)
@@ -806,15 +862,9 @@ ctx2.restore();
       .attr("transform", function (item) { return "translate(" + item.x + "," + item.y + ")"; });
 
     node.append("circle")
-      .attr("r", function (item) {
-        if (item && item.isPlaceholder) {
-          return (item.placeholderDiameter || (isMobile ? 320 : 150)) / 2;
-        }
-        return radiusScale(item.ppm);
-      })
+      .attr("r", function (item) { return getNodeRadius(item); })
       .attr("fill", function (item) { return item.color; });
 
-    // Append text only for real detected elements; placeholders are intentionally unlabeled
     node.each(function (item) {
       if (item.isPlaceholder) return;
       var g = d3.select(this);

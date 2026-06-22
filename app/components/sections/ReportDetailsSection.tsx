@@ -207,6 +207,8 @@ const ReportDetailsSection = ({
     return `${parseFloat(num.toFixed(2)).toString()} ppm`;
   };
 
+  const stripLeadingPpm = (text: string) => text.replace(/^\s*ppm\b/i, '');
+
   const formatOilText = (txt: string): React.ReactNode => {
     if (!txt) return '';
     // If label:value format, keep label and format the value separately
@@ -226,7 +228,7 @@ const ReportDetailsSection = ({
     if (!m) return txt;
     const idx = txt.indexOf(m[0]);
     const before = txt.slice(0, idx);
-    const after = txt.slice(idx + m[0].length);
+    const after = stripLeadingPpm(txt.slice(idx + m[0].length));
     return (
       <>
         {before}
@@ -302,7 +304,7 @@ const ReportDetailsSection = ({
       if (!m) return txt;
       const idx = txt.indexOf(m[0]);
       const before = txt.slice(0, idx);
-      const after = txt.slice(idx + m[0].length);
+      const after = stripLeadingPpm(txt.slice(idx + m[0].length));
       return (
         <>
           {before}
