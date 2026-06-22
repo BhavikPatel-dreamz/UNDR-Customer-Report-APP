@@ -20,6 +20,7 @@ type GuestLookupResult = {
 	kitRegistrationNumber: string;
 	orderNumber: string;
 	reportReady: boolean;
+	reportLinkEnabled?: boolean;
 };
 
 type DashboardState = {
@@ -103,7 +104,7 @@ function renderLoggedInSection(state: DashboardState) {
 		? state.registrations
 				.map((registration) => {
 								const status = registration.report?.status;
-								const reportLinkEnabled = registration.report?.reportLinkEnabled !== false;
+								const reportLinkEnabled = registration.reportLinkEnabled !== false;
 								const reportReady = status === "report_generated" || status === "uploaded";
 								let statusLabel = reportReady ? "Report ready" : "Pending";
 								let actionLabel = reportReady ? "View report" : "Report pending";
@@ -193,9 +194,11 @@ function renderGuestSection(state: DashboardState) {
 				<div style="color:#374151;font-size:14px;line-height:1.6;">
 					Kit <strong>${escapeHtml(state.guestLookupResult.kitRegistrationNumber)}</strong> matched order <strong>${escapeHtml(state.guestLookupResult.orderNumber)}</strong>.
 				</div>
-				${state.guestLookupResult.reportReady
-					? `<a href="${buildReportPath(state.guestLookupResult.kitRegistrationNumber)}" style="display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 18px;border-radius:999px;background:#111827;color:#fff;font-size:14px;font-weight:600;text-decoration:none;width:max-content;">View Report</a>`
-					: `<div style="color:#9a3412;font-size:14px;">Your report is not ready yet. Please check back later.</div>`}
+						${state.guestLookupResult.reportReady
+							? (state.guestLookupResult.reportLinkEnabled !== false
+								? `<a href="${buildReportPath(state.guestLookupResult.kitRegistrationNumber)}" style="display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 18px;border-radius:999px;background:#111827;color:#fff;font-size:14px;font-weight:600;text-decoration:none;width:max-content;">View Report</a>`
+								: `<div style="margin-top:10px;color:#b91c1c;font-size:13px;">Report access is disabled by the store.</div>`)
+							: `<div style="color:#9a3412;font-size:14px;">Your report is not ready yet. Please check back later.</div>`}
 			</div>
 		`
 		: state.guestLookupMessage
@@ -332,7 +335,8 @@ export async function action({ request }: ActionFunctionArgs) {
 		guestLookupResult: {
 			kitRegistrationNumber: registration.kitRegistrationNumber,
 			orderNumber: registration.orderNumber,
-					reportReady: registration.report?.status === "report_generated" || registration.report?.status === "uploaded",
+						reportReady: registration.report?.status === "report_generated" || registration.report?.status === "uploaded",
+						reportLinkEnabled: registration.reportLinkEnabled !== false,
 		},
 	});
 }
