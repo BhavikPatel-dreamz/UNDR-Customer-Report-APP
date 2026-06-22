@@ -60,6 +60,7 @@
     padding: 0px;
     box-sizing: border-box;
     letter-spacing: 0 !important;
+    font-family: 'Obviously', Arial, sans-serif;
 }
 
 
@@ -424,6 +425,7 @@ p {
     margin-right: 10px;
     letter-spacing: 0;
     font-size: 15px;
+    font-size: 13px;
 }
 
 .report_details_section .val_box .not-detected {
@@ -585,6 +587,10 @@ p {
 .report_details_section .metal_circle span {
     font-weight: 600;
     font-size: 16px;
+}
+
+.report_details_section .metal_circle span.not.detected {
+    font-size: 12px;
 }
 
 .report_details_section .quicklook_locked_preview {
@@ -772,9 +778,9 @@ p {
     }
 
     .report_details_section .metal_circle {
-        width: 85px;
-        height: 85px;
-        font-size: 14px;
+        width: 100px;
+        height: 100px;
+        font-size: 13px;
     }
 
     .report_details_section .circles_flex {
@@ -878,11 +884,6 @@ p {
         gap: 15px;
     }
 
-    .report_details_section .metal_circle {
-        width: 90px;
-        height: 90px;
-    }
-
     .report_details_section .oil_btn {
         width: 100%;
         max-width: 280px;
@@ -973,7 +974,7 @@ p {
     line-height: 30px;
     color: #A0A0A0;
     margin-bottom: 10px;
-    max-width: 60%;
+    max-width: 67%;
 }
 
 .elemental_breakdown_section .detailed_summary_btn {
@@ -1089,6 +1090,10 @@ p {
         font-size: 36px;
         line-height: 46px;
     }
+
+    .elemental_breakdown_section .footer_text {
+        max-width: 80%;
+    }
 }
 
 @media (max-width: 991px) {
@@ -1141,6 +1146,10 @@ p {
         font-size: 32px;
         line-height: 42px;
     }
+
+    .elemental_breakdown_section .footer_text {
+        max-width: 100%;
+    }
 }
 
 @media (max-width: 767px) {
@@ -1174,9 +1183,8 @@ p {
     }
 
     .elemental_breakdown_section .footer_text {
-        font-size: 12px;
-        line-height: 18px;
-        max-width: 100%;
+        font-size: 16px;
+        line-height: 24px;
     }
 
     .elemental_breakdown_section .detailed_summary_btn {
@@ -3952,6 +3960,16 @@ p {
     font-size: 24px;
     line-height: 1;
     cursor: pointer;
+    transition: all .2s ease;
+}
+
+.element_blurb_close span {
+    display: block;
+    margin-bottom: 4px;
+}
+
+.element_blurb_close:hover {
+    background: #000000;
 }
 
 .element_blurb_eyebrow {
@@ -4032,6 +4050,10 @@ p {
 
 .element_blurb_section p:last-child {
     margin-bottom: 0;
+}
+
+.element_blurb_section p a:hover {
+    color: #8b2323;
 }
 
 @media (max-width: 767px) {
@@ -4719,6 +4741,10 @@ p {
     line-height: 26px;
 }
 
+.additional_resources_disclaimer p a:hover {
+    color: #8B2323;
+}
+
 .additional_resources_disclaimer {
     margin-top: 70px;
 }
@@ -5013,9 +5039,6 @@ p {
 }
 
 @media (max-width: 1199px) {
-    .report_details_section .val_box {
-        font-size: 14px;
-    }
 
     .other_trace_icon {
         top: 46%;
@@ -5450,6 +5473,15 @@ p {
     align-items: center;
     justify-content: center;
     width: fit-content;
+}
+
+.report_share_bar .share_btn {
+    transition: all .3s ease;
+}
+
+.report_share_bar .share_btn:hover {
+    color: #FFFFFF !important;
+    background-color: #9e2a1f !important;
 }
 
 @media (max-width: 1199px) {

@@ -73,7 +73,7 @@ const FoundElementsListSection = ({ elements, appUrl = '' }: FoundElementsListSe
       <div className="element_blurb_modal" data-element-blurb-modal aria-hidden="true">
         <div className="element_blurb_backdrop" data-element-blurb-close></div>
         <div className="element_blurb_dialog" role="dialog" aria-modal="true" aria-labelledby="element-blurb-title">
-          <button className="element_blurb_close" type="button" data-element-blurb-close aria-label="Close element information">×</button>
+          <button className="element_blurb_close" type="button" data-element-blurb-close aria-label="Close element information"><span>×</span></button>
           <p className="element_blurb_eyebrow" data-element-blurb-symbol></p>
           <h3 className="element_blurb_title" id="element-blurb-title" data-element-blurb-title></h3>
           <div className="element_blurb_content" data-element-blurb-content></div>

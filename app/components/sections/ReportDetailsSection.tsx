@@ -182,12 +182,12 @@ const ReportDetailsSection = ({
     const cleaned = val.replace(/\s+/g, '');
     // If the value indicates "less than" the detection limit (e.g. "<0.1"),
     // treat as not detected and do not display a numeric value.
-    if (cleaned.includes('<')) return <span className="not-detected">Not detected</span>;
+    if (cleaned.includes('<')) return <span className="not detected">Not detected</span>;
     const m = cleaned.match(/-?\d+(?:\.\d+)?/);
     if (!m) return cleaned.replace('ppm', ' ppm');
     const num = Number(m[0]);
     if (Number.isNaN(num)) return cleaned.replace('ppm', ' ppm');
-    if (num === 0) return <span className="not-detected">Not detected</span>;
+    if (num === 0) return <span className="not detected">Not detected</span>;
     if (Number.isInteger(num)) return `${num} ppm`;
     return `${parseFloat(num.toFixed(2)).toString()} ppm`;
   };
@@ -403,7 +403,7 @@ const ReportDetailsSection = ({
                       style={{ backgroundColor: item.valueStyle?.backgroundColor }}
                       key={item.name}
                     >
-                      {item?.name?.length > 9 ? item.name.slice(0, 9) + ".." : item.name}
+                      {item?.name?.length > 7 ? item.name.slice(0, 7) + ".." : item.name}
                       <br />
                       <span>{formatHeavyMetalValue(item.ppm)}</span>
                     </div>
@@ -425,7 +425,7 @@ const ReportDetailsSection = ({
                       style={{ backgroundColor: item.valueStyle?.backgroundColor }}
                       key={item.name}
                     >
-                      {item?.name?.length > 9 ? item.name.slice(0, 9) + ".." : item.name}
+                      {item?.name?.length > 7 ? item.name.slice(0, 7) + ".." : item.name}
                       <br />
                       <span>{formatHeavyMetalValue(item.ppm)}</span>
                     </div>
