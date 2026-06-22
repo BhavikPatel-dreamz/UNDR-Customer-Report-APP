@@ -105,6 +105,16 @@ function renderReportAccessDeniedPage() {
 `;
 }
 
+function renderReportDisabledPage() {
+  return `
+<section style="padding:40px 20px;max-width:760px;margin:0 auto;text-align:center;">
+  <h1 style="margin:0 0 12px;font-size:30px;line-height:1.2;color:#111827;">Report disabled</h1>
+  <p style="margin:0 0 16px;font-size:16px;line-height:1.6;color:#4b5563;">This report's public link has been disabled by the store owner and is no longer available.</p>
+  <p style="margin:0;font-size:14px;line-height:1.6;color:#6b7280;">If you believe this is a mistake, please contact the store for help.</p>
+</section>
+`;
+}
+
 function ensurePetroleumContaminant(report: ProxyReportData) {
   if (report.petroleum_contaminant) return;
 
@@ -223,8 +233,15 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
   }
 
   // If the admin has disabled the public report link, deny access for non-admin requests.
-  if (!admin && (registration as any).reportLinkEnabled === false) {
-    return liquid(renderReportAccessDeniedPage(), { layout: !embed });
+  const regLevel = (registration as any).reportLinkEnabled;
+  const repLevel = (registration as any).report && (registration as any).report.reportLinkEnabled;
+  const linkEnabled = !(regLevel === false || repLevel === false);
+
+  if (!admin && linkEnabled === false) {
+    const resp = await liquid(renderReportDisabledPage(), { layout: !embed });
+    return new Response(typeof resp === "string" ? resp : await resp.text(), {
+      headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" },
+    });
   }
 
   const reportCustomerId = normalizeShopifyCustomerId(registration.shopifyCustomerId);
