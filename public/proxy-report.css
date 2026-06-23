@@ -3876,7 +3876,10 @@ p {
 .found_elements_list_section .element_col_arrow {
     width: 10%;
     display: flex;
+    flex-direction: row;
+    align-items: center;
     justify-content: flex-end;
+    gap: 8px;
 }
 
 .found_elements_list_section .element_blurb_button {
@@ -3901,6 +3904,24 @@ p {
     width: 20px;
     height: 20px;
     color: #7d8e95;
+}
+
+.found_elements_list_section .element_view_hint {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: flex-end;
+    font-style: italic;
+    color: #9aa6a9;
+    margin: 0 8px 0 0;
+    line-height: 1;
+    white-space: nowrap;
+}
+.found_elements_list_section .element_view_hint_line1 {
+    font-size: 12px;
+}
+.found_elements_list_section .element_view_hint_line2 {
+    font-size: 11px;
+    margin-top: 2px;
 }
 
 .found_elements_list_section .element_view_icon svg {
