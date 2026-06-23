@@ -174,7 +174,7 @@ export const ELEMENT_COLOR_MAP: Record<string, { bg: string; text: string }> = {
   co2: { bg: "#9CA3AF", text: "#9CA3AF" },
   ni: { bg: "#86BAB9", text: "#86BAB9" },
   mn: { bg: "#AF6666", text: "#AF6666" },
-  si: { bg: "#942320", text: "#942320" },
+  si: { bg: "#FFB624", text: "#FFB624" },
   cu: { bg: "#EFBD75", text: "#EFBD75" },
   mo: { bg: "#FDB923", text: "#FDB923" },
   co: { bg: "#B4C2D6", text: "#B4C2D6" },

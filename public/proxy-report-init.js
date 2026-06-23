@@ -313,14 +313,16 @@
     var minNonZeroPpm = nonZeroPpms.length ? Math.min.apply(null, nonZeroPpms) : maxPpm;
     var MIN_BAR_HEIGHT = 22;  // minimum height % for any non-zero bar
     var MAX_BAR_HEIGHT = 100; // maximum height % for the highest bar
+    var ZERO_BAR_HEIGHT = 8;  // fixed height % for zero-value bars
 
     sorted.forEach(function (item) {
       var ppm = Number(item.ppm) || 0;
-      // Skip zero-value items so they are not displayed
-      if (ppm <= 0) return;
+      var isZeroValue = ppm <= 0;
 
       var heightPercent;
-      if (minNonZeroPpm === maxPpm) {
+      if (isZeroValue) {
+        heightPercent = ZERO_BAR_HEIGHT;
+      } else if (minNonZeroPpm === maxPpm) {
         // Only one unique non-zero value → give it full height
         heightPercent = MAX_BAR_HEIGHT;
       } else {
@@ -334,7 +336,7 @@
       barWrapper.style.display = "flex";
 
       var body = document.createElement("div");
-      body.className = "bar_body";
+      body.className = isZeroValue ? "bar_body zero_value" : "bar_body";
       body.style.height = heightPercent + "%";
       body.style.backgroundColor = item.color;
 

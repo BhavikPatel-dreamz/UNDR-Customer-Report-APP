@@ -345,6 +345,8 @@ const ELEMENT_AVERAGE_PPM_BY_NAME: Record<string, number> = {
   protactinium: 7,
 };
 
+const ALL_PRECIOUS_METAL_SYMBOLS = ["au", "ag", "pt", "ru", "rh", "pd", "os", "ir"] as const;
+
 function getElementStandardDeviationPpm(input: string) {
   const key = input.trim().toLowerCase();
   if (ELEMENT_STANDARD_DEVIATION_PPM_BY_NAME[key] !== undefined) {
@@ -389,6 +391,34 @@ function formatElementSymbol(input: string) {
   return symbol.length <= 2
     ? symbol.charAt(0).toUpperCase() + symbol.slice(1)
     : input;
+}
+
+function buildPreciousMetalGraphItems(
+  preciousRows: ParsedReportRow[],
+): PreciousMetalGraphItem[] {
+  const ppmBySymbol = new Map<string, number>();
+
+  for (const row of preciousRows) {
+    const lookupKeys = getElementLookupKeys(row.element);
+    const key =
+      lookupKeys.find((item) => ELEMENT_NAME_MAP[item] || ELEMENT_SYMBOL_FROM_NAME[item]) ||
+      lookupKeys[0] ||
+      row.element.trim().toLowerCase();
+    const symbol =
+      ELEMENT_SYMBOL_FROM_NAME[key] ||
+      (ELEMENT_NAME_MAP[key] ? key : key.substring(0, 2));
+    const normalizedSymbol = symbol.toLowerCase();
+    const ppm = Number.isFinite(row.ppmValue) ? row.ppmValue : 0;
+    const existing = ppmBySymbol.get(normalizedSymbol) ?? 0;
+    ppmBySymbol.set(normalizedSymbol, Math.max(existing, ppm));
+  }
+
+  return ALL_PRECIOUS_METAL_SYMBOLS.map((symbol) => ({
+    name: ELEMENT_NAME_MAP[symbol] || symbol,
+    symbol: formatElementSymbol(symbol),
+    ppm: Number((ppmBySymbol.get(symbol) ?? 0).toFixed(6)),
+    color: (ELEMENT_COLOR_MAP[symbol] ?? ELEMENT_COLOR_MAP.default).bg,
+  }));
 }
 
 function formatSoilFeatureDifference(resultPpm: number, averagePpm: number) {
@@ -1253,24 +1283,7 @@ base.foundElements = found
         className: "bg_"+r.element,
       }));
 
-    base.preciousMetalPresent.items = preciousRows
-      .filter((r) => Number.isFinite(r.ppmValue) && r.ppmValue > 0)
-      .sort((a, b) => b.ppmValue - a.ppmValue)
-      .slice(0, 8)
-      .map((r): PreciousMetalGraphItem => {
-        const lookupKeys = getElementLookupKeys(r.element);
-        const key =
-          lookupKeys.find((item) => ELEMENT_NAME_MAP[item] || ELEMENT_SYMBOL_FROM_NAME[item]) ||
-          lookupKeys[0] ||
-          r.element.trim().toLowerCase();
-        const symbol = ELEMENT_SYMBOL_FROM_NAME[key] || (ELEMENT_NAME_MAP[key] ? key : key.substring(0, 2));
-        return {
-          name: ELEMENT_NAME_MAP[key] || formatElementName(r.element).replace(/\s*\([^)]+\)\s*$/, ""),
-          symbol: formatElementSymbol(symbol),
-          ppm: Number(r.ppmValue.toFixed(6)),
-          color: (ELEMENT_COLOR_MAP[key] ?? ELEMENT_COLOR_MAP.default).bg,
-        };
-      });
+    base.preciousMetalPresent.items = buildPreciousMetalGraphItems(preciousRows);
   }
 
   // --- Rare Earth Elements
@@ -1615,7 +1628,7 @@ export const ELEMENT_COLOR_MAP: Record<string, { bg: string; text: string }> = {
   co2: { bg: "#9CA3AF", text: "#9CA3AF" },
   ni: { bg: "#86BAB9", text: "#86BAB9" },
   mn: { bg: "#AF6666", text: "#AF6666" },
-  si: { bg: "#942320", text: "#942320" },
+  si: { bg: "#FFB624", text: "#FFB624" },
   cu: { bg: "#EFBD75", text: "#EFBD75" },
   mo: { bg: "#FDB923", text: "#FDB923" },
   co: { bg: "#B4C2D6", text: "#B4C2D6" },

@@ -2517,9 +2517,11 @@ p {
 }
 
 .precious_metal_present_section .ppm_value {
+    display: inline-block;
     font-family: 'Obviously', Arial, sans-serif;
     font-weight: 500;
     font-size: 22px;
+    line-height: 22px;
     color: #ffffff;
     letter-spacing: 0;
 }
@@ -5477,6 +5479,10 @@ p {
     align-items: center;
     justify-content: center;
     width: fit-content;
+}
+
+.report_share_bar {
+    display: none !important;
 }
 
 .report_share_bar .share_btn {
