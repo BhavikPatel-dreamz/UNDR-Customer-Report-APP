@@ -57,8 +57,6 @@
       if (!a.fixedLast && b.fixedLast) return -1;
       return (b.percentage || 0) - (a.percentage || 0);
     });
-    var minHeight = 42;
-
     // Compute numeric ppm values from formatted `ppm` strings (e.g. "631272ppm" or "4,414ppm")
     var numericValues = sortedData.map(function (it) {
       if (!it.ppm) return 0;
@@ -68,32 +66,34 @@
     var nonZero = numericValues.filter(function (v) { return v > 0; });
     var minNonZero = nonZero.length ? Math.min.apply(null, nonZero) : 0;
     var maxVal = nonZero.length ? Math.max.apply(null, nonZero) : 0;
-    var MIN_WIDTH = 30; // percent
-    var MAX_WIDTH = 100; // percent
-
-    function valueToWidth(v) {
-      if (!v || maxVal <= 0) return MIN_WIDTH;
-      if (minNonZero === maxVal) return MAX_WIDTH;
-      // log scale mapping for perceptual differences
-      var vis = Math.log10(v + 1);
-      var minVis = Math.log10(minNonZero + 1);
-      var maxVis = Math.log10(maxVal + 1);
-      var ratio = (vis - minVis) / (maxVis - minVis);
-      return Math.round(MIN_WIDTH + ratio * (MAX_WIDTH - MIN_WIDTH));
-    }
+    // width mapping constants removed (unused) to satisfy linters
 
     sortedData.forEach(function (item) {
       var bar = document.createElement("div");
       bar.className = "element_bar";
       // Fix bar height and use width to visually represent value (ppm)
-      bar.style.height = minHeight + "px";
       var value = 0;
       if (item.ppm) {
         value = Number(String(item.ppm).replace(/[^0-9.\-]/g, "")) || 0;
       }
-      var widthPct = valueToWidth(value);
-      bar.style.width = widthPct + "%";
+
+      var MIN_BAR_HEIGHT = 42;
+      var MAX_BAR_HEIGHT = 100;
+
+      var pxHeight;
+      if (maxVal <= 0 || value <= 0) {
+        pxHeight = MIN_BAR_HEIGHT;
+      } else if (minNonZero === maxVal) {
+        pxHeight = MAX_BAR_HEIGHT;
+      } else {
+  var linearRatio = (value - minNonZero) / (maxVal - minNonZero);
+  pxHeight = Math.round(MIN_BAR_HEIGHT + linearRatio * (MAX_BAR_HEIGHT - MIN_BAR_HEIGHT));
+}
+
+      bar.style.height = Math.max(pxHeight, MIN_BAR_HEIGHT) + "px";
+      bar.style.width = "100%";
       bar.style.backgroundColor = item.color;
+      bar.style.borderRadius = "10px 0 0 0";
 
       var name = document.createElement("span");
       name.className = "element_bar_name";
@@ -107,13 +107,8 @@
       bar.appendChild(value);
       chartBox.appendChild(bar);
     });
-
-    if (window.innerWidth > 767) {
-      var minChartHeight = sortedData.length * minHeight;
-      chartBox.style.height = Math.max(leftContent.offsetHeight, minChartHeight) + "px";
-    } else {
-      chartBox.style.height = "auto";
-    }
+    chartBox.style.height = "auto";
+    chartBox.style.minHeight = (sortedData.length * 42) + "px";
   }
 
   function initElementBreakdowns() {
