@@ -38,6 +38,10 @@ const FoundElementsListSection = ({ elements, appUrl = '' }: FoundElementsListSe
                 <p className="margin_value">{el.margin}</p>
               </div>
               <div className="element_col_arrow">
+                <span className="element_view_hint" aria-hidden="true">
+                  <span className="element_view_hint_line1">click here for more</span>
+                  <span className="element_view_hint_line2">information</span>
+                </span>
                 <button
                   className="element_blurb_button"
                   type="button"

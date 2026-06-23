@@ -434,7 +434,7 @@ function renderRegistrationPage(state: ActionData | LoaderData) {
 					</label>
 
 		<label style="display:flex;align-items:center;gap:10px;">
-			<input type="checkbox" name="smsConsent" value="1" checked />
+			<input type="checkbox" name="smsConsent" value="1" ${form.smsConsent ? 'checked' : ''} />
 			<span style="font-size:13px;line-height:1.2;">I agree to receive SMS messages (Shopify messaging standard).</span>
 		</label>
 
@@ -523,6 +523,7 @@ export async function action({ request }: ActionFunctionArgs) {
 		orderNumber: String(formData.get("orderNumber") || ""),
 		kitRegistrationNumber: String(formData.get("kitRegistrationNumber") || ""),
 		agreedToTerms: Boolean(String(formData.get("agreeTerms") || "") === "1" || String(formData.get("agreeTerms") || "") === "on"),
+		smsConsent: Boolean(formData.get("smsConsent")),
 	};
 	// reCAPTCHA check disabled for now; submit continues directly to validation/save.
 	// const requireV2 = formData.get("requireV2") === "1";
@@ -574,6 +575,11 @@ export async function action({ request }: ActionFunctionArgs) {
 			if (form.agreedToTerms) {
 				updateData.agreedToTerms = true;
 			}
+
+				// Persist SMS consent explicitly (true when checked, false when unchecked)
+				if (typeof form.smsConsent !== 'undefined') {
+					updateData.smsConsent = Boolean(form.smsConsent);
+				}
 
 			await updateRegistrationFieldsById(existing.id, updateData);
 
@@ -635,6 +641,7 @@ export async function action({ request }: ActionFunctionArgs) {
 			orderNumber: form.orderNumber,
 			kitRegistrationNumber: form.kitRegistrationNumber,
 			agreedToTerms: Boolean(form.agreedToTerms),
+			smsConsent: Boolean(form.smsConsent),
 			shopifyOrderId: null,
 			shopifyCustomerId,
 		});
