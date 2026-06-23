@@ -90,7 +90,12 @@
   pxHeight = Math.round(MIN_BAR_HEIGHT + linearRatio * (MAX_BAR_HEIGHT - MIN_BAR_HEIGHT));
 }
 
-      bar.style.height = Math.max(pxHeight, MIN_BAR_HEIGHT) + "px";
+      var isMobile = window.innerWidth <= 767;
+      if (isMobile) {
+        bar.style.minHeight = Math.max(pxHeight, MIN_BAR_HEIGHT) + "px";
+      } else {
+        bar.style.height = Math.max(pxHeight, MIN_BAR_HEIGHT) + "px";
+      }
       bar.style.width = "100%";
       bar.style.backgroundColor = item.color;
       bar.style.borderRadius = "10px 0 0 0";

@@ -998,9 +998,12 @@ p {
     display: flex;
     flex-direction: column;
     border-top-left-radius: 15px;
-    border-bottom-left-radius: 15px;
     overflow: hidden;
     min-height: 550px;
+}
+
+.elemental_breakdown_section .element_bar:first-child {
+    margin-top: 0;
 }
 
 .elemental_breakdown_section .element_bar {
@@ -1015,7 +1018,8 @@ p {
     gap: 16px;
     padding: 0 22px 0 20px;
     letter-spacing: 0;
-    min-width: 350px;
+    margin-top: -7px;
+    min-height: 50px;
 }
 
 .elemental_breakdown_section .element_bar_name,
@@ -1024,6 +1028,7 @@ p {
     font: inherit;
     font-weight: inherit;
     line-height: inherit;
+    padding-bottom: 10px;
 }
 
 .elemental_breakdown_section .element_bar_name {
@@ -1094,6 +1099,10 @@ p {
     .elemental_breakdown_section .footer_text {
         max-width: 80%;
     }
+
+    .elemental_breakdown_section .element_bar {
+        padding: 0 15px;
+    }
 }
 
 @media (max-width: 991px) {
@@ -1131,7 +1140,8 @@ p {
 
     .elemental_breakdown_section .element_bar {
         font-size: 16px;
-        padding-left: 15px;
+        line-height: 24px;
+        padding: 0 10px;
     }
 
     .other_trace_elements_section {
@@ -1153,6 +1163,16 @@ p {
 }
 
 @media (max-width: 767px) {
+
+    .elemental_breakdown_section .element_bar_name {
+        padding-bottom: 0;
+    }
+
+    .elemental_breakdown_section .element_bar_name, 
+    .elemental_breakdown_section .element_bar_value {
+        display: block;
+        text-align: left;
+    }
 
     .elemental_breakdown_section .report_right_chart {
         margin-right: calc(-100vw / 2 + 510px / 2);
@@ -1199,13 +1219,15 @@ p {
         width: 50%;
         min-height: 350px;
         border-top-left-radius: 10px;
-        border-bottom-left-radius: 10px;
     }
 
     .elemental_breakdown_section .element_bar {
         font-size: 12px;
         line-height: 16px;
-        padding-left: 10px;
+        display: block;
+        min-height: 42px;
+        height: auto;
+        padding: 10px;
     }
 
     .other_trace_elements_section {
