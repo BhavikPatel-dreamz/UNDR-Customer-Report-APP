@@ -43,18 +43,13 @@ export default function PrintQrProxy() {
       <body>
         <div className="card">
           <h1>Kit Registration</h1>
-          <div className="row">
-            <div style={{ flex: 1 }}>
-              <p><strong>Product:</strong> {productTitle}</p>
-              <p><strong>Variant No:</strong> {variantNo || variant}</p>
-              <p><strong>Quantity:</strong> {quantity}</p>
-              <p><strong>Order #:</strong> {orderNumber}</p>
-              <p><strong>Customer:</strong> {customerName} {customerEmail ? `(${customerEmail})` : ''}</p>
-              <p><strong>Kit #:</strong> {kitNumber}</p>
-            </div>
-            <div>
-              {qrUrl ? <img className="qr" src={qrUrl} alt="QR code" /> : <div style={{width:300,height:300,background:'#f3f3f3',display:'flex',alignItems:'center',justifyContent:'center'}}>No QR</div>}
-            </div>
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column' }}>
+            {qrUrl ? (
+              <img className="qr" src={qrUrl} alt="QR code" />
+            ) : (
+              <div style={{ width: 300, height: 300, background: '#f3f3f3', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>No QR</div>
+            )}
+            <p style={{ marginTop: 12, fontSize: 18 }}><strong>Kit #:</strong> {kitNumber}</p>
           </div>
         </div>
       </body>
