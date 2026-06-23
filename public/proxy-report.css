@@ -3942,7 +3942,7 @@ p {
     font-size: 12px;
 }
 .found_elements_list_section .element_view_hint_line2 {
-    font-size: 11px;
+    font-size: 12px;
     margin-top: 2px;
 }
 
@@ -4117,6 +4117,26 @@ p {
 
     .element_blurb_title {
         font-size: 28px;
+    }
+
+    .found_elements_list_section .element_col_arrow {
+        width: 100%;
+        justify-content: flex-start;
+    }
+
+    .found_elements_list_section .element_view_hint {
+        align-items: flex-start;
+        flex-direction: row;
+        margin: 0;
+        gap: 5px;
+    }
+
+    .found_elements_list_section .element_view_hint_line2 {
+        margin-top: 0;
+    }
+
+    .found_elements_list_section .element_blurb_button {
+        width: fit-content;
     }
 }
 
