@@ -183,6 +183,8 @@ const ReportDetailsSection = ({
     // If the value indicates "less than" the detection limit (e.g. "<0.1"),
     // treat as not detected and do not display a numeric value.
     if (cleaned.includes('<')) return <span className="not detected">Not detected</span>;
+    // Preserve explicit 'None Detected' text (including compacted forms like 'NoneDetected')
+    if (/^nonedetected$/i.test(cleaned)) return <span className="not detected">None Detected</span>;
     const m = cleaned.match(/-?\d+(?:\.\d+)?/);
     if (!m) return cleaned.replace('ppm', ' ppm');
     const num = Number(m[0]);
@@ -198,6 +200,7 @@ const ReportDetailsSection = ({
     const cleaned = val.replace(/\s+/g, '');
     // Respect detection-limit markers ("<...") by reporting as not detected.
     if (cleaned.includes('<')) return 'not detected';
+    if (/^nonedetected$/i.test(cleaned)) return 'None Detected';
     const m = cleaned.match(/-?\d+(?:\.\d+)?/);
     if (!m) return cleaned.replace('ppm', ' ppm');
     const num = Number(m[0]);
@@ -211,14 +214,17 @@ const ReportDetailsSection = ({
 
   const formatOilText = (txt: string): React.ReactNode => {
     if (!txt) return '';
+    // Normalize compacted 'NoneDetected' everywhere
+    txt = txt.replace(/none\s*detected/i, 'None Detected');
     // If label:value format, keep label and format the value separately
     const parts = txt.match(/^([^:]+):\s*(.+)$/);
     if (parts) {
       // For oil buttons we prefer plain text for reliability inside button containers
+      const val = parts[2].replace(/none\s*detected/i, 'None Detected');
       return (
         <>
           <span className="oil_btn_label">{parts[1]} :</span>
-          <span className="oil_btn_value">{formatHeavyMetalValueText(parts[2])}</span>
+          <span className="oil_btn_value">{formatHeavyMetalValueText(val)}</span>
         </>
       );
     }
@@ -288,13 +294,16 @@ const ReportDetailsSection = ({
 
   const renderSplitOilButton = (text: string, className: string) => {
     const formatOilText = (txt: string) => {
+      // Normalize compacted 'NoneDetected'
+      txt = txt.replace(/none\s*detected/i, 'None Detected');
       // If label:value format, keep label and format the value separately
       const parts = txt.match(/^([^:]+):\s*(.+)$/);
       if (parts) {
+        const val = parts[2].replace(/none\s*detected/i, 'None Detected');
         return (
           <>
             <span className="oil_btn_label">{parts[1]} :</span>
-            <span className="oil_btn_value">{formatHeavyMetalValue(parts[2])}</span>
+            <span className="oil_btn_value">{formatHeavyMetalValue(val)}</span>
           </>
         );
       }
@@ -338,8 +347,13 @@ const ReportDetailsSection = ({
   );
 
   const petroleumValue = (() => {
-    const value = oilIndicator.petroleum.replace(/^petroleum(?:\s+contaminants?)?:\s*/i, "").trim();
-    return value.toLowerCase() === "none" ? "None Detected" : value || oilIndicator.petroleum;
+    const raw = oilIndicator.petroleum || "";
+    let value = raw.replace(/^petroleum(?:\s+contaminants?)?\s*:\s*/i, "").trim();
+    // Normalize all variants: NoneDetected, nonedetected, None Detected, none
+    value = value.replace(/none\s*detected/i, "None Detected");
+    const compact = value.replace(/\s+/g, "").toLowerCase();
+    if (compact === "none" || compact === "nonedetected") return "None Detected";
+    return value || raw;
   })();
 
   const renderPetroleumIndicator = () => (

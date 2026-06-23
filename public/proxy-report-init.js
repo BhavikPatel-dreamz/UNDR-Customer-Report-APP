@@ -97,7 +97,9 @@
 
       var name = document.createElement("span");
       name.className = "element_bar_name";
-      name.innerText = item.name;
+      var ppmNum = Number(String(item.ppm || "").replace(/[^0-9.\-]/g, "")) || 0;
+      var pctStr = ppmNum > 0 ? " (" + (ppmNum / 10000).toFixed(3) + "%)" : "";
+      name.innerText = item.name + pctStr;
 
       var value = document.createElement("span");
       value.className = "element_bar_value";
