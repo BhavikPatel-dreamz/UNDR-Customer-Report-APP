@@ -388,7 +388,7 @@ function renderRegistrationPage(state: ActionData | LoaderData) {
 	if (ok) {
 		const firstName = String(form.name || "").split(" ")[0] || "";
 		const encoded = encodeURIComponent(firstName);
-		const target = `/apps/undr/instructions?showPopup=1&name=${encoded}`;
+		const target = `https://undrco.com/pages/sampling-instructions?showPopup=1&name=${encoded}`;
 		instructionsLinkHtml = `<div style="margin-bottom:8px;font-size:14px;"><a href="${escapeHtml(target)}" style="color:#065f46;font-weight:600;text-decoration:none;">See sampling instructions now</a></div>`;
 		redirectScript = `<script>(function(){try{setTimeout(function(){window.location.href='${escapeJsString(target)}';},5000);}catch(e){console.error(e);}})();</script>`;
 	}
@@ -490,6 +490,22 @@ export async function loader({ request }: LoaderFunctionArgs) {
 	defaults.phone = String(url.searchParams.get('phone') || '');
 	defaults.shopDomain = session?.shop || String(url.searchParams.get('shop') || '');
 
+	// If a kit number is provided, try to load the existing registration and
+	// autofill the form fields (only when the query params didn't already set them).
+	if (defaults.kitRegistrationNumber) {
+		try {
+			const existing = await getRegistrationByKitRegistrationNumber(defaults.kitRegistrationNumber);
+			if (existing) {
+				if (!String(url.searchParams.get('name') || '').trim()) defaults.name = existing.name || defaults.name;
+				if (!String(url.searchParams.get('email') || '').trim()) defaults.email = existing.email || defaults.email;
+				if (!String(url.searchParams.get('phone') || '').trim()) defaults.phone = existing.phone || defaults.phone;
+			}
+		} catch (err) {
+			// Non-fatal: if DB lookup fails, just proceed with query param values.
+			console.error('[proxy.undr.submit] could not lookup registration for prefill', err);
+		}
+	}
+
 	const data: LoaderData = { form: defaults };
 
 	return proxyPageResponse(request, liquid, data);
@@ -569,7 +585,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
 			const data: ActionData = {
 				ok: true,
-				message: `Thanks, ${String(form.name || '').split(' ')[0] || 'there'}! Your kit has been successfully registered. Let\u2019s get digging! Click here to see a quick sampling instruction video or stay on this page to be automatically redirected.`,
+				message: `Thanks, ${String(form.name || '').split(' ')[0] || 'there'}! Your kit has been successfully registered. Let\u2019s get digging!`,
 				form: Object.assign(getRegistrationDefaults(), { shopDomain: shop }),
 			};
 			return proxyPageResponse(request, liquid, data);
@@ -641,7 +657,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
 	const data: ActionData = {
 		ok: true,
-		message: `Thanks, ${String(form.name || '').split(' ')[0] || 'there'}! Your kit has been successfully registered. Let\u2019s get digging! Click here to see a quick sampling instruction video or stay on this page to be automatically redirected.`,
+		message: `Thanks, ${String(form.name || '').split(' ')[0] || 'there'}! Your kit has been successfully registered. Let\u2019s get digging!`,
 		form: Object.assign(getRegistrationDefaults(), { shopDomain: session?.shop || url.searchParams.get('shop')?.trim() || '' }),
 	};
 	return proxyPageResponse(request, liquid, data);

@@ -72,7 +72,7 @@ async function fetchOrderData(orderId: string, api: any) {
 
       return { kitMap: kitData?.kitMap ?? {}, statusMap: statusData?.statusMap ?? {}, customerMap: kitData?.customerMap ?? {} };
     } catch (e) {
-      return { kitMap: {}, statusMap: {} };
+      return { kitMap: {}, statusMap: {}, customerMap: {} };
     }
   })();
 
