@@ -42,6 +42,7 @@ model Registration {
   name                  String
   email                 String
   phone                 String
+  smsConsent            Boolean  @default(true)
   orderNumber           String
   shopifyOrderId        String?
   shopifyCustomerId     String?

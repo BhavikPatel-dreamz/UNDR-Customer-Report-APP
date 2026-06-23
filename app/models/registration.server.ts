@@ -33,6 +33,7 @@ export type RegistrationInput = {
   shopifyOrderId?: string | null;
   shopifyCustomerId?: string | null;
   agreedToTerms?: boolean;
+  smsConsent?: boolean;
 };
 
 export type RegistrationFormState = {
@@ -42,6 +43,7 @@ export type RegistrationFormState = {
   orderNumber: string;
   kitRegistrationNumber: string;
   agreedToTerms?: boolean;
+  smsConsent?: boolean;
   shopDomain?: string;
 };
 
@@ -63,6 +65,7 @@ export function getRegistrationDefaults(): RegistrationFormState {
     orderNumber: "",
     kitRegistrationNumber: "",
     agreedToTerms: false,
+    smsConsent: true,
     shopDomain: "",
   };
 }
@@ -112,6 +115,7 @@ export async function saveRegistration(input: RegistrationInput) {
       orderNumber: input.orderNumber.trim(),
       kitRegistrationNumber: input.kitRegistrationNumber.trim(),
       agreedToTerms: input.agreedToTerms ?? false,
+      smsConsent: input.smsConsent ?? true,
       shopifyOrderId: input.shopifyOrderId ?? null,
       shopifyCustomerId: input.shopifyCustomerId ?? null,
     },
@@ -139,7 +143,7 @@ export async function getRegistrationByKitNumber(kitRegistrationNumber: string) 
   }
 }
 
-export async function updateRegistrationFieldsById(id: string, data: Partial<{ name: string; email: string; phone: string; orderNumber: string; shopifyCustomerId: string | null; shop?: string; agreedToTerms?: boolean; reportLinkEnabled?: boolean }>) {
+export async function updateRegistrationFieldsById(id: string, data: Partial<{ name: string; email: string; phone: string; orderNumber: string; shopifyCustomerId: string | null; shop?: string; agreedToTerms?: boolean; reportLinkEnabled?: boolean; smsConsent?: boolean }>) {
   const updateData: any = {};
   if (data.name !== undefined) updateData.name = data.name.trim();
   if (data.email !== undefined) updateData.email = data.email.trim();
@@ -149,6 +153,7 @@ export async function updateRegistrationFieldsById(id: string, data: Partial<{ n
   if (data.shop !== undefined) updateData.shop = data.shop;
   if (data.reportLinkEnabled !== undefined) updateData.reportLinkEnabled = data.reportLinkEnabled;
   if (data.agreedToTerms !== undefined) updateData.agreedToTerms = data.agreedToTerms;
+  if (data.smsConsent !== undefined) updateData.smsConsent = data.smsConsent;
 
   return prisma.registration.update({ where: { id }, data: updateData });
 }
