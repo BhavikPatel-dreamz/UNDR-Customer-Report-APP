@@ -26,6 +26,7 @@ type ShopifyOrderPayload = {
   admin_graphql_api_id?: string;
   currency?: string;
   line_items?: ShopifyLineItem[];
+  note_attributes?: ShopifyLineItemProperty[] | null;
 };
 
 function getOrderId(payload: ShopifyOrderPayload) {
@@ -38,9 +39,24 @@ function getProperty(lineItem: ShopifyLineItem, name: string) {
   ).trim();
 }
 
-function findModuleFromLineItem(lineItem: ShopifyLineItem, shop: string): UnlockModule | null {
-  const explicitModule = getProperty(lineItem, "_undr_unlock").toLowerCase();
-  if (isUnlockModule(explicitModule)) return explicitModule;
+function getOrderAttribute(payload: ShopifyOrderPayload, name: string) {
+  const attrs = payload.note_attributes || [];
+  const keys = [name, `_${name}`, name.replace(/^_/, '')];
+  for (const k of keys) {
+    const found = attrs.find((a) => a.name === k);
+    if (found?.value) return String(found.value).trim();
+  }
+  return '';
+}
+
+function findModuleFromLineItem(lineItem: ShopifyLineItem, shop: string, payload: ShopifyOrderPayload): UnlockModule | null {
+  const explicitModule = (
+    getProperty(lineItem, '_undr_unlock') ||
+    getProperty(lineItem, 'undr_unlock') ||
+    getOrderAttribute(payload, 'undr_unlock') ||
+    getOrderAttribute(payload, '_undr_unlock')
+  ).toLowerCase();
+  if (isUnlockModule(explicitModule)) return explicitModule as UnlockModule;
 
   const variantId = String(lineItem.variant_id || "").trim();
   const sku = String(lineItem.sku || "").trim();
@@ -75,12 +91,35 @@ export async function recordPaidReportUnlocks(input: {
   const lineItems = input.payload.line_items || [];
 
   for (const lineItem of lineItems) {
-    const module = findModuleFromLineItem(lineItem, input.shop);
+    // Try to determine the module from the line item first, then fall back
+    // to order-level note attributes (for flows that set note attributes)
+    let module = findModuleFromLineItem(lineItem, input.shop, input.payload);
+    if (!module) {
+      const noteModule = getOrderAttribute(input.payload, 'undr_unlock') || getOrderAttribute(input.payload, '_undr_unlock');
+      if (isUnlockModule(noteModule)) module = noteModule as UnlockModule;
+    }
     if (!module) continue;
+    // Kit/registration/report package may be present as line-item properties
+    // (private keys with leading underscore) or as order note attributes
+    const kitRegistrationNumber =
+      getProperty(lineItem, '_undr_kit') ||
+      getProperty(lineItem, 'undr_kit') ||
+      getOrderAttribute(input.payload, 'undr_kit') ||
+      getOrderAttribute(input.payload, '_undr_kit');
 
-    const kitRegistrationNumber = getProperty(lineItem, "_undr_kit");
-    const registrationId = getProperty(lineItem, "_undr_registration_id");
-    const reportPackageProperty = getProperty(lineItem, "_undr_report_package").toLowerCase();
+    const registrationId =
+      getProperty(lineItem, '_undr_registration_id') ||
+      getProperty(lineItem, 'undr_registration_id') ||
+      getOrderAttribute(input.payload, 'undr_registration_id') ||
+      getOrderAttribute(input.payload, '_undr_registration_id');
+
+    const reportPackageProperty = (
+      getProperty(lineItem, '_undr_report_package') ||
+      getProperty(lineItem, 'undr_report_package') ||
+      getOrderAttribute(input.payload, 'undr_report_package') ||
+      getOrderAttribute(input.payload, '_undr_report_package')
+    ).toLowerCase();
+
     if (!kitRegistrationNumber && !registrationId) continue;
 
     const registration = await prisma.registration.findFirst({

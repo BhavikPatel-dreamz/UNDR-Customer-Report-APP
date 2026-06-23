@@ -1,0 +1,11 @@
+api_version = "2025-07"
+
+[[extensions]]
+name = "return-to-report"
+handle = "return-to-report"
+uid = "89185c74-5a0a-211c-41b4-7b7ff81aa85104cc59fa"
+type = "ui_extension"
+
+  [[extensions.targeting]]
+  module = "./src/ReturnToReport.tsx"
+  target = "purchase.thank-you.block.render"
