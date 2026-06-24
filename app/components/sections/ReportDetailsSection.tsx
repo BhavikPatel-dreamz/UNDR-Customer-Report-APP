@@ -15,7 +15,7 @@ const ShareBar = () => {
       navigator.clipboard.writeText(url).then(() => {
         setCopied(true);
         setTimeout(() => setCopied(false), 1800);
-      }).catch(() => {});
+      }).catch(() => { });
     }
   };
 
@@ -132,7 +132,7 @@ type HeavyMetalItem = {
   name: string;
   value: string;
   valueClassName: string;
-   valueStyle?: React.CSSProperties; // ✅ add this
+  valueStyle?: React.CSSProperties; // ✅ add this
   textStyle?: React.CSSProperties;  // optional
   textClassName: string;
 
@@ -167,7 +167,7 @@ const ReportDetailsSection = ({
   rareEarthElements,
   appUrl = '',
 }: ReportDetailsSectionProps) => {
-  
+
   const showHeavyMetals = quickViewPackage === "premium" || quickViewPackage === "hs_base" || quickViewPackage === "hs_plus";
   const showOilIndicator = quickViewPackage === "premium" || quickViewPackage === "treasure_plus" || quickViewPackage === "hs_plus";
   const showPreciousMetals =
@@ -330,7 +330,7 @@ const ReportDetailsSection = ({
   const renderOilIndicator = () => (
     <div className="oil_indicator_block">
       <h2 className="report_main_heading">Oil Indicator</h2>
-        <div className="oil_indicator_buttons">
+      <div className="oil_indicator_buttons">
         <div className={`oil_btn ${oilIndicator.crudeOilClassName}`}>{formatOilText(oilIndicator.crudeOil)}</div>
         {renderSplitOilButton(oilIndicator.petroleum, oilIndicator.petroleumClassName)}
       </div>
@@ -340,7 +340,7 @@ const ReportDetailsSection = ({
   const renderCrudeOilIndicator = () => (
     <div className="oil_indicator_block oil_indicator_block_crude_only">
       <h2 className="report_main_heading">Oil Indicator</h2>
-        <div className="oil_indicator_buttons">
+      <div className="oil_indicator_buttons">
         <div className={`oil_btn ${oilIndicator.crudeOilClassName}`}>{formatOilText(oilIndicator.crudeOil)}</div>
       </div>
     </div>
@@ -365,7 +365,7 @@ const ReportDetailsSection = ({
       </div>
     </div>
   );
-  
+
   return (
     <section className={`report_details_section quick_look_section ${((quickViewPackage || "").toLowerCase().replace(/\s+/g, "_"))}`}>
       <div className="container">
@@ -377,10 +377,53 @@ const ReportDetailsSection = ({
             <div className="chart_wrapper">
               <canvas id="element_layered_chart"></canvas>
             </div>
-            <div className="chart_legend">
-              <span className="legend_item"><span className="box_below"></span>Below Average</span>
-              <span className="legend_item"><span className="box_ref"></span>Average</span>
-              <span className="legend_item"><span className="box_above"></span>Above Average</span>
+            <div className="chart_legend" style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: '12px 20px',
+              marginTop: '14px',
+              alignItems: 'center',
+              fontSize: '13px',
+              fontFamily: 'inherit',
+              fontWeight: '400',
+              color: 'inherit',
+            }}>
+              {[
+                { bg: '#ffffff', border: '1px solid #ccc', label: 'Below −2 SD' },
+                { bg: '#e8e8e8', border: 'none', label: '−2 to −1 SD' },
+                { bg: '#c7c5c5', border: 'none', label: '−1 to +1 SD (Average)' },
+                { bg: '#8b8b8b', border: 'none', label: '+1 to +2 SD' },
+                { bg: '#5b5a5a', border: 'none', label: 'Above +2 SD' },
+              ].map(({ bg, border, label }) => (
+                <span
+                  key={label}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    fontSize: '13px',
+                    fontFamily: 'inherit',
+                    fontWeight: '400',
+                    color: 'inherit',
+                    whiteSpace: 'nowrap',
+                    letterSpacing: 'normal',
+                    lineHeight: '1.4',
+                  }}
+                >
+                  <span
+                    style={{
+                      display: 'inline-block',
+                      width: '13px',
+                      height: '13px',
+                      borderRadius: '3px',
+                      background: bg,
+                      border: border,
+                      flexShrink: 0,
+                    }}
+                  />
+                  {label}
+                </span>
+              ))}
             </div>
             <div className="chart_footer_divider"></div>
             <div className="chart_footer_text">
@@ -391,9 +434,8 @@ const ReportDetailsSection = ({
           <div className="report_right_col">
             {hasTopRow && (
               <div
-                className={`top_info_row ${showHeavyMetals && showOilIndicator && quickViewPackage === "premium" ? "" : "single_info_row"} ${
-                  topInfoRowHasBorder ? "" : "no_border"
-                }`}
+                className={`top_info_row ${showHeavyMetals && showOilIndicator && quickViewPackage === "premium" ? "" : "single_info_row"} ${topInfoRowHasBorder ? "" : "no_border"
+                  }`}
               >
                 {showHeavyMetals && renderHeavyMetals()}
                 {showHeavyMetals && showOilIndicator && quickViewPackage === "premium" && <div className="vertical_divider"></div>}
@@ -429,7 +471,7 @@ const ReportDetailsSection = ({
               </div>
             )}
 
-            
+
 
             {showRareEarthElements && (
               <div className="info_block no_border">
@@ -450,7 +492,7 @@ const ReportDetailsSection = ({
                 <img src={`${appUrl ? appUrl : ''}/images/treasure-icon.svg`} className="treasure_icon" alt="Icon" />
               </div>
 
-              
+
 
             )}
           </div>
@@ -465,10 +507,10 @@ const ReportDetailsSection = ({
           </div>
         </div>
       </div>
-  
+
       <img src={`${appUrl ? appUrl : ''}/images/quick-look-icon.svg`} className="quick_look_icon" alt="Quick look icon" />
 
-      
+
 
       {/* ── social share ── */}
       <ShareBar />

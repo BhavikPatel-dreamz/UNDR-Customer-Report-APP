@@ -2,6 +2,95 @@
   var reportData = getReportData();
   var reportChart;
 
+  // Local ELEMENT_COLOR_MAP (mirrors server mapping) used to determine fingerprint bar colors.
+  // Keep minimal and only define if not already provided on the window.
+  if (!window.ELEMENT_COLOR_MAP) {
+    window.ELEMENT_COLOR_MAP = {
+      fe: { bg: "#D8816C", text: "#D8816C" },
+        cr: { bg: "#86BAB9", text: "#86BAB9" },
+        co2: { bg: "#9CA3AF", text: "#9CA3AF" },
+        ni: { bg: "#86BAB9", text: "#86BAB9" },
+        mn: { bg: "#AF6666", text: "#AF6666" },
+        si: { bg: "#FFB624", text: "#FFB624" },
+        cu: { bg: "#EFBD75", text: "#EFBD75" },
+        mo: { bg: "#FDB923", text: "#FDB923" },
+        co: { bg: "#B4C2D6", text: "#B4C2D6" },
+        tb: { bg: "#AF6666", text: "#AF6666" },
+        na: { bg: "#D6A091", text: "#D6A091" },
+        v: { bg: "#808083", text: "#808083" },
+        s: { bg: "#707768", text: "#707768" },
+        yb: { bg: "#D8816C", text: "#D8816C" },
+        dy: { bg: "#D8816C", text: "#D8816C" },
+        p: { bg: "#D6A091", text: "#D6A091" },
+        al: { bg: "#BFA6A6", text: "#BFA6A6" },
+        i: { bg: "#808083", text: "#808083" },
+        re: { bg: "#FDB923", text: "#FDB923" },
+        ca: { bg: "#FED095", text: "#FED095" },
+        cl: { bg: "#95AA8C", text: "#95AA8C" },
+        k: { bg: "#9BAD7F", text: "#9BAD7F" },
+        nb: { bg: "#B4C2D6", text: "#B4C2D6" },
+        ba: { bg: "#707768", text: "#707768" },
+        sn: { bg: "#95AA8C", text: "#95AA8C" },
+        ga: { bg: "#869B9B", text: "#869B9B" },
+        sm: { bg: "#B4C2D6", text: "#B4C2D6" },
+        ge: { bg: "#FED095", text: "#FED095" },
+        ta: { bg: "#9BAD7F", text: "#9BAD7F" },
+        in: { bg: "#EFBD75", text: "#EFBD75" },
+        la: { bg: "#F2CF91", text: "#F2CF91" },
+        pa: { bg: "#AF6666", text: "#AF6666" },
+        ra: { bg: "#FED095", text: "#FED095" },
+        ac: { bg: "#B4C2D6", text: "#B4C2D6" },
+        ag: { bg: "#808083", text: "#808083" },
+        y: { bg: "#D6A091", text: "#D6A091" },
+        te: { bg: "#AB4543", text: "#AB4543" },
+        sr: { bg: "#F2CF91", text: "#F2CF91" },
+        cs: { bg: "#3F443A", text: "#3F443A" },
+        ce: { bg: "#FDB923", text: "#FDB923" },
+        pr: { bg: "#869B9B", text: "#869B9B" },
+        nd: { bg: "#808083", text: "#808083" },
+        o: { bg: "#942320", text: "#942320" },
+        eu: { bg: "#F2CF91", text: "#F2CF91" },
+        gd: { bg: "#AB4543", text: "#AB4543" },
+        zn: { bg: "#F2CF91", text: "#F2CF91" },
+        ti: { bg: "#86BAB9", text: "#86BAB9" },
+        ho: { bg: "#B4C2D6", text: "#B4C2D6" },
+        er: { bg: "#D6A091", text: "#D6A091" },
+        tm: { bg: "#3F443A", text: "#3F443A" },
+        sc: { bg: "#EFBD75", text: "#EFBD75" },
+        lu: { bg: "#869B9B", text: "#869B9B" },
+        hf: { bg: "#3F443A", text: "#3F443A" },
+        w: { bg: "#B4C2D6", text: "#B4C2D6" },
+        mg: { bg: "#AB4543", text: "#AB4543" },
+        os: { bg: "#95AA8C", text: "#95AA8C" },
+        ir: { bg: "#942320", text: "#942320" },
+        pt: { bg: "#F2CF91", text: "#F2CF91" },
+        au: { bg: "#FDB923", text: "#FDB923" },
+        hg: { bg: "#FED095", text: "#FED095" },
+        tl: { bg: "#FED095", text: "#FED095" },
+        pb: { bg: "#707768", text: "#707768" },
+        bi: { bg: "#869B9B", text: "#869B9B" },
+        po: { bg: "#707768", text: "#707768" },
+        at: { bg: "#F2CF91", text: "#F2CF91" },
+        fr: { bg: "#9BAD7F", text: "#9BAD7F" },
+        th: { bg: "#FDB923", text: "#FDB923" },
+        u: { bg: "#EFBD75", text: "#EFBD75" },
+        f: { bg: "#707768", text: "#707768" },
+        zr: { bg: "#707768", text: "#707768" },
+        rb: { bg: "#95AA8C", text: "#95AA8C" },
+        br: { bg: "#AB4543", text: "#AB4543" },
+        ru: { bg: "#86BAB9", text: "#86BAB9" },
+        rh: { bg: "#3F443A", text: "#3F443A" },
+        pd: { bg: "#D8816C", text: "#D8816C" },
+        cd: { bg: "#AF6666", text: "#AF6666" },
+        se: { bg: "#D8816C", text: "#D8816C" },
+        sb: { bg: "#d98670", text: "#d98670" },
+        as: { bg: "#D6A091", text: "#D6A091" },
+        tc: { bg: "#869B9B", text: "#869B9B" },
+        pm: { bg: "#AB4543", text: "#AB4543" },
+        default: { bg: "#9CA3AF", text: "#9CA3AF" },
+    };
+  }
+
   function getReportData() {
     var script = document.getElementById("proxy-report-data");
     if (!script || !script.textContent) return null;
@@ -371,297 +460,319 @@
     });
   }
 
+  // Replace ONLY initReportDetails
+
   function initReportDetails() {
-    var canvas = document.getElementById("element_layered_chart");
-    if (!canvas || !window.Chart || !reportData) return;
+  var canvas = document.getElementById("element_layered_chart");
+  if (!canvas || !window.Chart || !reportData) return;
 
-    if (reportChart) {
-      reportChart.destroy();
-    }
-
-    var ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    function hasLayeredChartData(chart) {
-      if (!chart || !Array.isArray(chart.elementNames) || chart.elementNames.length === 0) return false;
-      var hasBelow = Array.isArray(chart.belowData) && chart.belowData.some(function (v) { return Number(v) > 0; });
-      var hasRef = Array.isArray(chart.refData) && chart.refData.some(function (v) { return Number(v) > 0; });
-      var hasAbove = Array.isArray(chart.aboveData) && chart.aboveData.some(function (v) { return Number(v) > 0; });
-      return hasBelow || hasRef || hasAbove;
-    }
-
-    function normalizeNumber(value) {
-      if (typeof value === "number" && isFinite(value)) return value;
-      if (typeof value === "string") {
-        var parsed = Number(value.replace(/,/g, "").trim());
-        if (isFinite(parsed)) return parsed;
-      }
-      return 0;
-    }
-
-    function toElementChartVisualValue(value) {
-      var n = normalizeNumber(value);
-      if (n <= 0) return 0;
-
-      return Math.log10(n + 1);
-    }
-
-    var reportChartData = (reportData.reportDetails && reportData.reportDetails.reportChart) || null;
-    var chartInput = hasLayeredChartData(reportChartData)
-      ? {
-        labels: reportChartData.elementNames || [],
-        belowData: reportChartData.belowData || [],
-        refData: reportChartData.refData || [],
-        aboveData: reportChartData.aboveData || [],
-        calculations: reportChartData.calculations || []
-      }
-      : {
-        labels: [],
-        belowData: [],
-        refData: [],
-        aboveData: [],
-        calculations: []
-      };
-
-    var chartRows = (chartInput.labels || []).map(function (label, index) {
-      var below = normalizeNumber((chartInput.belowData || [])[index]);
-      var reference = normalizeNumber((chartInput.refData || [])[index]);
-      var above = normalizeNumber((chartInput.aboveData || [])[index]);
-      var calculation = (chartInput.calculations || [])[index] || {};
-      var adjustedPpm = normalizeNumber(calculation.adjustedPpm);
-      var measuredPpm = Math.max(adjustedPpm, below, above);
-
-      return {
-        index: index,
-        label: label,
-        below: below,
-        reference: reference,
-        above: above,
-        measuredPpm: measuredPpm,
-        visualWeight: Math.max(toElementChartVisualValue(measuredPpm), toElementChartVisualValue(reference) * 0.35)
-      };
-    }).filter(function (row) {
-      return row.measuredPpm > 0;
-    });
-
-    // Deduplicate chartRows by label (preserve existing classification logic).
-    // If duplicates exist, merge them and prefer classification priority: above > reference > below.
-    (function dedupeChartRows() {
-      var seen = Object.create(null);
-      var unique = [];
-      chartRows.forEach(function (row) {
-        var key = String(row.label || '').trim().toLowerCase();
-        if (!key) {
-          unique.push(row);
-          return;
-        }
-        var existing = seen[key];
-        if (!existing) {
-          seen[key] = row;
-          unique.push(row);
-          return;
-        }
-        // Merge classifications with priority: above > reference > below
-        function hasAbove(r) { return Number(r.above) > 0; }
-        function hasRef(r) { return Number(r.reference) > 0; }
-        function hasBelow(r) { return Number(r.below) > 0; }
-        if (hasAbove(row) || hasAbove(existing)) {
-          existing.above = Math.max(Number(existing.above) || 0, Number(row.above) || 0);
-          existing.reference = 0;
-          existing.below = 0;
-        } else if (hasRef(row) || hasRef(existing)) {
-          existing.reference = Math.max(Number(existing.reference) || 0, Number(row.reference) || 0);
-          existing.below = 0;
-        } else {
-          existing.below = Math.max(Number(existing.below) || 0, Number(row.below) || 0);
-        }
-        // Keep measuredPpm as the max to be safe for any downstream logic
-        existing.measuredPpm = Math.max(Number(existing.measuredPpm) || 0, Number(row.measuredPpm) || 0);
-      });
-      chartRows = unique;
-    })();
-
-    var visualValues = [];
-    chartRows.forEach(function (row) {
-      [row.below, row.reference, row.above].forEach(function (value) {
-        var visualValue = toElementChartVisualValue(value);
-        if (visualValue > 0) visualValues.push(visualValue);
-      });
-    });
-    visualValues.sort(function (a, b) { return a - b; });
-
-    var minVisualValue = visualValues.length ? visualValues[0] : 0;
-    var capIndex = visualValues.length ? Math.floor((visualValues.length - 1) * 0.88) : 0;
-    var cappedMaxVisualValue = visualValues.length ? visualValues[capIndex] : 0;
-
-    function toReadableElementChartVisualValue(value) {
-      var visualValue = toElementChartVisualValue(value);
-      if (visualValue <= 0) return 0;
-      if (cappedMaxVisualValue <= minVisualValue) return 60;
-
-      var cappedValue = Math.min(visualValue, cappedMaxVisualValue);
-      return 20 + ((cappedValue - minVisualValue) / (cappedMaxVisualValue - minVisualValue)) * 80;
-    }
-
-    var chartVisualInput = {
-      labels: chartRows.map(function (row) { return row.label; }),
-      belowData: chartRows.map(function (row) { return toReadableElementChartVisualValue(row.below); }),
-      refData: chartRows.map(function (row) { return toReadableElementChartVisualValue(row.reference); }),
-      aboveData: chartRows.map(function (row) { return toReadableElementChartVisualValue(row.above); })
-    };
-
-    // Preserve existing category assignment logic: whichever of below/ref/above is present
-    // determines the element's category. We DO NOT scale bar length by ppm — instead
-    // place each element onto one of three fixed ring radii.
-    var INNER_RING = 33; // inner ring visual value
-    var MID_RING = 66;   // middle ring visual value
-    var OUTER_RING = 100; // outer ring visual value
-
-    for (var i = 0; i < (chartVisualInput.labels || []).length; i++) {
-      var wasAbove = Number((chartVisualInput.aboveData || [])[i]) > 0;
-      var wasRef = Number((chartVisualInput.refData || [])[i]) > 0;
-      var wasBelow = Number((chartVisualInput.belowData || [])[i]) > 0;
-      // Clear all three then set only the appropriate ring to a fixed value
-      chartVisualInput.aboveData[i] = 0;
-      chartVisualInput.refData[i] = 0;
-      chartVisualInput.belowData[i] = 0;
-      if (wasAbove) chartVisualInput.aboveData[i] = OUTER_RING;
-      else if (wasRef) chartVisualInput.refData[i] = MID_RING;
-      else if (wasBelow) chartVisualInput.belowData[i] = INNER_RING;
-    }
-
-    // Use fixed visual scale (0-100) so ring positions are absolute and not scaled by data
-    var chartMax = 100;
-
-    // UNDR palette (cycled per-element)
-    var undrPalette = [
-      '#a32720', '#f6b315', '#2f8f46', '#1f78b4', '#8b2323', '#6b7280', '#7c3aed', '#d97706'
-    ];
-
-    // Build per-element color arrays so each label/bar uses a palette color
-    var paletteForLabels = (chartVisualInput.labels || []).map(function (_lbl, idx) {
-      return undrPalette[idx % undrPalette.length];
-    });
-
-    reportChart = new window.Chart(ctx, {
-      // Plugin draws concentric rings and faint radial connector lines from center to each label
-      plugins: [{
-        id: 'elementVisuals',
-        beforeDatasetsDraw: function (chart) {
-          try {
-            if (chart.config && chart.config.type !== 'polarArea') return;
-            var ctx2 = chart.ctx;
-            var scaleR = chart.scales && chart.scales.r;
-            var cx = (chart.chartArea.left + chart.chartArea.right) / 2;
-            var cy = (chart.chartArea.top + chart.chartArea.bottom) / 2;
-            var maxR = (scaleR && scaleR.drawingArea) || Math.min(chart.chartArea.width, chart.chartArea.height) / 2;
-            // Outer -> dark, middle -> medium, inner -> light
-            var outerR = maxR;
-            var midR = Math.round(maxR * 0.66);
-            var innerR = Math.round(maxR * 0.33);
-            ctx2.save();
-            // draw outer (dark grey)
-            // Outer ring (Above Average) — dark grey
-ctx2.beginPath();
-ctx2.arc(cx, cy, outerR, 0, Math.PI * 2);
-ctx2.fillStyle = 'rgba(55,65,81,0.32)';
-ctx2.fill();
-ctx2.beginPath();
-ctx2.arc(cx, cy, outerR, 0, Math.PI * 2);
-ctx2.strokeStyle = 'rgba(55,65,81,0.55)';
-ctx2.lineWidth = 1.5;
-ctx2.stroke();
-
-// Middle ring (Average) — medium grey
-ctx2.beginPath();
-ctx2.arc(cx, cy, midR, 0, Math.PI * 2);
-ctx2.fillStyle = 'rgba(148,163,184,0.22)';
-ctx2.fill();
-ctx2.beginPath();
-ctx2.arc(cx, cy, midR, 0, Math.PI * 2);
-ctx2.strokeStyle = 'rgba(100,116,139,0.50)';
-ctx2.lineWidth = 1.5;
-ctx2.stroke();
-
-// Inner ring (Below Average) — light grey
-ctx2.beginPath();
-ctx2.arc(cx, cy, innerR, 0, Math.PI * 2);
-ctx2.fillStyle = 'rgba(226,232,240,0.18)';
-ctx2.fill();
-ctx2.beginPath();
-ctx2.arc(cx, cy, innerR, 0, Math.PI * 2);
-ctx2.strokeStyle = 'rgba(148,163,184,0.45)';
-ctx2.lineWidth = 1.5;
-ctx2.stroke();
-
-ctx2.restore();
-          } catch (e) {
-            // ignore
-          }
-        },
-        afterDraw: function (chart) {
-          try {
-            if (chart.config && chart.config.type !== 'polarArea') return;
-            var meta = chart.getDatasetMeta && chart.getDatasetMeta(0);
-            if (!meta || !meta.data || !meta.data.length) return;
-            var ctx2 = chart.ctx;
-            ctx2.save();
-            ctx2.lineWidth = 1.5;
-            ctx2.strokeStyle = 'rgba(75,85,99,0.26)';
-            if (ctx2.setLineDash) ctx2.setLineDash([3,3]);
-            var scaleR = chart.scales && chart.scales.r;
-            var outerLimit = (scaleR && scaleR.drawingArea) || Math.min(chart.chartArea.width, chart.chartArea.height) / 2;
-            // labelPadding ensures lines extend beyond the drawing area to the label text
-            var labelPadding = Math.round(Math.max(24, Math.min(chart.chartArea.width, chart.chartArea.height) * 0.06));
-            meta.data.forEach(function (arc) {
-              var start = arc.startAngle;
-              var end = arc.endAngle;
-              var mid = (start + end) / 2;
-              var cx = arc.x || (chart.chartArea.left + chart.chartArea.right) / 2;
-              var cy = arc.y || (chart.chartArea.top + chart.chartArea.bottom) / 2;
-              var outer = outerLimit + labelPadding;
-              var x2 = cx + Math.cos(mid) * outer;
-              var y2 = cy + Math.sin(mid) * outer;
-              ctx2.beginPath();
-              ctx2.moveTo(cx, cy);
-              ctx2.lineTo(x2, y2);
-              ctx2.stroke();
-            });
-            if (ctx2.setLineDash) ctx2.setLineDash([]);
-            ctx2.restore();
-          } catch (e) {
-            // fail silently to avoid breaking chart
-          }
-        }
-      }],
-      type: "polarArea",
-      data: {
-        labels: chartVisualInput.labels,
-        datasets: [
-          { label: "Reference Range", data: chartVisualInput.refData, backgroundColor: paletteForLabels, borderWidth: 1, borderColor: "#ffffff", borderRadius: 6, order: 3 },
-          { label: "Below Range", data: chartVisualInput.belowData, backgroundColor: paletteForLabels, borderWidth: 1, borderColor: "#ffffff", borderRadius: 6, order: 2 },
-          { label: "Above Range", data: chartVisualInput.aboveData, backgroundColor: paletteForLabels, borderWidth: 1, borderColor: "#ffffff", borderRadius: 6, order: 1 }
-        ]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        events: [],
-        layout: { padding: 24 },
-        scales: {
-          r: {
-            min: 0,
-            max: chartMax,
-            ticks: { display: false },
-            angleLines: { color: "rgba(17, 24, 39, 0.08)" },
-            grid: { color: "rgba(17, 24, 39, 0.12)" },
-            pointLabels: { display: true, centerPointLabels: true, padding: 8, font: { size: 10, weight: "600" }, color: "#4b5563" }
-          }
-        },
-        plugins: { legend: { display: false }, tooltip: { enabled: false } }
-      }
-    });
+  if (reportChart) {
+    reportChart.destroy();
   }
+
+  var ctx = canvas.getContext("2d");
+  if (!ctx) return;
+
+  var ELEMENT_REFS = {
+    "O":  { mean: 425000,   sd: 37500 },
+    "F":  { mean: 300,      sd: 100 },
+    "Na": { mean: 5500,     sd: 2000 },
+    "Mg": { mean: 5500,     sd: 2250 },
+    "Al": { mean: 55000,    sd: 22500 },
+    "Si": { mean: 275000,   sd: 37500 },
+    "P":  { mean: 700,      sd: 250 },
+    "S":  { mean: 550,      sd: 225 },
+    "Cl": { mean: 130,      sd: 40 },
+    "K":  { mean: 20000,    sd: 7500 },
+    "Ca": { mean: 25500,    sd: 12250 },
+    "Sc": { mean: 20,       sd: 5 },
+    "Ti": { mean: 5500,     sd: 2250 },
+    "V":  { mean: 80,       sd: 35 },
+    "Cr": { mean: 77.5,     sd: 36.25 },
+    "Mn": { mean: 1750,     sd: 625 },
+    "Fe": { mean: 37500,    sd: 16250 },
+    "Co": { mean: 20.5,     sd: 9.75 },
+    "Ni": { mean: 51,       sd: 24.5 },
+    "Cu": { mean: 51,       sd: 24.5 },
+    "Zn": { mean: 165,      sd: 67.5 },
+    "Ga": { mean: 12.5,     sd: 6.25 },
+    "Ge": { mean: 1.05,     sd: 0.475 },
+    "As": { mean: 10.5,     sd: 4.75 },
+    "Se": { mean: 1.05,     sd: 0.475 },
+    "Br": { mean: 2.5,      sd: 1.25 },
+    "Rb": { mean: 65,       sd: 17.5 },
+    "Sr": { mean: 260,      sd: 75 },
+    "Y":  { mean: 22.5,     sd: 8.75 },
+    "Zr": { mean: 200,      sd: 50 },
+    "Nb": { mean: 16,       sd: 7 },
+    "Mo": { mean: 1,        sd: 0.5 },
+    "Tc": { mean: 0,        sd: 0.01 },
+    "Ru": { mean: 0,        sd: 0.01 },
+    "Rh": { mean: 0,        sd: 0.01 },
+    "Pd": { mean: 0,        sd: 0.01 },
+    "Ag": { mean: 0.505,    sd: 0.2475 },
+    "Cd": { mean: 0.505,    sd: 0.2475 },
+    "In": { mean: 0.255,    sd: 0.1225 },
+    "Sn": { mean: 2.75,     sd: 1.125 },
+    "Sb": { mean: 1.025,    sd: 0.4875 },
+    "Te": { mean: 0.505,    sd: 0.2475 },
+    "I":  { mean: 2.75,     sd: 1.125 },
+    "Cs": { mean: 6,        sd: 3.5 },
+    "Ba": { mean: 700,      sd: 237.5 },
+    "La": { mean: 27.5,     sd: 11.25 },
+    "Ce": { mean: 55,       sd: 22.5 },
+    "Pr": { mean: 6.5,      sd: 2.75 },
+    "Nd": { mean: 27.5,     sd: 11.25 },
+    "Pm": { mean: 0,        sd: 0.01 },
+    "Sm": { mean: 5.5,      sd: 2.25 },
+    "Eu": { mean: 1.6,      sd: 0.7 },
+    "Gd": { mean: 5.5,      sd: 2.25 },
+    "Tb": { mean: 1.05,     sd: 0.475 },
+    "Dy": { mean: 3,        sd: 1.335 },
+    "Ho": { mean: 1.05,     sd: 0.475 },
+    "Er": { mean: 2.25,     sd: 1.125 },
+    "Tm": { mean: 0.4,      sd: 0.2 },
+    "Yb": { mean: 2,        sd: 0.85 },
+    "Lu": { mean: 0.525,    sd: 0.2375 },
+    "Hf": { mean: 2.75,     sd: 1.125 },
+    "Ta": { mean: 2.75,     sd: 1.125 },
+    "W":  { mean: 2.55,     sd: 1.225 },
+    "Re": { mean: 0,        sd: 0.01 },
+    "Os": { mean: 0,        sd: 0.01 },
+    "Ir": { mean: 0,        sd: 0.01 },
+    "Pt": { mean: 0,        sd: 0.01 },
+    "Au": { mean: 0.00525,  sd: 0.002375 },
+    "Hg": { mean: 0.105,    sd: 0.0475 },
+    "Tl": { mean: 0.2,      sd: 0.05 },
+    "Pb": { mean: 17.5,     sd: 6.25 },
+    "Bi": { mean: 0.505,    sd: 0.2475 },
+    "Po": { mean: 0,        sd: 0.01 },
+    "At": { mean: 0,        sd: 0.01 },
+    "Ra": { mean: 0,        sd: 0.01 },
+    "Ac": { mean: 0,        sd: 0.01 },
+    "Th": { mean: 7,        sd: 3 },
+    "Pa": { mean: 0,        sd: 0.01 },
+    "U":  { mean: 2.25,     sd: 1.125 }
+  };
+
+  // ── z-score → visual radius (0–100) ─────────────────────────────
+  // Axis: z=-2 → 0 (center), z=-1 → 25, z=0 → 50, z=+1 → 75, z=+2 → 100 (edge)
+  // Each SD unit = 25 visual units
+  function zToVisual(z) {
+    var clamped = Math.max(-2, Math.min(2, z));
+    return (clamped + 2) / 4 * 100;
+  }
+
+  function calcZAndVisual(ppm, symbol) {
+    var ref = ELEMENT_REFS[symbol];
+    if (!ref || ref.sd <= 0) return null;
+    var z = (ppm - ref.mean) / ref.sd;
+    var visual = zToVisual(z);
+    return { z: z, visual: visual };
+  }
+
+  // Band boundaries in visual units
+  var V_NEG2 = 0;   // z = -2  (white center)
+  var V_NEG1 = 25;  // z = -1  (inner ring boundary)
+  var V_MEAN = 50;  // z =  0  (mean — dashed line)
+  var V_POS1 = 75;  // z = +1  (outer ring boundary)
+  var V_POS2 = 100; // z = +2  (outer edge)
+
+  var reportChartData = (reportData.reportDetails && reportData.reportDetails.reportChart) || null;
+  if (!reportChartData) return;
+
+  var undrPalette = [
+    '#a32720','#f6b315','#2f8f46','#1f78b4',
+    '#8b2323','#e67e22','#7c3aed','#0891b2',
+    '#be185d','#065f46','#92400e','#1e40af',
+    '#6d28d9','#047857','#b45309','#dc2626',
+    '#7c2d12','#15803d','#1d4ed8','#9333ea'
+  ];
+
+  var labels     = [];
+  var visualData = [];
+  var barColors  = [];
+
+  // ── CONSOLE LOG TABLE ─────────────────────────────────────────────
+  var debugRows = [];
+
+  (reportChartData.elementNames || []).forEach(function (symbol, idx) {
+    var calc = (reportChartData.calculations || [])[idx] || {};
+    var ppm  = Number(calc.adjustedPpm) || 0;
+    if (ppm <= 0) return;
+
+    var result = calcZAndVisual(ppm, symbol);
+    if (result === null) return;
+
+    var z = result.z;
+    var visual = result.visual;
+
+    // Determine SD zone label
+    var sdZone;
+    if (z >= 2)       sdZone = "≥ +2 SD (extreme high)";
+    else if (z >= 1)  sdZone = "+1 to +2 SD (above avg)";
+    else if (z >= 0)  sdZone = "0 to +1 SD (avg-high)";
+    else if (z >= -1) sdZone = "-1 to 0 SD (avg-low)";
+    else if (z >= -2) sdZone = "-2 to -1 SD (below avg)";
+    else              sdZone = "< -2 SD (extreme low)";
+
+    // ── DEBUG LOG ──────────────────────────────────────────────────
+    // Add a detailed console group showing the calculation steps for each element
+    try {
+      var _refMean = (ELEMENT_REFS[symbol] || {}).mean;
+      var _refSd = (ELEMENT_REFS[symbol] || {}).sd;
+      console.groupCollapsed("Calc: " + symbol + " — z-score details");
+      console.log("ppm:", ppm);
+      console.log("mean:", _refMean, "sd:", _refSd);
+      console.log("z = (ppm - mean) / sd =>", "(" + ppm + " - " + _refMean + ") / " + _refSd + " =", z.toFixed(3));
+      var _clamped = Math.max(-2, Math.min(2, z));
+      console.log("clamped z:", _clamped.toFixed(3), "→ visual:", zToVisual(z).toFixed(1), "(0-100)");
+      console.log("sd zone:", sdZone, "(based on z)");
+      console.groupEnd();
+    } catch (e) {
+      /* ignore logging errors */
+    }
+
+    debugRows.push({
+      symbol:     symbol,
+      ppm:        ppm,
+      mean:       (ELEMENT_REFS[symbol] || {}).mean,
+      sd:         (ELEMENT_REFS[symbol] || {}).sd,
+      z_score:    parseFloat(z.toFixed(3)),
+      visual_val: parseFloat(visual.toFixed(1)),
+      sd_zone:    sdZone
+    });
+
+    // Minimum visible bar — z=-2 gets visual=0, push to 2 so label shows
+    if (visual <= 0) return;
+    visual = Math.max(2, Math.min(100, visual));
+
+    labels.push(symbol);
+    visualData.push(visual);
+    // Prefer per-element color from a provided ELEMENT_COLOR_MAP (server-injected
+    // on the window) or from reportData.elementColorMap. Fall back to palette.
+    var symKey = String(symbol || "").trim().toLowerCase();
+    var color = (
+      (window.ELEMENT_COLOR_MAP && window.ELEMENT_COLOR_MAP[symKey] && (window.ELEMENT_COLOR_MAP[symKey].bg || window.ELEMENT_COLOR_MAP[symKey].color)) ||
+      (reportData && reportData.elementColorMap && reportData.elementColorMap[symKey]) ||
+      undrPalette[labels.length % undrPalette.length]
+    );
+    barColors.push(color);
+  });
+
+  // Print the debug table
+  console.group("🔬 Soil Fingerprint Chart — Z-Score Debug");
+  console.table(debugRows);
+  console.groupEnd();
+
+  // ── Ring plugin — drawn AFTER datasets so rings are BEHIND bars ──
+  var ringPlugin = {
+    id: 'zScoreRings',
+
+    // Draw rings BEFORE datasets so bars render ON TOP
+    beforeDatasetsDraw: function (chart) {
+  try {
+    var c   = chart.ctx;
+    var scR = chart.scales && chart.scales.r;
+    if (!scR) return;
+    var cx   = (chart.chartArea.left + chart.chartArea.right)  / 2;
+    var cy   = (chart.chartArea.top  + chart.chartArea.bottom) / 2;
+    var maxR = scR.drawingArea;
+
+    // eslint-disable-next-line no-inner-declarations
+    function vR(v) { return (v / 100) * maxR; }
+
+    c.save();
+
+    // Zone 5 — outermost: fully dark grey
+    c.beginPath();
+    c.arc(cx, cy, vR(V_POS2), 0, Math.PI * 2);
+    c.fillStyle = '#787777';
+    c.fill();
+
+    // Zone 4 — second ring: medium dark grey
+    c.beginPath();
+    c.arc(cx, cy, vR(V_POS1), 0, Math.PI * 2);
+    c.fillStyle = '#969696';
+    c.fill();
+
+    // Zone 3 — middle: dark grey
+    c.beginPath();
+    c.arc(cx, cy, vR(V_MEAN), 0, Math.PI * 2);
+    c.fillStyle = '#c7c5c5';
+    c.fill();
+
+    // Zone 2 — inner: light grey
+    c.beginPath();
+    c.arc(cx, cy, vR(V_NEG1), 0, Math.PI * 2);
+    c.fillStyle = '#ffffff';
+    c.fill();
+
+    // Zone 1 — center: white
+    c.beginPath();
+    c.arc(cx, cy, vR(V_NEG2) + 3, 0, Math.PI * 2);
+    c.fillStyle = '#ffffff';
+    c.fill();
+
+    // White boundary lines between zones
+    [V_NEG1, V_MEAN, V_POS1, V_POS2].forEach(function (v, i) {
+      c.beginPath();
+      c.arc(cx, cy, vR(v), 0, Math.PI * 2);
+      c.strokeStyle = 'rgba(255,255,255,1)';
+      c.lineWidth = i === 3 ? 3 : 2.5;
+      if (c.setLineDash) c.setLineDash([]);
+      c.stroke();
+    });
+
+     c.beginPath();
+    c.arc(cx, cy, vR(V_POS2), 0, Math.PI * 2);
+    c.clip();
+    // Note: no c.restore() here — clip must stay active while bars are drawn
+  } catch (e) { /* ignore */ }
+},
+  };
+
+  reportChart = new window.Chart(ctx, {
+    plugins: [ringPlugin],
+    type: "polarArea",
+    data: {
+      labels: labels,
+      datasets: [{
+        label: "Element Z-Score",
+        data: visualData,
+        backgroundColor: barColors,   // Full solid — no opacity
+        borderWidth: 1.5,
+        borderColor: "#ffffff"
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      events: [],
+      layout: { padding: 28 },
+      scales: {
+        r: {
+          min: 0,
+          max: 100,
+          ticks: { display: false },
+          angleLines: { color: "rgba(17,24,39,0.06)" },
+          grid: { display: false },
+          pointLabels: {
+            display: true,
+            centerPointLabels: true,
+            padding: 8,
+            font: { size: 10, weight: "600" },
+            color: "#4b5563"
+          }
+        }
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: { enabled: false }
+      }
+    }
+  });
+}
 
   function initEarthElements() {
     var chartRef = document.getElementById("chart_wrapper");
