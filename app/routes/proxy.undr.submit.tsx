@@ -517,6 +517,7 @@ function renderRegistrationPage(state: ActionData | LoaderData) {
 		<p style="margin:0 0 8px;font-size:12px;letter-spacing:0.16em;text-transform:uppercase;opacity:0.6;">UNDR CO</p>
 		<h1 style="margin:0 0 10px;font-size:clamp(26px,5vw,42px);font-weight:700;line-height:1.1;">Register your test kit</h1>
 		<p style="margin:0;font-size:16px;line-height:1.7;opacity:0.8;">Enter your details below to register your kit.</p>
+		<div id="undr-kit-message" style="min-height:18px;margin-top:8px;color:#ff0000;font-size:16px;font-weight:600;"></div>
 	</div>
 
 	${message
@@ -552,7 +553,7 @@ function renderRegistrationPage(state: ActionData | LoaderData) {
 					</label>
 
 			<label style="display:flex;align-items:center;gap:10px;">
-				<input type="checkbox" name="smsConsent" value="1" ${form.smsConsent ? 'checked' : ''} />
+				<input type="checkbox" name="smsConsent" style="accent-color: #000;"  value="1" ${form.smsConsent ? 'checked' : ''} />
 				<span style="font-size:13px;line-height:1.2;">I agree to receive SMS messages (Shopify messaging standard).</span>
 			</label>
 
@@ -565,7 +566,7 @@ function renderRegistrationPage(state: ActionData | LoaderData) {
 			</label>
 
 			<label style="display:flex;align-items:center;gap:10px;">
-				<input type="checkbox" name="agreeTerms" value="1" ${form.agreedToTerms ? 'checked' : ''} />
+				<input type="checkbox" name="agreeTerms" style="accent-color: #000;" value="1" ${form.agreedToTerms ? 'checked' : ''} />
 				<span style="font-size:13px;line-height:1.2;">I agree to the <a href="${escapeHtml(storeBase)}/pages/terms-of-service" style="color:#065f46;text-decoration:underline;">Terms of Service</a>, <a href="${escapeHtml(storeBase)}/pages/terms-of-use" style="color:#065f46;text-decoration:underline;">Terms of Use</a>, and the <a href="${escapeHtml(storeBase)}/pages/master-disclaimer-and-limitation-of-liability" style="color:#065f46;text-decoration:underline;">Disclaimer</a>.</span>
 			</label>
 
@@ -577,7 +578,7 @@ function renderRegistrationPage(state: ActionData | LoaderData) {
 		(function(){
 			var btn = document.getElementById('go-step-2');
 			if (!btn) return;
-			btn.addEventListener('click', function(){
+			btn.addEventListener('click', async function(){
 				try {
 					var mainForm = document.getElementById('undr-registration-form');
 					var params = new URLSearchParams(window.location.search || '');
@@ -591,8 +592,74 @@ function renderRegistrationPage(state: ActionData | LoaderData) {
 							}
 						} catch(e){}
 					});
-					// Navigate to the same path with step=2 so the loader renders page 2
-					window.location.href = window.location.pathname + '?' + params.toString();
+
+					// Inline error helper
+					function setInlineError(msg) {
+						try {
+							// Primary: show in the page-level message area under intro
+							var pageMsg = document.getElementById('undr-kit-message');
+							if (pageMsg) {
+								pageMsg.textContent = msg || '';
+								return;
+							}
+							// Fallback: show under the kit input
+							var input = mainForm ? mainForm.querySelector('[name="kitRegistrationNumber"]') : null;
+							if (!input) return;
+							var container = input.parentNode;
+							if (!container) return;
+							var existing = container.querySelector('.client-kit-error');
+							if (!existing) {
+								existing = document.createElement('div');
+								existing.className = 'client-kit-error';
+								existing.style.color = '#b42318';
+								existing.style.fontSize = '13px';
+								existing.style.marginTop = '6px';
+								container.appendChild(existing);
+							}
+							existing.textContent = msg || '';
+						} catch(e){}
+					}
+
+					// Clear previous inline error
+					setInlineError('');
+
+					// Require that user agrees to terms before proceeding to step 2
+					try {
+						var agreeEl = mainForm ? mainForm.querySelector('[name="agreeTerms"]') : null;
+						var agreed = false;
+						if (agreeEl) {
+							if (agreeEl.type === 'checkbox') agreed = Boolean(agreeEl.checked);
+							else agreed = String(agreeEl.value || '') === '1' || String(agreeEl.value || '') === 'on';
+						}
+						if (!agreed) {
+							setInlineError('You must agree to the Terms of Service, Terms of Use, and Disclaimer to continue.');
+							return;
+						}
+					} catch (e) {}
+
+					// Require a kit value and validate it server-side before navigating
+					var kit = (params.get('kitRegistrationNumber') || '').trim();
+					if (!kit) {
+						setInlineError('Please enter your kit registration number.');
+						return;
+					}
+
+					try {
+						var body = 'intent=check-kit&kitRegistrationNumber=' + encodeURIComponent(kit);
+						var resp = await fetch(window.location.pathname, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: body, credentials: 'same-origin' });
+						if (resp.ok) {
+							var json = await resp.json();
+							if (json && json.exists) {
+								window.location.href = window.location.pathname + '?' + params.toString();
+							} else {
+								setInlineError('Kit number not recognized. Please check your kit number or contact support.');
+							}
+						} else {
+							setInlineError('Could not validate kit right now. Please try again.');
+						}
+					} catch (err) {
+						setInlineError('Could not validate kit right now. Please try again.');
+					}
 				} catch (e) { console.error(e); }
 			});
 		})();
@@ -656,6 +723,7 @@ export async function action({ request }: ActionFunctionArgs) {
 	const { admin, session, liquid } = await authenticate.public.appProxy(request);
 
 	const formData = await request.formData();
+	const intent = String(formData.get("intent") || "");
 	const form: RegistrationFormState = {
 		name: String(formData.get("name") || ""),
 		email: String(formData.get("email") || ""),
@@ -678,6 +746,16 @@ export async function action({ request }: ActionFunctionArgs) {
 		reason: String(formData.get('reason') || ''),
 		reasonOther: String(formData.get('reasonOther') || ''),
 	};
+
+	// If the request is a quick kit existence check (AJAX), respond with JSON
+	if (intent === 'check-kit') {
+		const kit = String(formData.get('kitRegistrationNumber') || '').trim();
+		const rawKitInputCheck = kit;
+		const trailing10Check = rawKitInputCheck.match(/(\d{10})$/);
+		const lookupKitCheck = trailing10Check ? trailing10Check[1] : rawKitInputCheck;
+		const exists = Boolean(await getRegistrationByKitRegistrationNumber(lookupKitCheck));
+		return new Response(JSON.stringify({ exists }), { headers: { 'Content-Type': 'application/json' } });
+	}
 
 	// If the user clicked Register Kit to advance to step 2, render step 2 without final validation/save
 	if (step === '2' && final !== '1') {
@@ -732,7 +810,11 @@ export async function action({ request }: ActionFunctionArgs) {
 		form.reasonOther = page2Values.reasonOther;
 	}
 
-	const existing = await getRegistrationByKitRegistrationNumber(form.kitRegistrationNumber);
+	// Normalize kit input for lookup: prefer a trailing 10-digit kit number when present
+	const rawKitInput = String(form.kitRegistrationNumber || "").trim();
+	const trailing10 = rawKitInput.match(/(\d{10})$/);
+	const lookupKit = trailing10 ? trailing10[1] : rawKitInput;
+	const existing = await getRegistrationByKitRegistrationNumber(lookupKit);
 	const shop = session?.shop || url.searchParams.get("shop")?.trim() || "";
 	if (existing) {
 		// Update existing registration with latest submitter info and mark as submitted

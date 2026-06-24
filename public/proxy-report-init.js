@@ -687,31 +687,31 @@
     // Zone 5 — outermost: fully dark grey
     c.beginPath();
     c.arc(cx, cy, vR(V_POS2), 0, Math.PI * 2);
-    c.fillStyle = '#787777';
+    c.fillStyle = '#939598';
     c.fill();
 
     // Zone 4 — second ring: medium dark grey
     c.beginPath();
     c.arc(cx, cy, vR(V_POS1), 0, Math.PI * 2);
-    c.fillStyle = '#969696';
+    c.fillStyle = '#a6a8ab';
     c.fill();
 
     // Zone 3 — middle: dark grey
     c.beginPath();
     c.arc(cx, cy, vR(V_MEAN), 0, Math.PI * 2);
-    c.fillStyle = '#c7c5c5';
+    c.fillStyle = '#d3d3d3';
     c.fill();
 
     // Zone 2 — inner: light grey
     c.beginPath();
     c.arc(cx, cy, vR(V_NEG1), 0, Math.PI * 2);
-    c.fillStyle = '#ffffff';
+    c.fillStyle = '#e5e6e7';
     c.fill();
 
     // Zone 1 — center: white
     c.beginPath();
     c.arc(cx, cy, vR(V_NEG2) + 3, 0, Math.PI * 2);
-    c.fillStyle = '#ffffff';
+    c.fillStyle = '#e5e6e7';
     c.fill();
 
     // White boundary lines between zones
