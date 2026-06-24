@@ -6,6 +6,7 @@ import {
 	getRegistrationDefaults,
 	saveRegistration,
 	validateRegistration,
+	validateRegistrationStep2,
 	type RegistrationFormErrors,
 	type RegistrationFormState,
 } from "../models/registration.server";
@@ -15,6 +16,7 @@ import { authenticate } from "../shopify.server";
 
 type LoaderData = {
 	form: RegistrationFormState;
+	showStep2?: boolean;
 };
 
 type ActionData = {
@@ -23,6 +25,7 @@ type ActionData = {
 	errors?: RegistrationFormErrors;
 	form: RegistrationFormState;
 	requireV2?: boolean;
+	showStep2?: boolean;
 };
 
 const RECAPTCHA_ACTION = "submit_kit_registration";
@@ -34,6 +37,112 @@ function getLoggedInCustomerId(url: URL): string | null {
 		url.searchParams.get("customer_id")?.trim() ||
 		null
 	);
+}
+
+function renderStep2Section(form: RegistrationFormState, errors?: RegistrationFormErrors) {
+	const escapeHtml = (value: string) => String(value || '').replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#39;');
+
+	const depthOptions = ['surface','3 inches','6 inches','9 inches','1 foot','2+feet'];
+	const propertyOptions = ['residential','undeveloped','urban','industrial'];
+	const landUseOptions = ['garden','farm','lawn','forest','pasture','idle','unknown'];
+	const reasonOptions = ['curiosity','potential financial gain','health and safety concerns','environmental concerns','just for fun','other'];
+
+	return `
+	<div style="max-width:600px;margin:18px auto;padding:20px;border:1px solid rgba(15,23,42,0.08);border-radius:12px;background:#ffffff;">
+		<h2 style="margin:0 0 12px;font-size:18px;font-weight:700;">Additional details</h2>
+		<form method="post" style="display:grid;gap:12px;">
+				<input type="hidden" name="step" value="2" />
+				<input type="hidden" name="final" value="1" />
+				<!-- Carry Step 1 values so final submission includes required fields -->
+				<input type="hidden" name="name" value="${escapeHtml(String((form as any).name || ''))}" />
+				<input type="hidden" name="email" value="${escapeHtml(String((form as any).email || ''))}" />
+				<input type="hidden" name="phone" value="${escapeHtml(String((form as any).phone || ''))}" />
+				<input type="hidden" name="orderNumber" value="${escapeHtml(String((form as any).orderNumber || ''))}" />
+				<input type="hidden" name="kitRegistrationNumber" value="${escapeHtml(String((form as any).kitRegistrationNumber || ''))}" />
+				<input type="hidden" name="agreeTerms" value="${(form as any).agreedToTerms ? '1' : ''}" />
+				<input type="hidden" name="smsConsent" value="${(form as any).smsConsent ? '1' : ''}" />
+			<input type="hidden" name="final" value="1" />
+			<label style="display:grid;gap:6px;">
+				<span style="font-weight:600;">Address</span>
+				<input name="address" value="${escapeHtml(String((form as any).address || ''))}" style="min-height:40px;padding:8px;border:1px solid rgba(15,23,42,0.12);border-radius:8px;" />
+				${errors?.address ? `<div style="color:#b42318;font-size:13px;">${escapeHtml(errors.address)}</div>` : ''}
+			</label>
+
+			<label style="display:grid;gap:6px;">
+				<span style="font-weight:600;">Depth of sample</span>
+				<select name="depth" style="min-height:40px;padding:8px;border:1px solid rgba(15,23,42,0.12);border-radius:8px;">
+					<option value="">Select depth</option>
+					${depthOptions.map(o=>`<option value="${escapeHtml(o)}" ${ (String((form as any).depth || '')===o ? 'selected' : '') }>${escapeHtml(o)}</option>`).join('')}
+				</select>
+				${errors?.depth ? `<div style="color:#b42318;font-size:13px;">${escapeHtml(errors.depth)}</div>` : ''}
+			</label>
+
+			<label style="display:grid;gap:6px;">
+				<span style="font-weight:600;">Property type</span>
+				<select name="propertyType" style="min-height:40px;padding:8px;border:1px solid rgba(15,23,42,0.12);border-radius:8px;">
+					<option value="">Select property type</option>
+					${propertyOptions.map(o=>`<option value="${escapeHtml(o)}" ${ (String((form as any).propertyType || '')===o ? 'selected' : '') }>${escapeHtml(o)}</option>`).join('')}
+				</select>
+				${errors?.propertyType ? `<div style="color:#b42318;font-size:13px;">${escapeHtml(errors.propertyType)}</div>` : ''}
+			</label>
+
+			<label style="display:grid;gap:6px;">
+				<span style="font-weight:600;">Land use (optional)</span>
+				<select name="landUse" style="min-height:40px;padding:8px;border:1px solid rgba(15,23,42,0.12);border-radius:8px;">
+					<option value="">Select land use</option>
+					${landUseOptions.map(o=>`<option value="${escapeHtml(o)}" ${ (String((form as any).landUse || '')===o ? 'selected' : '') }>${escapeHtml(o)}</option>`).join('')}
+				</select>
+			</label>
+
+			<label style="display:grid;gap:6px;">
+				<span style="font-weight:600;">Approx. Acreage of property (optional)</span>
+				<input name="acreage" type="number" step="0.01" value="${escapeHtml(String((form as any).acreage || ''))}" style="min-height:40px;padding:8px;border:1px solid rgba(15,23,42,0.12);border-radius:8px;" />
+				${errors?.acreage ? `<div style="color:#b42318;font-size:13px;">${escapeHtml(errors.acreage)}</div>` : ''}
+			</label>
+
+			<label style="display:grid;gap:6px;">
+				<span style="font-weight:600;">Reason for testing</span>
+				<select name="reason" id="reason-select" style="min-height:40px;padding:8px;border:1px solid rgba(15,23,42,0.12);border-radius:8px;">
+					<option value="">Select reason</option>
+					${reasonOptions.map(o=>`<option value="${escapeHtml(o)}" ${ (String((form as any).reason || '')===o ? 'selected' : '') }>${escapeHtml(o)}</option>`).join('')}
+				</select>
+			</label>
+
+			<div id="reason-other" style="display:${String((form as any).reason||'')==='other' ? 'block' : 'none'};">
+				<label style="display:grid;gap:6px;">
+					<span style="font-weight:600;">Other (please specify)</span>
+					<input name="reasonOther" value="${escapeHtml(String((form as any).reasonOther || ''))}" style="min-height:40px;padding:8px;border:1px solid rgba(15,23,42,0.12);border-radius:8px;" />
+				</label>
+			</div>
+
+			<div style="display:flex;gap:8px;align-items:center;margin-top:6px;">
+				<button type="submit" style="min-height:44px;padding:0 24px;border:none;border-radius:999px;background:#0f172a;color:#fff;font-size:15px;font-weight:600;cursor:pointer;">Complete registration</button>
+				<button type="button" id="back-to-step1" style="min-height:44px;padding:0 24px;border:1px solid rgba(15,23,42,0.12);border-radius:999px;background:#fff;color:#111827;font-size:15px;font-weight:600;cursor:pointer;">Back</button>
+			</div>
+		</form>
+	</div>
+	<script>
+		(function(){
+			var back = document.getElementById('back-to-step1');
+			if (back) back.addEventListener('click', function(){ window.location.href = window.location.pathname; });
+			var reason = document.getElementById('reason-select');
+			var other = document.getElementById('reason-other');
+			if (reason && other) {
+				reason.addEventListener('change', function(e){
+					try {
+						var val = '';
+						try {
+							val = (e && e.target && typeof e.target.value !== 'undefined') ? String(e.target.value) : '';
+						} catch (_err) {
+							val = (reason.value || '');
+						}
+						if (val === 'other') other.style.display = 'block'; else other.style.display = 'none';
+					} catch(e){}
+				});
+			}
+		})();
+	</script>
+	`;
 }
 
 function normalizeCustomerId(value?: string | null): string | null {
@@ -303,6 +412,7 @@ function renderError(message?: string) {
 
 function renderRegistrationPage(state: ActionData | LoaderData) {
 	const form = state.form;
+	const showStep2 = Boolean((state as any).showStep2);
 	const errors = "errors" in state ? state.errors : undefined;
 	const message = "message" in state ? state.message : undefined;
 	const ok = "ok" in state ? state.ok : false;
@@ -407,57 +517,80 @@ function renderRegistrationPage(state: ActionData | LoaderData) {
 			: ""
 	}
 
-	<form id="undr-registration-form" method="post" style="display:grid;gap:16px;max-width:600px;padding:28px;border:1px solid rgba(15,23,42,0.12);border-radius:20px;background:#fffdf8;">
-		<input type="hidden" name="recaptchaToken" value="" />
-		${requireV2 ? `<input type="hidden" name="requireV2" value="1" />` : ""}
-		<label style="display:grid;gap:5px;">
-			<span style="font-size:14px;font-weight:600;">Name</span>
-			<input name="name" value="${escapeHtml(form.name)}" autocomplete="name" style="min-height:44px;padding:10px 14px;border-radius:10px;border:1px solid rgba(15,23,42,0.2);font-size:15px;box-sizing:border-box;width:100%;" />
-			${renderError(errors?.name)}
-		</label>
+	${!showStep2 ? (
+		`<form id="undr-registration-form" method="post" style="display:grid;gap:16px;max-width:600px;padding:28px;border:1px solid rgba(15,23,42,0.12);border-radius:20px;background:#fffdf8;">
+			<input type="hidden" name="recaptchaToken" value="" />
+			${requireV2 ? `<input type="hidden" name="requireV2" value="1" />` : ""}
+			<label style="display:grid;gap:5px;">
+				<span style="font-size:14px;font-weight:600;">Name</span>
+				<input name="name" value="${escapeHtml(form.name)}" autocomplete="name" style="min-height:44px;padding:10px 14px;border-radius:10px;border:1px solid rgba(15,23,42,0.2);font-size:15px;box-sizing:border-box;width:100%;" />
+				${renderError(errors?.name)}
+			</label>
 
-		<label style="display:grid;gap:5px;">
-			<span style="font-size:14px;font-weight:600;">Email</span>
-			<input name="email" type="email" value="${escapeHtml(form.email)}" autocomplete="email" style="min-height:44px;padding:10px 14px;border-radius:10px;border:1px solid rgba(15,23,42,0.2);font-size:15px;box-sizing:border-box;width:100%;" />
-			${renderError(errors?.email)}
-		</label>
+			<label style="display:grid;gap:5px;">
+				<span style="font-size:14px;font-weight:600;">Email</span>
+				<input name="email" type="email" value="${escapeHtml(form.email)}" autocomplete="email" style="min-height:44px;padding:10px 14px;border-radius:10px;border:1px solid rgba(15,23,42,0.2);font-size:15px;box-sizing:border-box;width:100%;" />
+				${renderError(errors?.email)}
+			</label>
 
 					<label style="display:grid;gap:5px;">
 						<span style="font-size:14px;font-weight:600;">Phone</span>
 						<input name="phone" type="tel" value="${escapeHtml(form.phone)}" autocomplete="tel"
 							required
-							pattern="^\+1\s*\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}$"
+							pattern="^\\+1\\s*\\(?\\d{3}\\)?[\\s.\\-]?\\d{3}[\\s.\\-]?\\d{4}$"
 							title="Please enter a full U.S. phone number, e.g. +1 (555) 555-5555"
 							inputmode="tel"
 							style="min-height:44px;padding:10px 14px;border-radius:10px;border:1px solid rgba(15,23,42,0.2);font-size:15px;box-sizing:border-box;width:100%;" />
 						${renderError(errors?.phone)}
 					</label>
 
-		<label style="display:flex;align-items:center;gap:10px;">
-			<input type="checkbox" name="smsConsent" value="1" ${form.smsConsent ? 'checked' : ''} />
-			<span style="font-size:13px;line-height:1.2;">I agree to receive SMS messages (Shopify messaging standard).</span>
-		</label>
+			<label style="display:flex;align-items:center;gap:10px;">
+				<input type="checkbox" name="smsConsent" value="1" ${form.smsConsent ? 'checked' : ''} />
+				<span style="font-size:13px;line-height:1.2;">I agree to receive SMS messages (Shopify messaging standard).</span>
+			</label>
 
 
 
-		<label style="display:grid;gap:5px;">
-			<span style="font-size:14px;font-weight:600;">Kit Registration Number</span>
-			<input name="kitRegistrationNumber" value="${escapeHtml(form.kitRegistrationNumber)}" autocomplete="off" style="min-height:44px;padding:10px 14px;border-radius:10px;border:1px solid rgba(15,23,42,0.2);font-size:15px;box-sizing:border-box;width:100%;" />
-			${renderError(errors?.kitRegistrationNumber)}
-		</label>
+			<label style="display:grid;gap:5px;">
+				<span style="font-size:14px;font-weight:600;">Kit Registration Number</span>
+				<input name="kitRegistrationNumber" value="${escapeHtml(form.kitRegistrationNumber)}" autocomplete="off" style="min-height:44px;padding:10px 14px;border-radius:10px;border:1px solid rgba(15,23,42,0.2);font-size:15px;box-sizing:border-box;width:100%;" />
+				${renderError(errors?.kitRegistrationNumber)}
+			</label>
 
-		<label style="display:flex;align-items:center;gap:10px;">
-			<input type="checkbox" name="agreeTerms" value="1" ${form.agreedToTerms ? 'checked' : ''} />
-			<span style="font-size:13px;line-height:1.2;">I agree to the <a href="${escapeHtml(storeBase)}/pages/terms-of-service" style="color:#065f46;text-decoration:underline;">Terms of Service</a>, <a href="${escapeHtml(storeBase)}/pages/terms-of-use" style="color:#065f46;text-decoration:underline;">Terms of Use</a>, and the <a href="${escapeHtml(storeBase)}/pages/master-disclaimer-and-limitation-of-liability" style="color:#065f46;text-decoration:underline;">Disclaimer</a>.</span>
-		</label>
+			<label style="display:flex;align-items:center;gap:10px;">
+				<input type="checkbox" name="agreeTerms" value="1" ${form.agreedToTerms ? 'checked' : ''} />
+				<span style="font-size:13px;line-height:1.2;">I agree to the <a href="${escapeHtml(storeBase)}/pages/terms-of-service" style="color:#065f46;text-decoration:underline;">Terms of Service</a>, <a href="${escapeHtml(storeBase)}/pages/terms-of-use" style="color:#065f46;text-decoration:underline;">Terms of Use</a>, and the <a href="${escapeHtml(storeBase)}/pages/master-disclaimer-and-limitation-of-liability" style="color:#065f46;text-decoration:underline;">Disclaimer</a>.</span>
+			</label>
 
-		${requireV2 && recaptchaV2SiteKey ? `<div class="g-recaptcha" data-sitekey="${recaptchaV2SiteKeyHtml}" style="margin-top:4px;"></div>` : ""}
-		<button type="submit" style="min-height:44px;padding:0 24px;border:none;border-radius:999px;background:#111827;color:#fff;font-size:15px;font-weight:600;cursor:pointer;">Register Kit</button>
-</form>
-${recaptchaScript}
-${maskScript}
-	${instructionsLinkHtml}
-	${redirectScript}
+			${requireV2 && recaptchaV2SiteKey ? `<div class="g-recaptcha" data-sitekey="${recaptchaV2SiteKeyHtml}" style="margin-top:4px;"></div>` : ""}
+			<button type="button" id="go-step-2" style="min-height:44px;padding:0 24px;border:none;border-radius:999px;background:#111827;color:#fff;font-size:15px;font-weight:600;cursor:pointer;">Register Kit</button>
+		</form>`
+		+ recaptchaScript + maskScript + instructionsLinkHtml + redirectScript + `
+		<script>
+		(function(){
+			var btn = document.getElementById('go-step-2');
+			if (!btn) return;
+			btn.addEventListener('click', function(){
+				try {
+					var mainForm = document.getElementById('undr-registration-form');
+					var params = new URLSearchParams(window.location.search || '');
+					params.set('step','2');
+					var fields = ['name','email','phone','orderNumber','kitRegistrationNumber','shop'];
+					fields.forEach(function(f){
+						try {
+							var el = mainForm ? mainForm.querySelector('[name="'+f+'"]') : null;
+							if (el && typeof el.value !== 'undefined' && String(el.value || '').trim() !== '') {
+								params.set(f, String(el.value));
+							}
+						} catch(e){}
+					});
+					// Navigate to the same path with step=2 so the loader renders page 2
+					window.location.href = window.location.pathname + '?' + params.toString();
+				} catch (e) { console.error(e); }
+			});
+		})();
+		</script>
+	` ) : renderStep2Section(form, errors)}
 </div>
 `;
 }
@@ -506,7 +639,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 		}
 	}
 
-	const data: LoaderData = { form: defaults };
+	const data: LoaderData = { form: defaults, showStep2: url.searchParams.get('step') === '2' };
 
 	return proxyPageResponse(request, liquid, data);
 }
@@ -525,6 +658,25 @@ export async function action({ request }: ActionFunctionArgs) {
 		agreedToTerms: Boolean(String(formData.get("agreeTerms") || "") === "1" || String(formData.get("agreeTerms") || "") === "on"),
 		smsConsent: Boolean(formData.get("smsConsent")),
 	};
+
+	const step = String(formData.get('step') || '1');
+	const final = String(formData.get('final') || '0');
+
+	const page2Values = {
+		address: String(formData.get('address') || ''),
+		depth: String(formData.get('depth') || ''),
+		propertyType: String(formData.get('propertyType') || ''),
+		landUse: String(formData.get('landUse') || ''),
+		acreage: formData.get('acreage') ? Number(String(formData.get('acreage'))) : undefined,
+		reason: String(formData.get('reason') || ''),
+		reasonOther: String(formData.get('reasonOther') || ''),
+	};
+
+	// If the user clicked Register Kit to advance to step 2, render step 2 without final validation/save
+	if (step === '2' && final !== '1') {
+		const data: ActionData = { ok: false, form: Object.assign(getRegistrationDefaults(), form, page2Values), showStep2: true };
+		return proxyPageResponse(request, liquid, data);
+	}
 	// reCAPTCHA check disabled for now; submit continues directly to validation/save.
 	// const requireV2 = formData.get("requireV2") === "1";
 	// const recaptchaToken = String(formData.get("recaptchaToken") || "");
@@ -543,16 +695,35 @@ export async function action({ request }: ActionFunctionArgs) {
 	// 	return proxyPageResponse(request, liquid, data);
 	// }
 
-	const validationErrors = validateRegistration(form);
-	if (validationErrors) {
-		const data: ActionData = {
-			ok: false,
-			message: "Please fill all required fields.",
-			errors: validationErrors,
-			form,
-		};
-		return proxyPageResponse(request, liquid, data);
-	}
+		// Validate step 1 fields
+		const validationErrors = validateRegistration(form);
+		if (validationErrors) {
+			const data: ActionData = {
+				ok: false,
+				message: "Please fill all required fields.",
+				errors: validationErrors,
+				form,
+			};
+			return proxyPageResponse(request, liquid, data);
+		}
+
+		// If final submission from step 2, validate step 2 fields too
+		if (final === '1') {
+			const merged = Object.assign({}, form, page2Values) as RegistrationFormState;
+			const step2Errors = validateRegistrationStep2(merged);
+			if (step2Errors) {
+				const data: ActionData = { ok: false, message: 'Please fill required fields on this page.', errors: step2Errors, form: merged, showStep2: true };
+				return proxyPageResponse(request, liquid, data);
+			}
+			// merge page2 into form for saving
+			form.address = page2Values.address;
+			form.depth = page2Values.depth;
+			form.propertyType = page2Values.propertyType;
+			form.landUse = page2Values.landUse;
+			form.acreage = page2Values.acreage as any;
+			form.reason = page2Values.reason;
+			form.reasonOther = page2Values.reasonOther;
+		}
 
 	const existing = await getRegistrationByKitRegistrationNumber(form.kitRegistrationNumber);
 	const shop = session?.shop || url.searchParams.get("shop")?.trim() || "";
@@ -579,6 +750,17 @@ export async function action({ request }: ActionFunctionArgs) {
 				// Persist SMS consent explicitly (true when checked, false when unchecked)
 				if (typeof form.smsConsent !== 'undefined') {
 					updateData.smsConsent = Boolean(form.smsConsent);
+				}
+
+				// If final submission from step 2, include page 2 fields
+				if (String(formData.get('final') || '') === '1') {
+					updateData.address = String(formData.get('address') || '');
+					updateData.depth = String(formData.get('depth') || '');
+					updateData.propertyType = String(formData.get('propertyType') || '');
+					updateData.landUse = String(formData.get('landUse') || '');
+					if (formData.get('acreage')) updateData.acreage = Number(String(formData.get('acreage')));
+					updateData.reason = String(formData.get('reason') || '');
+					updateData.reasonOther = String(formData.get('reasonOther') || '');
 				}
 
 			await updateRegistrationFieldsById(existing.id, updateData);
@@ -644,6 +826,14 @@ export async function action({ request }: ActionFunctionArgs) {
 			smsConsent: Boolean(form.smsConsent),
 			shopifyOrderId: null,
 			shopifyCustomerId,
+			// Page 2 fields (if provided)
+			address: form.address || undefined,
+			depth: form.depth || undefined,
+			propertyType: form.propertyType || undefined,
+			landUse: form.landUse || undefined,
+			acreage: typeof form.acreage !== 'undefined' && form.acreage !== '' ? Number(form.acreage as any) : undefined,
+			reason: form.reason || undefined,
+			reasonOther: form.reasonOther || undefined,
 		});
 
 		// Mark registration as submitted so UI shows `register_submitted` status

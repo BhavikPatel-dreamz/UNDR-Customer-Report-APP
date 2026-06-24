@@ -34,6 +34,14 @@ export type RegistrationInput = {
   shopifyCustomerId?: string | null;
   agreedToTerms?: boolean;
   smsConsent?: boolean;
+  // Page 2 fields
+  address?: string | null;
+  depth?: string | null;
+  propertyType?: string | null;
+  landUse?: string | null;
+  acreage?: number | null;
+  reason?: string | null;
+  reasonOther?: string | null;
 };
 
 export type RegistrationFormState = {
@@ -45,6 +53,14 @@ export type RegistrationFormState = {
   agreedToTerms?: boolean;
   smsConsent?: boolean;
   shopDomain?: string;
+  // Page 2 fields
+  address?: string;
+  depth?: string;
+  propertyType?: string;
+  landUse?: string;
+  acreage?: number | string;
+  reason?: string;
+  reasonOther?: string;
 };
 
 export type RegistrationFormErrors = Partial<Record<keyof RegistrationFormState, string>>;
@@ -67,6 +83,13 @@ export function getRegistrationDefaults(): RegistrationFormState {
     agreedToTerms: false,
     smsConsent: true,
     shopDomain: "",
+    address: "",
+    depth: "",
+    propertyType: "",
+    landUse: "",
+    acreage: "",
+    reason: "",
+    reasonOther: "",
   };
 }
 
@@ -105,6 +128,35 @@ export function validateRegistration(
   return Object.keys(errors).length ? errors : null;
 }
 
+export function validateRegistrationStep2(input: Partial<RegistrationFormState>) {
+  const errors: RegistrationFormErrors = {};
+
+  if (!input.address || !String(input.address).trim()) {
+    errors.address = "Address is required.";
+  }
+
+  if (!input.depth || !String(input.depth).trim()) {
+    errors.depth = "Depth of sample is required.";
+  }
+
+  if (!input.propertyType || !String(input.propertyType).trim()) {
+    errors.propertyType = "Property type is required.";
+  }
+
+  if (
+    typeof input.acreage !== 'undefined' &&
+    input.acreage !== null &&
+    String(input.acreage).trim() !== ''
+  ) {
+    const val = Number(input.acreage);
+    if (Number.isNaN(val)) {
+      errors.acreage = "Approx. acreage must be a number.";
+    }
+  }
+
+  return Object.keys(errors).length ? errors : null;
+}
+
 export async function saveRegistration(input: RegistrationInput) {
   return prisma.registration.create({
     data: {
@@ -118,6 +170,14 @@ export async function saveRegistration(input: RegistrationInput) {
       smsConsent: input.smsConsent ?? true,
       shopifyOrderId: input.shopifyOrderId ?? null,
       shopifyCustomerId: input.shopifyCustomerId ?? null,
+      // Page 2 fields
+      address: input.address ?? null,
+      depth: input.depth ?? null,
+      propertyType: input.propertyType ?? null,
+      landUse: input.landUse ?? null,
+      acreage: input.acreage ?? null,
+      reason: input.reason ?? null,
+      reasonOther: input.reasonOther ?? null,
     },
   });
 }
@@ -154,6 +214,16 @@ export async function updateRegistrationFieldsById(id: string, data: Partial<{ n
   if (data.reportLinkEnabled !== undefined) updateData.reportLinkEnabled = data.reportLinkEnabled;
   if (data.agreedToTerms !== undefined) updateData.agreedToTerms = data.agreedToTerms;
   if (data.smsConsent !== undefined) updateData.smsConsent = data.smsConsent;
+
+  // Page 2 fields
+  const anyData = data as any;
+  if (anyData.address !== undefined) updateData.address = anyData.address;
+  if (anyData.depth !== undefined) updateData.depth = anyData.depth;
+  if (anyData.propertyType !== undefined) updateData.propertyType = anyData.propertyType;
+  if (anyData.landUse !== undefined) updateData.landUse = anyData.landUse;
+  if (anyData.acreage !== undefined) updateData.acreage = anyData.acreage;
+  if (anyData.reason !== undefined) updateData.reason = anyData.reason;
+  if (anyData.reasonOther !== undefined) updateData.reasonOther = anyData.reasonOther;
 
   return prisma.registration.update({ where: { id }, data: updateData });
 }

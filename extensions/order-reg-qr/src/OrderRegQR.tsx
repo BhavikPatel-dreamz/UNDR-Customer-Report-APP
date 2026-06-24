@@ -498,15 +498,7 @@ function App() {
           </BlockStack>
         ))}
         {/* Order-level actions: Save only (per-item QR generation replaces order-level QR) */}
-        <InlineStack gap="base">
-          <Button
-            onPress={() => handleSaveOrder()}
-            disabled={orderSaveLoading || !lineItems.some(li => kitMap[li.id] && !savedMap[li.id])}
-          >
-            {orderSaveLoading ? 'Saving…' : 'Save'}
-          </Button>
-          {orderSaveError ? <Text tone="critical">{orderSaveError}</Text> : null}
-        </InlineStack>
+        {orderSaveError ? <Text tone="critical">{orderSaveError}</Text> : null}
       </BlockStack>
     </AdminBlock>
   );
