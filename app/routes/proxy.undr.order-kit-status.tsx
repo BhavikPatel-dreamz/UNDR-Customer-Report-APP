@@ -23,7 +23,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
   const registrations = await getRegistrationsByShopifyOrderId(orderId);
 
-  const statusMap: Record<string, { status?: string; reportUrl?: string }> = {};
+  const statusMap: Record<string, { status?: string; reportUrl?: string; reportLinkEnabled?: boolean }> = {};
   const shopDomain = session?.shop || undefined;
   const origin = shopDomain ? `https://${shopDomain}` : '';
 

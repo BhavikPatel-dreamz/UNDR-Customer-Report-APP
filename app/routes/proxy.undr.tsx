@@ -31,6 +31,7 @@ type DashboardState = {
 		orderNumber: string;
 		createdAt: Date;
 		report?: { status: string } | null;
+		reportLinkEnabled?: boolean;
 		name?: string | null;
 		email?: string | null;
 		phone?: string | null;

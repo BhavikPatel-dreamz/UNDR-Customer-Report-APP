@@ -452,6 +452,7 @@ export default function RegistrationDetail() {
   const [savingReportRowId, setSavingReportRowId] = useState<string | null>(null);
   const [reportRowDraft, setReportRowDraft] = useState({ rawValue: "", ppmValue: "" });
   const [savingCrudeOil, setSavingCrudeOil] = useState(false);
+  const [reportLinkEnabled, setReportLinkEnabled] = useState(Boolean(registration.reportLinkEnabled));
 
   useEffect(() => {
     setPetroleumPpmValues(buildPetroleumPpmValues(rows));
@@ -582,7 +583,6 @@ export default function RegistrationDetail() {
   // Owner-only preview link: works even when the public report link is disabled.
   const reportPreviewUrl = `${reportUrl}?preview=${encodeURIComponent(reportPreviewToken)}`;
 
-  const [reportLinkEnabled, setReportLinkEnabled] = useState(false);
   const [reportLinkError, setReportLinkError] = useState<string | null>(null);
 
   return (

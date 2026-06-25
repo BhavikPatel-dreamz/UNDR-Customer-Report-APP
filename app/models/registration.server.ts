@@ -289,7 +289,9 @@ export async function listRegistrationsByCustomerId(shopifyCustomerId: string) {
       },
     },
     orderBy: { createdAt: "desc" },
-    include: { report: { select: { id: true, status: true } } },
+    include: {
+      report: { select: { id: true, status: true } },
+    },
   });
 }
 
@@ -328,7 +330,9 @@ export async function findRegistrationForGuestLookup(input: {
         : {}),
       ...(createdAtFilter ? { createdAt: createdAtFilter } : {}),
     },
-    include: { report: { select: { id: true, status: true } } },
+    include: {
+      report: { select: { id: true, status: true } },
+    },
   });
 }
 
@@ -381,7 +385,9 @@ export async function getRegistrationsByShopifyOrderId(shopifyOrderId: string) {
         { orderNumber: { equals: withoutHash, mode: 'insensitive' as const } },
       ],
     },
-    include: { report: { select: { id: true, status: true } } },
+    include: {
+      report: { select: { id: true, status: true } },
+    },
   });
 }
 
