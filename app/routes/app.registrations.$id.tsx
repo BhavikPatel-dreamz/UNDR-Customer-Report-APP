@@ -17,6 +17,7 @@ import {
   extractReportRows,
   upsertReport,
   upsertManualPetroleumRowByRegistrationId,
+  upsertCrudeOilRowByRegistrationId,
   updateReportRowValuesByRegistrationId,
 } from "../models/report.server";
 import { boundary } from "@shopify/shopify-app-react-router/server";
@@ -146,6 +147,47 @@ export const action = async ({ params, request }: ActionFunctionArgs) => {
     return { success: true, message: "Manual petroleum config saved.", intent: "manual_config" as const };
   }
 
+  if (intent === "crude_oil_config") {
+    const crudeoilPpmRaw = String(formData.get("crudeoilPpm") || "").trim();
+    const crudeoilPpm = crudeoilPpmRaw ? Number(crudeoilPpmRaw) : NaN;
+    const crudeoilRawValueInput = String(formData.get("crudeoilRawValue") || "").trim();
+    const crudeoilRawValue = crudeoilRawValueInput ? Number(crudeoilRawValueInput) : NaN;
+    const derivedPpmFromRaw = Number.isFinite(crudeoilRawValue) ? crudeoilRawValue * 10000 : NaN;
+    const finalPpm =
+      Number.isFinite(crudeoilPpm) && crudeoilPpm >= 0
+        ? crudeoilPpm
+        : Number.isFinite(derivedPpmFromRaw) && derivedPpmFromRaw >= 0
+          ? derivedPpmFromRaw
+          : NaN;
+
+    if (!Number.isFinite(finalPpm) || finalPpm < 0) {
+      return {
+        error: "Enter a non-negative PPM value for crude oil.",
+        intent: "crude_oil_config" as const,
+      };
+    }
+
+    if (!registration.report) {
+      return {
+        error: "No report found. Upload CSV first, then apply crude oil config.",
+        intent: "crude_oil_config" as const,
+      };
+    }
+
+    const rawForDb =
+      Number.isFinite(crudeoilRawValue) && crudeoilRawValue >= 0
+        ? crudeoilRawValue
+        : finalPpm / 10000;
+    
+    await upsertCrudeOilRowByRegistrationId({
+      registrationId: registration.id,
+      rawValue: rawForDb,
+      ppmValue: finalPpm,
+    });
+
+    return { success: true, message: "Crude oil config saved.", intent: "crude_oil_config" as const };
+  }
+
   if (intent === "report_row_config") {
     const reportRowId = String(formData.get("reportRowId") || "").trim();
     const rawValue = Number(String(formData.get("rawValue") || "").trim());
@@ -257,10 +299,10 @@ export const headers: HeadersFunction = (args) => boundary.headers(args);
 
 type LoaderData = Awaited<ReturnType<typeof loader>>;
 type ActionData =
-  | { success: true; message: string; rowCount?: number; intent?: "upload_csv" | "manual_config" | "package_config" | "quick_view_config" | "report_row_config" }
-  | { error: string; intent?: "upload_csv" | "manual_config" | "package_config" | "quick_view_config" | "report_row_config" | "toggle_report_link" }
-  | { success: true; message: string; intent?: "toggle_report_link" }
-  | { error: string; intent?: "toggle_report_link" }
+  | { success: true; message: string; rowCount?: number; intent?: "upload_csv" | "manual_config" | "package_config" | "quick_view_config" | "report_row_config" | "crude_oil_config" }
+  | { error: string; intent?: "upload_csv" | "manual_config" | "package_config" | "quick_view_config" | "report_row_config" | "toggle_report_link" | "crude_oil_config" }
+  | { success: true; message: string; intent?: "toggle_report_link" | "crude_oil_config" }
+  | { error: string; intent?: "toggle_report_link" | "crude_oil_config" }
   | undefined;
 
   const PETROLEUM_CONTAMINANTS = [
@@ -277,6 +319,8 @@ type ActionData =
     "Lubricating Oil",
     "Benzene",
   ];
+
+  const CRUDE_OIL = "Crude Oil";
 
 function Badge({
   label,
@@ -319,10 +363,16 @@ function buildPetroleumPpmValues(rows: Array<{ element: string; ppmValue: number
   }, {});
 }
 
+function getCrudeOilPpmValue(rows: Array<{ element: string; ppmValue: number }>) {
+  const crudeOilRow = rows.find((row) => row.element === "Crude Oil");
+  return crudeOilRow && Number.isFinite(crudeOilRow.ppmValue) ? String(crudeOilRow.ppmValue) : "0";
+}
+
 export default function RegistrationDetail() {
   const { registration, shopDomain, reportPreviewToken } = useLoaderData<LoaderData>();
   const actionData = useActionData<ActionData>();
   const manualPetroleumFetcher = useFetcher<ActionData>();
+  const crudeOilFetcher = useFetcher<ActionData>();
   const reportRowFetcher = useFetcher<ActionData>();
   const reportLinkFetcher = useFetcher<ActionData>();
   const packageConfigFetcher = useFetcher<ActionData>();
@@ -332,6 +382,7 @@ export default function RegistrationDetail() {
   const nav = useNavigation();
   const isUploading = uploadFetcher.state !== "idle" || nav.state === "submitting";
   const isSavingPetroleum = manualPetroleumFetcher.state !== "idle";
+  const isSavingCrudeOil = crudeOilFetcher.state !== "idle";
   const isSavingReportRow = reportRowFetcher.state !== "idle";
   const isSavingReportLink = reportLinkFetcher.state !== "idle";
   const isSavingPackage = packageConfigFetcher.state !== "idle";
@@ -363,6 +414,12 @@ export default function RegistrationDetail() {
       : actionData && actionData.intent === "report_row_config"
         ? actionData
         : undefined;
+  const crudeOilData =
+    crudeOilFetcher.data && crudeOilFetcher.data.intent === "crude_oil_config"
+      ? crudeOilFetcher.data
+      : actionData && actionData.intent === "crude_oil_config"
+        ? actionData
+        : undefined;
   const currentReportPackage = (() => {
     const rawValue = String(
       (registration as unknown as { reportPackage?: string }).reportPackage || "premium",
@@ -387,14 +444,21 @@ export default function RegistrationDetail() {
   const [petroleumPpmValues, setPetroleumPpmValues] = useState<Record<string, string>>(() =>
     buildPetroleumPpmValues(rows),
   );
+  const [crudeOilPpmValue, setCrudeOilPpmValue] = useState<string>("0");
   const [editingPetroleum, setEditingPetroleum] = useState<string | null>(null);
   const [savingPetroleum, setSavingPetroleum] = useState<string | null>(null);
+  const [editingCrudeOil, setEditingCrudeOil] = useState(false);
   const [editingReportRowId, setEditingReportRowId] = useState<string | null>(null);
   const [savingReportRowId, setSavingReportRowId] = useState<string | null>(null);
   const [reportRowDraft, setReportRowDraft] = useState({ rawValue: "", ppmValue: "" });
+  const [savingCrudeOil, setSavingCrudeOil] = useState(false);
 
   useEffect(() => {
     setPetroleumPpmValues(buildPetroleumPpmValues(rows));
+    const crudeOilRow = rows.find((r) => r.element === "Crude Oil");
+    if (crudeOilRow) {
+      setCrudeOilPpmValue(String(crudeOilRow.ppmValue));
+    }
   }, [rows]);
 
   useEffect(() => {
@@ -425,6 +489,18 @@ export default function RegistrationDetail() {
   }, [manualPetroleumFetcher.state, manualPetroleumFetcher.data]);
 
   useEffect(() => {
+    if (crudeOilFetcher.state !== "idle") return;
+
+    if (
+      crudeOilFetcher.data &&
+      crudeOilFetcher.data.intent === "crude_oil_config" &&
+      "success" in crudeOilFetcher.data
+    ) {
+      setEditingCrudeOil(false);
+    }
+  }, [crudeOilFetcher.state, crudeOilFetcher.data]);
+
+  useEffect(() => {
     if (reportRowFetcher.state !== "idle") return;
 
     setSavingReportRowId(null);
@@ -449,6 +525,14 @@ export default function RegistrationDetail() {
     formData.set("petroleumPpm", ppmValue);
     setSavingPetroleum(type);
     manualPetroleumFetcher.submit(formData, { method: "post" });
+  };
+
+  const saveCrudeOilValue = (ppmValue: string, rawDisplay: string) => {
+    const formData = new FormData();
+    formData.set("intent", "crude_oil_config");
+    formData.set("crudeoilPpm", ppmValue);
+    formData.set("crudeoilRawValue", rawDisplay);
+    crudeOilFetcher.submit(formData, { method: "post" });
   };
 
   const startEditingReportRow = (row: { id: string; rawValue: number; ppmValue: number }) => {
@@ -534,7 +618,13 @@ export default function RegistrationDetail() {
         {registration.shopifyCustomerId && (
           <InfoRow label="Shopify customer ID" value={registration.shopifyCustomerId} />
         )}
-        <InfoRow label="Registered on" value={new Date(registration.createdAt).toLocaleString()} />
+        <InfoRow
+          label="Registered on"
+          value={new Date(registration.createdAt).toLocaleString("en-US", {
+            dateStyle: "short",
+            timeStyle: "medium",
+          })}
+        />
         <div style={{ paddingTop: "12px" }}>
           <Badge
             label={report?.status === "report_generated" || report?.status === "uploaded" ? "Report generated" : "Pending report"}
@@ -998,6 +1088,173 @@ Ni,6.7106,mass%`}
         </div>
       </s-section>
 
+      {/* ── Manual crude oil control ── */}
+      <s-section heading="Manual crude oil control">
+        {crudeOilData && "error" in crudeOilData && typeof crudeOilData.error === "string" && (
+          <div
+            style={{
+              marginBottom: "16px",
+              padding: "12px 16px",
+              borderRadius: "10px",
+              background: "#fef2f2",
+              color: "#b91c1c",
+              fontSize: "14px",
+            }}
+          >
+            {crudeOilData.error}
+          </div>
+        )}
+        {crudeOilData && "message" in crudeOilData && typeof crudeOilData.message === "string" && (
+          <div
+            style={{
+              marginBottom: "16px",
+              padding: "12px 16px",
+              borderRadius: "10px",
+              background: "#ecfdf3",
+              color: "#065f46",
+              fontSize: "14px",
+              fontWeight: 600,
+            }}
+          >
+            ✓ {crudeOilData.message}
+          </div>
+        )}
+
+        <p style={{ margin: "0 0 12px", fontSize: "13px", color: "#6b7280" }}>
+          Crude oil contaminant value. Default PPM is 0. Click the pencil icon to edit, then save.
+        </p>
+
+        <div style={{ border: "1px solid #e5e7eb", borderRadius: "12px", overflow: "hidden" }}>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1.8fr 1fr 1fr auto",
+              gap: "10px",
+              padding: "10px 12px",
+              background: "#f9fafb",
+              borderBottom: "1px solid #e5e7eb",
+              fontSize: "12px",
+              fontWeight: 700,
+              color: "#374151",
+            }}
+          >
+            <span>Contaminant</span>
+            <span>PPM value</span>
+            <span>Raw value</span>
+            <span>Action</span>
+          </div>
+
+          {(() => {
+            const ppmValue = crudeOilPpmValue ?? "0";
+            const numericPpm = Number(ppmValue);
+            const rawDisplay = Number.isFinite(numericPpm) ? (numericPpm / 10000).toFixed(4) : "0.0000";
+
+            return (
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1.8fr 1fr 1fr auto",
+                  gap: "10px",
+                  alignItems: "center",
+                  padding: "10px 12px",
+                  borderBottom: "1px solid #f3f4f6",
+                }}
+              >
+                <span style={{ fontSize: "13px", fontWeight: 600, color: "#111827" }}>{CRUDE_OIL}</span>
+
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  name="crudeOilPpm"
+                  value={ppmValue}
+                  onChange={(e) => setCrudeOilPpmValue(e.currentTarget.value)}
+                  disabled={!editingCrudeOil || isUploading || isSavingCrudeOil}
+                  style={{
+                    height: "34px",
+                    borderRadius: "8px",
+                    border: "1px solid #d1d5db",
+                    padding: "0 10px",
+                    fontSize: "13px",
+                    background: !editingCrudeOil ? "#f9fafb" : "#ffffff",
+                  }}
+                />
+
+                <span style={{ fontSize: "13px", color: "#4b5563", fontFamily: "monospace" }}>{rawDisplay}</span>
+
+                <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                  {!editingCrudeOil ? (
+                    <button
+                      type="button"
+                      onClick={() => setEditingCrudeOil(true)}
+                      style={{
+                        height: "32px",
+                        width: "32px",
+                        borderRadius: "999px",
+                        border: "1px solid #d1d5db",
+                        background: "#fff",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        cursor: "pointer",
+                      }}
+                      aria-label={`Edit ${CRUDE_OIL}`}
+                      title={`Edit ${CRUDE_OIL}`}
+                    >
+                      <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+                        <path
+                          d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zm17.71-10.04a1 1 0 0 0 0-1.41l-2.51-2.51a1 1 0 0 0-1.41 0l-1.96 1.96 3.75 3.75 2.13-2z"
+                          fill="currentColor"
+                        />
+                      </svg>
+                    </button>
+                  ) : (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => saveCrudeOilValue(ppmValue, rawDisplay)}
+                        disabled={isUploading || isSavingCrudeOil}
+                        style={{
+                          minHeight: "32px",
+                          padding: "0 12px",
+                          border: 0,
+                          borderRadius: "999px",
+                          background: isUploading || isSavingCrudeOil ? "#9ca3af" : "#0f766e",
+                          color: "#fff",
+                          fontSize: "12px",
+                          fontWeight: 600,
+                          cursor: isUploading || isSavingCrudeOil ? "default" : "pointer",
+                        }}
+                      >
+                        {isSavingCrudeOil ? "Saving..." : "Save"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setEditingCrudeOil(false)}
+                        disabled={isUploading || isSavingCrudeOil}
+                        style={{
+                          minHeight: "32px",
+                          padding: "0 12px",
+                          borderRadius: "999px",
+                          border: "1px solid #d1d5db",
+                          background: "#fff",
+                          color: "#111827",
+                          fontSize: "12px",
+                          fontWeight: 600,
+                          cursor: isUploading || isSavingCrudeOil ? "default" : "pointer",
+                        }}
+                      >
+                        Cancel
+                      </button>
+                    </>
+                  )}
+                </div>
+              </div>
+            );
+          })()}
+        </div>
+      </s-section>
+
       {/* ── Parsed rows table ── */}
       {rows.length > 0 && (
         <s-section heading={`Report data (${rows.length} elements)`}>
@@ -1072,7 +1329,7 @@ Ni,6.7106,mass%`}
                             }}
                           />
                         ) : (
-                          row.rawValue
+                          Number.isFinite(row.rawValue) ? row.rawValue.toFixed(4) : String(row.rawValue)
                         )}
                       </td>
                       <td style={{ padding: "8px 12px", fontFamily: "monospace", fontWeight: 600 }}>

@@ -1845,6 +1845,35 @@ export async function upsertManualPetroleumRowByRegistrationId(input: {
   });
 }
 
+export async function upsertCrudeOilRowByRegistrationId(input: {
+  registrationId: string;
+  rawValue: number;
+  ppmValue: number;
+}) {
+  const report = await prisma.report.findUnique({
+    where: { registrationId: input.registrationId },
+  });
+  if (!report) return null;
+
+  await prisma.reportRow.deleteMany({
+    where: {
+      reportId: report.id,
+      category: "oil_contaminant",
+    },
+  });
+
+  return prisma.reportRow.create({
+    data: {
+      reportId: report.id,
+      element: "Crude Oil",
+      rawValue: input.rawValue,
+      ppmValue: input.ppmValue,
+      unit: "ppm",
+      category: "oil_contaminant",
+    },
+  });
+}
+
 export async function updateReportRowValuesByRegistrationId(input: {
   registrationId: string;
   rowId: string;

@@ -515,6 +515,10 @@ p {
     background: #8b231a;
     border-radius: 0 10px 0 0;
     margin-bottom: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 5px;
 }
 
 .report_details_section .oil_indicator_block_compact {
