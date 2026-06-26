@@ -631,9 +631,10 @@ function renderRegistrationPage(state: ActionData | LoaderData) {
 					var phoneEl = mainForm ? mainForm.querySelector('[name="phone"]') : null;
 									if (!nameEl || !String(nameEl.value || '').trim()) { setInlineError('Name is required.'); return; }
 					if (!emailEl || !String(emailEl.value || '').trim()) { setInlineError('Email is required.'); return; }
-					var phoneVal = String((phoneEl && phoneEl.value) || '').replace(/[\s\(\)\-\+]/g, '').trim();
+					var phoneVal = String((phoneEl && phoneEl.value) || '').trim();
+					var phonePattern = /^\\+1\\s*\\(?\\d{3}\\)?[\\s.-]?\\d{3}[\\s.-]?\\d{4}$/;
 					if (!phoneEl || !phoneVal) { setInlineError('Phone number is required.'); return; }
-					if (phoneVal.length < 10) { setInlineError('Please enter a valid U.S. phone number, e.g. +1 (555) 555-5555.'); return; }
+					if (!phonePattern.test(phoneVal)) { setInlineError('Please enter a full U.S. phone number, e.g. +1 (555) 555-5555.'); return; }
 
 					// Require that user agrees to terms before proceeding to step 2
 					try {
