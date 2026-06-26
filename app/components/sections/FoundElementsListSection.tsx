@@ -19,7 +19,7 @@ const FoundElementsListSection = ({ elements, appUrl = '' }: FoundElementsListSe
   const elementBlurbsJson = JSON.stringify(ELEMENT_BLURBS_BY_SYMBOL).replaceAll("<", "\\u003c");
 
   return (
-    <section className="found_elements_list_section">
+    <section id="full_list_of_elements_section" className="found_elements_list_section">
       <div className="container">
         <h2 className="section_main_title">Complete List of<br /> Elements in Your Sample</h2>
         <p className="element_click_hint">Click on each element for more information</p>

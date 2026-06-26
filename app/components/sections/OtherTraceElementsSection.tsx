@@ -17,7 +17,7 @@ const OtherTraceElementsSection = ({ appUrl = '' }: OtherTraceElementsSectionPro
               <p className="footer_text">The full list of elements can be found at the end of this report</p>
               <h3 className="detailed_summary_btn">Detailed summary</h3>
               <div className="arrow_down_icon">
-                <a href="#pmb_section" className="dive_arrow_link">
+                <a href="#full_list_of_elements_section" className="dive_arrow_link">
                   <svg width="51" height="18" viewBox="0 0 51 18" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M1.33398 1.3335L25.3337 16.6669L48.834 1.3335" stroke="#808285" strokeWidth="2.66667" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
