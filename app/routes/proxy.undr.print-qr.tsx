@@ -38,16 +38,37 @@ export default function PrintQrProxy() {
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width,initial-scale=1" />
         <title>Print QR</title>
-        <style>{`body{font-family:Arial,Helvetica,sans-serif;padding:24px;color:#111} .card{max-width:720px;margin:0 auto;border:1px solid #eee;padding:20px;border-radius:8px} img.qr{max-width:300px;height:auto} .row{display:flex;gap:16px;align-items:flex-start}`}</style>
+        <style>{`
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Arial, Helvetica, sans-serif; color: #111; }
+  .card {
+    max-width: 720px;
+    margin: 0 auto;
+    border: 1px solid #eee;
+    padding: 20px;
+    border-radius: 8px;
+  }
+  img.qr {
+    width: 2.5in;
+    height: 2.5in;
+    object-fit: contain;
+    display: block;
+  }
+  @media print {
+    body { padding: 0; margin: 0; }
+    .card { border: none; padding: 0; margin: 0 auto; }
+    /* Prevent browser from scaling down the page */
+    @page { size: auto; margin: 10mm; }
+  }
+`}</style>
       </head>
       <body>
         <div className="card">
-          <h1>Kit Registration</h1>
           <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column' }}>
             {qrUrl ? (
               <img className="qr" src={qrUrl} alt="QR code" />
             ) : (
-              <div style={{ width: 300, height: 300, background: '#f3f3f3', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>No QR</div>
+              <div style={{ width: '2.5in', height: '2.5in', background: '#f3f3f3', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>No QR</div>
             )}
             <p style={{ marginTop: 12, fontSize: 18 }}><strong>Kit #:</strong> {kitNumber}</p>
           </div>
