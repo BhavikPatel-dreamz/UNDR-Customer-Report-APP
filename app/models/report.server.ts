@@ -977,10 +977,8 @@ base.foundElements = found
       // Determine standard deviation ppm: prefer detection limit from the row when available
       let standardDeviationPpm: number | null = null;
       if (r.detectionLimitPercent != null && Number.isFinite(r.detectionLimitPercent)) {
-        // Formula: (detection limit % as given in CSV) * 10,000 ppm * 3
-        // detectionLimitPercent in CSV is expressed as mass% (e.g. 0.01937), so compute:
-        // std_ppm = detectionLimitPercent / 100 * 10000 * 3 === detectionLimitPercent * 300
-        standardDeviationPpm = r.detectionLimitPercent * 300;
+        // Formula: (% detection limit from CSV) * 10,000 ppm * 3
+        standardDeviationPpm = r.detectionLimitPercent * 10000 * 3;
       } else {
         standardDeviationPpm = getElementStandardDeviationPpm(r.element) as number | null;
       }
@@ -989,7 +987,7 @@ base.foundElements = found
       symbol: formatElementSymbol(ELEMENT_SYMBOL_FROM_NAME[key] || key.substring(0, 2)),
       name: formatElementName(r.element).replace(/\s*\([^)]+\)\s*$/, ""),
       // ppm: r.ppmValue.toFixed(2),
-      ppm: Math.floor(r.ppmValue).toString().slice(0, 2) + "ppm",
+      ppm: Math.floor(r.ppmValue).toString().slice(0, 3) + "ppm",
       margin: standardDeviationPpm == null ? "± 0 ppm" : `± ${Number.isFinite(standardDeviationPpm) ? Number(standardDeviationPpm.toFixed(2)) : standardDeviationPpm} ppm`,
       valueStyle: {
         backgroundColor: colors.bg,

@@ -24,7 +24,7 @@ const formatPpm = (value: unknown): string => {
 
   const str = Math.floor(n).toString();
 
-  return str.slice(0, 2);
+  return str.slice(0, 3);
 };
 
 export function mapFoundElements(rows: unknown): FoundElementItem[] {
