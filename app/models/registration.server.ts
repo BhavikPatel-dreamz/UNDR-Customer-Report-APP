@@ -335,6 +335,17 @@ export async function findRegistrationForGuestLookup(input: {
     },
   });
 }
+export async function getRegistrationByKitNumberWithReport(kitRegistrationNumber: string) {
+  return prisma.registration.findFirst({
+    where: {
+      kitRegistrationNumber: {
+        equals: kitRegistrationNumber.trim(),
+        mode: "insensitive",
+      },
+    },
+    include: { report: { select: { status: true } } },
+  });
+}
 
 export async function updateRegistrationReportPackageById(input: {
   registrationId: string;

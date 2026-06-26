@@ -4,6 +4,7 @@ import type { ActionFunctionArgs, LoaderFunctionArgs } from "react-router";
 import {
 	getRegistrationByKitRegistrationNumber,
 	getRegistrationDefaults,
+	getRegistrationByKitNumberWithReport, 
 	saveRegistration,
 	validateRegistration,
 	validateRegistrationStep2,
@@ -649,7 +650,9 @@ function renderRegistrationPage(state: ActionData | LoaderData) {
 						var resp = await fetch(window.location.pathname, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: body, credentials: 'same-origin' });
 						if (resp.ok) {
 							var json = await resp.json();
-							if (json && json.exists) {
+							if (json && json.alreadyRegistered) {
+								setInlineError('This kit has already been registered. Please contact support if you need assistance.');
+							} else if (json && json.exists) {
 								window.location.href = window.location.pathname + '?' + params.toString();
 							} else {
 								setInlineError('Kit number not recognized. Please check your kit number or contact support.');
@@ -753,8 +756,10 @@ export async function action({ request }: ActionFunctionArgs) {
 		const rawKitInputCheck = kit;
 		const trailing10Check = rawKitInputCheck.match(/(\d{10})$/);
 		const lookupKitCheck = trailing10Check ? trailing10Check[1] : rawKitInputCheck;
-		const exists = Boolean(await getRegistrationByKitRegistrationNumber(lookupKitCheck));
-		return new Response(JSON.stringify({ exists }), { headers: { 'Content-Type': 'application/json' } });
+		const kitCheckReg = await getRegistrationByKitNumberWithReport(lookupKitCheck);
+		const exists = Boolean(kitCheckReg);
+		const alreadyRegistered = Boolean(kitCheckReg && kitCheckReg.report?.status === 'register_submitted');
+		return new Response(JSON.stringify({ exists, alreadyRegistered }), { headers: { 'Content-Type': 'application/json' } });
 	}
 
 	// If the user clicked Register Kit to advance to step 2, render step 2 without final validation/save
