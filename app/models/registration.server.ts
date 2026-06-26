@@ -143,15 +143,21 @@ export function validateRegistrationStep2(input: Partial<RegistrationFormState>)
     errors.propertyType = "Property type is required.";
   }
 
-  if (
-    typeof input.acreage !== 'undefined' &&
-    input.acreage !== null &&
-    String(input.acreage).trim() !== ''
-  ) {
+  if (!input.landUse || !String(input.landUse).trim()) {
+    errors.landUse = "Land use is required.";
+  }
+
+  if (typeof input.acreage === 'undefined' || input.acreage === null || String(input.acreage).trim() === '') {
+    errors.acreage = "Approx. acreage is required.";
+  } else {
     const val = Number(input.acreage);
     if (Number.isNaN(val)) {
       errors.acreage = "Approx. acreage must be a number.";
     }
+  }
+
+  if (!input.reason || !String(input.reason).trim()) {
+    errors.reason = "Reason for testing is required.";
   }
 
   return Object.keys(errors).length ? errors : null;

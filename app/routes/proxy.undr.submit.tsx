@@ -66,14 +66,14 @@ function renderStep2Section(form: RegistrationFormState, errors?: RegistrationFo
 			<input type="hidden" name="final" value="1" />
 
 			<label style="display:grid; gap:5px;">
-				<span style="font-family: 'Anonymous Pro', monospace; font-weight: 600; font-size: 14px; line-height: 20px; color: #111827; letter-spacing: 0.06rem;">Address</span>
+				<span style="font-family: 'Anonymous Pro', monospace; font-weight: 600; font-size: 14px; line-height: 20px; color: #111827; letter-spacing: 0.06rem;">Address <span style="color:#b42318;">*</span></span>
 				<input name="address" value="${escapeHtml(String((form as any).address || ''))}" 
 				style="min-height: 44px; padding: 10px 14px; border-radius: 10px; border: 1px solid rgba(15, 23, 42, 0.2); font-size: 15px; box-sizing: border-box; width: 100%;" />
 				${errors?.address ? `<div style="color:#b42318;font-size:13px;">${escapeHtml(errors.address)}</div>` : ''}
 			</label>
 
 			<label style="display:grid; gap:5px;">
-				<span style="font-family: 'Anonymous Pro', monospace; font-weight: 600; font-size: 14px; line-height: 20px; color: #111827; letter-spacing: 0.06rem;">Depth of sample</span>
+				<span style="font-family: 'Anonymous Pro', monospace; font-weight: 600; font-size: 14px; line-height: 20px; color: #111827; letter-spacing: 0.06rem;">Depth of sample <span style="color:#b42318;">*</span></span>
 				<select name="depth" style="min-height: 44px; padding: 10px 14px; border-radius: 10px; border: 1px solid rgba(15, 23, 42, 0.2); font-size: 15px; box-sizing: border-box; width: 100%; background: #FFFFFF; appearance: none; -webkit-appearance: none; -moz-appearance: none; padding-right: 35px;
 				background-image: url('data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%222%22%3E%3Cpath%20d%3D%22M6%209l6%206%206-6%22%2F%3E%3C%2Fsvg%3E'); background-repeat: no-repeat; background-position: right 12px center; background-size: 16px; font-family: 'Anonymous Pro', monospace; font-weight: 600; font-size: 14px; line-height: 20px; color: #111827; letter-spacing: 0.06rem; ">
 					<option value="">Select depth</option>
@@ -83,7 +83,7 @@ function renderStep2Section(form: RegistrationFormState, errors?: RegistrationFo
 			</label>
 
 			<label style="display:grid; gap:5px;">
-				<span style="font-family: 'Anonymous Pro', monospace; font-weight: 600; font-size: 14px; line-height: 20px; color: #111827; letter-spacing: 0.06rem;">Property type</span>
+				<span style="font-family: 'Anonymous Pro', monospace; font-weight: 600; font-size: 14px; line-height: 20px; color: #111827; letter-spacing: 0.06rem;">Property type <span style="color:#b42318;">*</span></span>
 				<select name="propertyType" style="min-height: 44px; padding: 10px 14px; border-radius: 10px; border: 1px solid rgba(15, 23, 42, 0.2); font-size: 15px; box-sizing: border-box; width: 100%; background: #FFFFFF; appearance: none; -webkit-appearance: none; -moz-appearance: none; padding-right: 35px;
 				background-image: url('data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%222%22%3E%3Cpath%20d%3D%22M6%209l6%206%206-6%22%2F%3E%3C%2Fsvg%3E'); background-repeat: no-repeat; background-position: right 12px center; background-size: 16px; font-family: 'Anonymous Pro', monospace; font-weight: 600; font-size: 14px; line-height: 20px; color: #111827; letter-spacing: 0.06rem; ">
 					<option value="">Select property type</option>
@@ -93,27 +93,29 @@ function renderStep2Section(form: RegistrationFormState, errors?: RegistrationFo
 			</label>
 
 			<label style="display:grid; gap:5px;">
-				<span style="font-family: 'Anonymous Pro', monospace; font-weight: 600; font-size: 14px; line-height: 20px; color: #111827; letter-spacing: 0.06rem;">Land use (optional)</span>
+				<span style="font-family: 'Anonymous Pro', monospace; font-weight: 600; font-size: 14px; line-height: 20px; color: #111827; letter-spacing: 0.06rem;">Land use <span style="color:#b42318;">*</span></span>
 				<select name="landUse" style="min-height: 44px; padding: 10px 14px; border-radius: 10px; border: 1px solid rgba(15, 23, 42, 0.2); font-size: 15px; box-sizing: border-box; width: 100%; background: #FFFFFF; appearance: none; -webkit-appearance: none; -moz-appearance: none; padding-right: 35px;
 				background-image: url('data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%222%22%3E%3Cpath%20d%3D%22M6%209l6%206%206-6%22%2F%3E%3C%2Fsvg%3E'); background-repeat: no-repeat; background-position: right 12px center; background-size: 16px; font-family: 'Anonymous Pro', monospace; font-weight: 600; font-size: 14px; line-height: 20px; color: #111827; letter-spacing: 0.06rem; ">
 					<option value="">Select land use</option>
 					${landUseOptions.map(o => `<option value="${escapeHtml(o)}" ${(String((form as any).landUse || '') === o ? 'selected' : '')}>${escapeHtml(o)}</option>`).join('')}
 				</select>
+				${errors?.landUse ? `<div style="color:#b42318;font-size:13px;">${escapeHtml(errors.landUse)}</div>` : ''}
 			</label>
 
 			<label style="display:grid; gap:5px;">
-				<span style="font-family: 'Anonymous Pro', monospace; font-weight: 600; font-size: 14px; line-height: 20px; color: #111827; letter-spacing: 0.06rem;">Approx. Acreage of property (optional)</span>
+				<span style="font-family: 'Anonymous Pro', monospace; font-weight: 600; font-size: 14px; line-height: 20px; color: #111827; letter-spacing: 0.06rem;">Approx. Acreage of property <span style="color:#b42318;">*</span></span>
 				<input name="acreage" type="number" step="0.01" value="${escapeHtml(String((form as any).acreage || ''))}" style="min-height: 44px; padding: 10px 14px; border-radius: 10px; border: 1px solid rgba(15, 23, 42, 0.2); font-size: 15px; box-sizing: border-box; width: 100%;" />
 				${errors?.acreage ? `<div style="color:#b42318;font-size:13px;">${escapeHtml(errors.acreage)}</div>` : ''}
 			</label>
 
 			<label style="display:grid; gap:5px;">
-				<span style="font-family: 'Anonymous Pro', monospace; font-weight: 600; font-size: 14px; line-height: 20px; color: #111827; letter-spacing: 0.06rem;">Reason for testing</span>
+				<span style="font-family: 'Anonymous Pro', monospace; font-weight: 600; font-size: 14px; line-height: 20px; color: #111827; letter-spacing: 0.06rem;">Reason for testing <span style="color:#b42318;">*</span></span>
 				<select name="reason" id="reason-select" style="min-height: 44px; padding: 10px 14px; border-radius: 10px; border: 1px solid rgba(15, 23, 42, 0.2); font-size: 15px; box-sizing: border-box; width: 100%; background: #FFFFFF; appearance: none; -webkit-appearance: none; -moz-appearance: none; padding-right: 35px;
 				background-image: url('data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%222%22%3E%3Cpath%20d%3D%22M6%209l6%206%206-6%22%2F%3E%3C%2Fsvg%3E'); background-repeat: no-repeat; background-position: right 12px center; background-size: 16px; font-family: 'Anonymous Pro', monospace; font-weight: 600; font-size: 14px; line-height: 20px; color: #111827; letter-spacing: 0.06rem; ">
 					<option value="">Select reason</option>
 					${reasonOptions.map(o => `<option value="${escapeHtml(o)}" ${(String((form as any).reason || '') === o ? 'selected' : '')}>${escapeHtml(o)}</option>`).join('')}
 				</select>
+				${errors?.reason ? `<div style="color:#b42318;font-size:13px;">${escapeHtml(errors.reason)}</div>` : ''}
 			</label>
 
 			<div id="reason-other" style="display:${String((form as any).reason || '') === 'other' ? 'block' : 'none'};">
@@ -531,19 +533,19 @@ function renderRegistrationPage(state: ActionData | LoaderData) {
 			<input type="hidden" name="recaptchaToken" value="" />
 			${requireV2 ? `<input type="hidden" name="requireV2" value="1" />` : ""}
 			<label style="display:grid;gap:5px;">
-				<span style="font-size:14px;font-weight:600;">Name</span>
+				<span style="font-size:14px;font-weight:600;">Name <span style="color:#b42318;">*</span></span>
 				<input name="name" value="${escapeHtml(form.name)}" autocomplete="name" style="min-height:44px;padding:10px 14px;border-radius:10px;border:1px solid rgba(15,23,42,0.2);font-size:15px;box-sizing:border-box;width:100%;" />
 				${renderError(errors?.name)}
 			</label>
 
 			<label style="display:grid;gap:5px;">
-				<span style="font-size:14px;font-weight:600;">Email</span>
+				<span style="font-size:14px;font-weight:600;">Email <span style="color:#b42318;">*</span></span>
 				<input name="email" type="email" value="${escapeHtml(form.email)}" autocomplete="email" style="min-height:44px;padding:10px 14px;border-radius:10px;border:1px solid rgba(15,23,42,0.2);font-size:15px;box-sizing:border-box;width:100%;" />
 				${renderError(errors?.email)}
 			</label>
 
 					<label style="display:grid;gap:5px;">
-						<span style="font-size:14px;font-weight:600;">Phone</span>
+						<span style="font-size:14px;font-weight:600;">Phone <span style="color:#b42318;">*</span></span>
 						<input name="phone" type="tel" value="${escapeHtml(form.phone)}" autocomplete="tel"
 							required
 							pattern="^\\+1\\s*\\(?\\d{3}\\)?[\\s.\\-]?\\d{3}[\\s.\\-]?\\d{4}$"
@@ -623,6 +625,15 @@ function renderRegistrationPage(state: ActionData | LoaderData) {
 
 					// Clear previous inline error
 					setInlineError('');
+
+					var nameEl = mainForm ? mainForm.querySelector('[name="name"]') : null;
+					var emailEl = mainForm ? mainForm.querySelector('[name="email"]') : null;
+					var phoneEl = mainForm ? mainForm.querySelector('[name="phone"]') : null;
+									if (!nameEl || !String(nameEl.value || '').trim()) { setInlineError('Name is required.'); return; }
+					if (!emailEl || !String(emailEl.value || '').trim()) { setInlineError('Email is required.'); return; }
+					var phoneVal = String((phoneEl && phoneEl.value) || '').replace(/[\s\(\)\-\+]/g, '').trim();
+					if (!phoneEl || !phoneVal) { setInlineError('Phone number is required.'); return; }
+					if (phoneVal.length < 10) { setInlineError('Please enter a valid U.S. phone number, e.g. +1 (555) 555-5555.'); return; }
 
 					// Require that user agrees to terms before proceeding to step 2
 					try {
