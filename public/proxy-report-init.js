@@ -211,29 +211,15 @@
   function initElementBreakdowns() {
     if (!reportData) return;
 
-    var allItems = [];
-    if (Array.isArray(reportData.elementBreakdown.items)) {
-      allItems = allItems.concat(reportData.elementBreakdown.items);
-    }
-    if (Array.isArray(reportData.otherTraceElements.items)) {
-      allItems = allItems.concat(reportData.otherTraceElements.items);
-    }
-
     var mainItems = [];
     var traceItems = [];
-    allItems.forEach(function (item) {
-      var ppmValue = 0;
-      if (item && item.ppm) {
-        ppmValue = Number(String(item.ppm).replace(/[^0-9.\-]/g, "")) || 0;
-      }
 
-      var isOtherTraceSummary = item && item.name === "Other Trace Elements";
-      if (isOtherTraceSummary || ppmValue > 300) {
-        mainItems.push(item);
-      } else {
-        traceItems.push(item);
-      }
-    });
+    if (Array.isArray(reportData.elementBreakdown.items)) {
+      mainItems = mainItems.concat(reportData.elementBreakdown.items);
+    }
+    if (Array.isArray(reportData.otherTraceElements.items)) {
+      traceItems = traceItems.concat(reportData.otherTraceElements.items);
+    }
 
     renderBarChart("#main-chart", ".elemental_breakdown_section .report_left_content", mainItems);
     renderBarChart("#trace-chart", ".other_trace_elements_section .report_left_content", traceItems);
