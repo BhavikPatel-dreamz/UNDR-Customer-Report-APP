@@ -469,6 +469,323 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
     }
   }
 
+
+  // ── treasure_base: strip heavy metals, precious metals, oil, and petroleum ──
+   if (selectedReportPackage === "treasure_base") {
+    const hasHeavyMetalsUnlock = report.unlockedModules.includes("heavy_metals") || report.unlockedModules.includes("premium");
+    const hasPreciousUnlock = report.unlockedModules.includes("precious_metals") || report.unlockedModules.includes("premium");
+    const hasCrudeOilUnlock = report.unlockedModules.includes("crude_oil") || report.unlockedModules.includes("premium");
+    const hasPetroleumUnlock = report.unlockedModules.includes("petroleum") || report.unlockedModules.includes("premium");
+
+    const STRIP_SYMS = new Set([
+      // heavy metals — only strip if not unlocked
+      ...(!hasHeavyMetalsUnlock ? ["as", "cd", "sb", "te", "hg", "tl", "th", "u", "cr", "pb"] : []),
+      // precious metals — only strip if not unlocked
+      ...(!hasPreciousUnlock ? ["au", "ag", "pt", "ru", "rh", "pd", "os", "ir"] : []),
+    ]);
+
+    const extractSym = (name: string) => {
+      const m = String(name || "").match(/\(([A-Za-z0-9]+)\)/);
+      return m ? m[1].toLowerCase() : String(name || "").trim().toLowerCase();
+    };
+    const shouldStrip = (sym: string) => STRIP_SYMS.has(sym.toLowerCase());
+
+    // Quick look cards
+    if (report.reportDetails) {
+      if (!hasHeavyMetalsUnlock) report.reportDetails.heavyMetals = [];
+      if (!hasPreciousUnlock) report.reportDetails.preciousMetals = [];
+      report.reportDetails.oilIndicator = {
+        crudeOil: hasCrudeOilUnlock ? report.reportDetails.oilIndicator.crudeOil : "Crude oil: 0 ppm",
+        petroleum: hasPetroleumUnlock ? report.reportDetails.oilIndicator.petroleum : "Petroleum Contaminants: None Detected",
+        crudeOilClassName: hasCrudeOilUnlock ? report.reportDetails.oilIndicator.crudeOilClassName : "btn_gray",
+        petroleumClassName: hasPetroleumUnlock ? report.reportDetails.oilIndicator.petroleumClassName : "btn_gray",
+      };
+    }
+
+    // Heavy metal charts
+    if (!hasHeavyMetalsUnlock) {
+      report.multiLevelCharts = {
+        group1Max: 35,
+        group1Rows: [],
+        group1ScaleLabels: ["0", "5", "10", "15", "20", "25", "30", "35"],
+        group2Max: 450,
+        group2Rows: [],
+        group2ScaleLabels: ["0", "50", "100", "150", "200", "250", "300", "350", "400", "450"],
+      };
+    }
+
+    // Oil / petroleum
+    report.oilContaminants = hasCrudeOilUnlock ? report.oilContaminants : { status: "Not Detected", value: "0ppm" };
+    report.petroleum_contaminant = hasPetroleumUnlock ? report.petroleum_contaminant : undefined;
+    report.petroleumTraceFound = hasPetroleumUnlock ? report.petroleumTraceFound : { ...report.petroleumTraceFound, rows: [] };
+    if (!hasPreciousUnlock) {
+      report.preciousMetalPresent = { items: [] };
+    }
+
+    // Layered fingerprint chart
+    if (report.reportDetails?.reportChart) {
+      const chart = report.reportDetails.reportChart as any;
+      const filtered = {
+        elementNames: [] as string[],
+        belowData: [] as number[],
+        refData: [] as number[],
+        aboveData: [] as number[],
+        calculations: [] as any[],
+      };
+      (chart.elementNames || []).forEach((sym: string, idx: number) => {
+        if (!shouldStrip(sym.trim().toLowerCase())) {
+          filtered.elementNames.push(sym);
+          filtered.belowData.push(chart.belowData?.[idx] ?? 0);
+          filtered.refData.push(chart.refData?.[idx] ?? 0);
+          filtered.aboveData.push(chart.aboveData?.[idx] ?? 0);
+          filtered.calculations.push(chart.calculations?.[idx] ?? { adjustedPpm: 0 });
+        }
+      });
+      report.reportDetails.reportChart = filtered as any;
+    }
+
+    // Element breakdown bars
+    if (Array.isArray(report.elementBreakdown?.items)) {
+      report.elementBreakdown.items = report.elementBreakdown.items.filter(
+        (it: any) => !shouldStrip(extractSym(it.name))
+      );
+    }
+
+    // Other trace elements
+    if (Array.isArray(report.otherTraceElements?.items)) {
+      report.otherTraceElements.items = report.otherTraceElements.items.filter(
+        (it: any) => !shouldStrip(extractSym(it.name))
+      );
+    }
+
+    // Trace found chart
+    if (Array.isArray(report.traceFound?.rows)) {
+      report.traceFound.rows = report.traceFound.rows.filter(
+        (r: any) => !shouldStrip(extractSym(r.label))
+      );
+    }
+
+    // Found / not found element lists
+    if (Array.isArray(report.foundElements)) {
+      report.foundElements = report.foundElements.filter(
+        (it: any) => !shouldStrip(String(it.symbol || "").toLowerCase())
+      );
+    }
+    if (Array.isArray(report.notFoundElements)) {
+      report.notFoundElements = report.notFoundElements.filter(
+        (it: any) => !shouldStrip(String(it.symbol || "").toLowerCase())
+      );
+    }
+
+    // Soil features
+    if (Array.isArray(report.soilFeatures)) {
+      report.soilFeatures = report.soilFeatures.filter(
+        (f: any) => !shouldStrip(extractSym(String(f.title || "")))
+      );
+    }
+  }
+
+  // ── treasure_plus: strip heavy metals, oil, and petroleum ──
+  // ── treasure_plus: strip heavy metals and petroleum only, keep oil/crude ──
+  // ── treasure_plus: strip heavy metals and petroleum only, keep oil/crude ──
+  if (selectedReportPackage === "treasure_plus") {
+    const hasHeavyMetalsUnlock = report.unlockedModules.includes("heavy_metals") || report.unlockedModules.includes("premium");
+    const HEAVY_METAL_SYMS = new Set([
+      ...(!hasHeavyMetalsUnlock ? ["as", "cd", "sb", "te", "hg", "tl", "th", "u", "cr", "pb"] : []),
+    ]);
+    const extractSym = (name: string) => {
+      const m = String(name || "").match(/\(([A-Za-z0-9]+)\)/);
+      return m ? m[1].toLowerCase() : String(name || "").trim().toLowerCase();
+    };
+    const shouldStrip = (sym: string) => HEAVY_METAL_SYMS.has(sym.toLowerCase());
+
+    if (report.reportDetails) {
+      if (!hasHeavyMetalsUnlock) report.reportDetails.heavyMetals = [];
+      report.reportDetails.oilIndicator = {
+        ...report.reportDetails.oilIndicator,
+        petroleum: "Petroleum Contaminants: None Detected",
+        petroleumClassName: "btn_gray",
+      };
+    }
+    if (!hasHeavyMetalsUnlock) {
+      report.multiLevelCharts = {
+        group1Max: 35,
+        group1Rows: [],
+        group1ScaleLabels: ["0", "5", "10", "15", "20", "25", "30", "35"],
+        group2Max: 450,
+        group2Rows: [],
+        group2ScaleLabels: ["0", "50", "100", "150", "200", "250", "300", "350", "400", "450"],
+      };
+    }
+    report.petroleum_contaminant = undefined;
+    report.petroleumTraceFound = { ...report.petroleumTraceFound, rows: [] };
+
+    // Strip heavy metal elements from all charts and lists
+    if (report.reportDetails?.reportChart) {
+      const chart = report.reportDetails.reportChart as any;
+      const filtered = { elementNames: [] as string[], belowData: [] as number[], refData: [] as number[], aboveData: [] as number[], calculations: [] as any[] };
+      (chart.elementNames || []).forEach((sym: string, idx: number) => {
+        if (!shouldStrip(sym.trim().toLowerCase())) {
+          filtered.elementNames.push(sym);
+          filtered.belowData.push(chart.belowData?.[idx] ?? 0);
+          filtered.refData.push(chart.refData?.[idx] ?? 0);
+          filtered.aboveData.push(chart.aboveData?.[idx] ?? 0);
+          filtered.calculations.push(chart.calculations?.[idx] ?? { adjustedPpm: 0 });
+        }
+      });
+      report.reportDetails.reportChart = filtered as any;
+    }
+    if (Array.isArray(report.elementBreakdown?.items)) {
+      report.elementBreakdown.items = report.elementBreakdown.items.filter((it: any) => !shouldStrip(extractSym(it.name)));
+    }
+    if (Array.isArray(report.otherTraceElements?.items)) {
+      report.otherTraceElements.items = report.otherTraceElements.items.filter((it: any) => !shouldStrip(extractSym(it.name)));
+    }
+    if (Array.isArray(report.traceFound?.rows)) {
+      report.traceFound.rows = report.traceFound.rows.filter((r: any) => !shouldStrip(extractSym(r.label)));
+    }
+    if (Array.isArray(report.foundElements)) {
+      report.foundElements = report.foundElements.filter((it: any) => !shouldStrip(String(it.symbol || "").toLowerCase()));
+    }
+    if (Array.isArray(report.notFoundElements)) {
+      report.notFoundElements = report.notFoundElements.filter((it: any) => !shouldStrip(String(it.symbol || "").toLowerCase()));
+    }
+    if (Array.isArray(report.soilFeatures)) {
+      report.soilFeatures = report.soilFeatures.filter((f: any) => !shouldStrip(extractSym(String(f.title || ""))));
+    }
+  }
+
+// ── hs_base: strip precious metals, REE, oil, and petroleum ──
+  if (selectedReportPackage === "hs_base") {
+    const hasPreciousUnlock = report.unlockedModules.includes("precious_metals") || report.unlockedModules.includes("premium");
+    const hasRareEarthUnlockLocal = report.unlockedModules.includes("rare_earth") || report.unlockedModules.includes("premium");
+    const hasCrudeOilUnlock = report.unlockedModules.includes("crude_oil") || report.unlockedModules.includes("premium");
+    const hasPetroleumUnlock = report.unlockedModules.includes("petroleum") || report.unlockedModules.includes("premium");
+    const STRIP_SYMS = new Set([
+      ...(!hasPreciousUnlock ? ["au", "ag", "pt", "ru", "rh", "pd", "os", "ir"] : []),
+      ...(!hasRareEarthUnlockLocal ? ["la", "ce", "pr", "nd", "pm", "sm", "eu", "gd", "tb", "dy", "ho", "er", "tm", "yb", "lu", "sc", "y"] : []),
+    ]);
+    const extractSym = (name: string) => {
+      const m = String(name || "").match(/\(([A-Za-z0-9]+)\)/);
+      return m ? m[1].toLowerCase() : String(name || "").trim().toLowerCase();
+    };
+    const shouldStrip = (sym: string) => STRIP_SYMS.has(sym.toLowerCase());
+
+    if (report.reportDetails) {
+      if (!hasPreciousUnlock) report.reportDetails.preciousMetals = [];
+      if (!hasRareEarthUnlockLocal) report.reportDetails.rareEarthElements = [];
+      report.reportDetails.oilIndicator = {
+        crudeOil: hasCrudeOilUnlock ? report.reportDetails.oilIndicator.crudeOil : "Crude oil: 0 ppm",
+        crudeOilClassName: hasCrudeOilUnlock ? report.reportDetails.oilIndicator.crudeOilClassName : "btn_gray",
+        petroleum: hasPetroleumUnlock ? report.reportDetails.oilIndicator.petroleum : "Petroleum Contaminants: None Detected",
+        petroleumClassName: hasPetroleumUnlock ? report.reportDetails.oilIndicator.petroleumClassName : "btn_gray",
+      };
+    }
+    if (!hasCrudeOilUnlock) report.oilContaminants = { status: "Not Detected", value: "0ppm" };
+    if (!hasPetroleumUnlock) { report.petroleum_contaminant = undefined; report.petroleumTraceFound = { ...report.petroleumTraceFound, rows: [] }; }
+    if (!hasPreciousUnlock) report.preciousMetalPresent = { items: [] };
+    if (!hasRareEarthUnlockLocal) report.earthElementsBreakdown = { items: [] };
+
+    if (report.reportDetails?.reportChart) {
+      const chart = report.reportDetails.reportChart as any;
+      const filtered = { elementNames: [] as string[], belowData: [] as number[], refData: [] as number[], aboveData: [] as number[], calculations: [] as any[] };
+      (chart.elementNames || []).forEach((sym: string, idx: number) => {
+        if (!shouldStrip(sym.trim().toLowerCase())) {
+          filtered.elementNames.push(sym);
+          filtered.belowData.push(chart.belowData?.[idx] ?? 0);
+          filtered.refData.push(chart.refData?.[idx] ?? 0);
+          filtered.aboveData.push(chart.aboveData?.[idx] ?? 0);
+          filtered.calculations.push(chart.calculations?.[idx] ?? { adjustedPpm: 0 });
+        }
+      });
+      report.reportDetails.reportChart = filtered as any;
+    }
+    if (Array.isArray(report.elementBreakdown?.items)) {
+      report.elementBreakdown.items = report.elementBreakdown.items.filter((it: any) => !shouldStrip(extractSym(it.name)));
+    }
+    if (Array.isArray(report.otherTraceElements?.items)) {
+      report.otherTraceElements.items = report.otherTraceElements.items.filter((it: any) => !shouldStrip(extractSym(it.name)));
+    }
+    if (Array.isArray(report.traceFound?.rows)) {
+      report.traceFound.rows = report.traceFound.rows.filter((r: any) => !shouldStrip(extractSym(r.label)));
+    }
+    if (Array.isArray(report.foundElements)) {
+      report.foundElements = report.foundElements.filter((it: any) => !shouldStrip(String(it.symbol || "").toLowerCase()));
+    }
+    if (Array.isArray(report.notFoundElements)) {
+      report.notFoundElements = report.notFoundElements.filter((it: any) => !shouldStrip(String(it.symbol || "").toLowerCase()));
+    }
+    if (Array.isArray(report.soilFeatures)) {
+      report.soilFeatures = report.soilFeatures.filter((f: any) => !shouldStrip(extractSym(String(f.title || ""))));
+    }
+  }
+
+  // ── hs_plus: strip precious metals, REE, and oil/petroleum ──
+  // ── hs_plus: strip precious metals, REE, and crude oil only — keep petroleum ──
+  if (selectedReportPackage === "hs_plus") {
+    const hasPreciousUnlock = report.unlockedModules.includes("precious_metals") || report.unlockedModules.includes("premium");
+    const hasRareEarthUnlockLocal = report.unlockedModules.includes("rare_earth") || report.unlockedModules.includes("premium");
+    const hasCrudeOilUnlock = report.unlockedModules.includes("crude_oil") || report.unlockedModules.includes("premium");
+    const STRIP_SYMS = new Set([
+      ...(!hasPreciousUnlock ? ["au", "ag", "pt", "ru", "rh", "pd", "os", "ir"] : []),
+      ...(!hasRareEarthUnlockLocal ? ["la", "ce", "pr", "nd", "pm", "sm", "eu", "gd", "tb", "dy", "ho", "er", "tm", "yb", "lu", "sc", "y"] : []),
+    ]);
+    const extractSym = (name: string) => {
+      const m = String(name || "").match(/\(([A-Za-z0-9]+)\)/);
+      return m ? m[1].toLowerCase() : String(name || "").trim().toLowerCase();
+    };
+    const shouldStrip = (sym: string) => STRIP_SYMS.has(sym.toLowerCase());
+
+     if (report.reportDetails) {
+      if (!hasPreciousUnlock) report.reportDetails.preciousMetals = [];
+      if (!hasRareEarthUnlockLocal) report.reportDetails.rareEarthElements = [];
+      // keep petroleum indicator, only clear crude oil
+      report.reportDetails.oilIndicator = {
+        ...report.reportDetails.oilIndicator,
+        crudeOil: hasCrudeOilUnlock ? report.reportDetails.oilIndicator.crudeOil : "Crude oil: 0 ppm",
+        crudeOilClassName: hasCrudeOilUnlock ? report.reportDetails.oilIndicator.crudeOilClassName : "btn_gray",
+      };
+    }
+    // keep oilContaminants/petroleum_contaminant/petroleumTraceFound as-is
+    if (!hasCrudeOilUnlock) report.oilContaminants = { status: "Not Detected", value: "0ppm" };
+    if (!hasPreciousUnlock) report.preciousMetalPresent = { items: [] };
+    if (!hasRareEarthUnlockLocal) report.earthElementsBreakdown = { items: [] };
+
+    if (report.reportDetails?.reportChart) {
+      const chart = report.reportDetails.reportChart as any;
+      const filtered = { elementNames: [] as string[], belowData: [] as number[], refData: [] as number[], aboveData: [] as number[], calculations: [] as any[] };
+      (chart.elementNames || []).forEach((sym: string, idx: number) => {
+        if (!shouldStrip(sym.trim().toLowerCase())) {
+          filtered.elementNames.push(sym);
+          filtered.belowData.push(chart.belowData?.[idx] ?? 0);
+          filtered.refData.push(chart.refData?.[idx] ?? 0);
+          filtered.aboveData.push(chart.aboveData?.[idx] ?? 0);
+          filtered.calculations.push(chart.calculations?.[idx] ?? { adjustedPpm: 0 });
+        }
+      });
+      report.reportDetails.reportChart = filtered as any;
+    }
+    if (Array.isArray(report.elementBreakdown?.items)) {
+      report.elementBreakdown.items = report.elementBreakdown.items.filter((it: any) => !shouldStrip(extractSym(it.name)));
+    }
+    if (Array.isArray(report.otherTraceElements?.items)) {
+      report.otherTraceElements.items = report.otherTraceElements.items.filter((it: any) => !shouldStrip(extractSym(it.name)));
+    }
+    if (Array.isArray(report.traceFound?.rows)) {
+      report.traceFound.rows = report.traceFound.rows.filter((r: any) => !shouldStrip(extractSym(r.label)));
+    }
+    if (Array.isArray(report.foundElements)) {
+      report.foundElements = report.foundElements.filter((it: any) => !shouldStrip(String(it.symbol || "").toLowerCase()));
+    }
+    if (Array.isArray(report.notFoundElements)) {
+      report.notFoundElements = report.notFoundElements.filter((it: any) => !shouldStrip(String(it.symbol || "").toLowerCase()));
+    }
+    if (Array.isArray(report.soilFeatures)) {
+      report.soilFeatures = report.soilFeatures.filter((f: any) => !shouldStrip(extractSym(String(f.title || ""))));
+    }
+  }
+
+  // ── treasure_base: block petroleum leaking back in from raw DB rows ──
   // Ensure heavyMetals are always normalized for both page HTML and injected JSON.
   if (report?.reportDetails?.heavyMetals) {
     report.reportDetails.heavyMetals = mapHeavyMetals(report.reportDetails.heavyMetals);
@@ -511,7 +828,7 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
     })
     .filter((item) => item.type.length > 0);
 
-  if (petroleumContaminants.length > 0) {
+    if (petroleumContaminants.length > 0 && selectedReportPackage !== "treasure_base" && selectedReportPackage !== "treasure_plus" && selectedReportPackage !== "hs_base") {
     report.petroleum_contaminant = petroleumContaminants[0];
   }
 

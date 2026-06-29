@@ -63,13 +63,12 @@ const Index = ({ report, appUrl = '' }: IndexProps) => {
   const canDisplayOilBreakdown =
     reportPackage === 'treasure_plus' ||
     reportPackage === 'premium' ||
-    (reportPackage === 'hs_plus' && hasCrudeOilUnlock);
-  const canUnlockOilBreakdown = !hasCrudeOilUnlock && reportPackage === 'hs_plus';
+    hasCrudeOilUnlock;
+  const canUnlockOilBreakdown = !hasCrudeOilUnlock && (reportPackage === 'hs_base' || reportPackage === 'hs_plus' || reportPackage === 'treasure_base');
   const shouldShowOilBreakdown = canDisplayOilBreakdown || canUnlockOilBreakdown;
   const canDisplayPetroleumBreakdown = reportPackage === 'hs_plus' || reportPackage === 'premium' || hasPetroleumUnlock;
-  const canUnlockPetroleumBreakdown = !hasPetroleumUnlock && reportPackage === 'treasure_plus';
-  const shouldShowPetroleumBreakdown =
-    canDisplayPetroleumBreakdown || canUnlockPetroleumBreakdown;
+  const canUnlockPetroleumBreakdown = !hasPetroleumUnlock && (reportPackage === 'treasure_plus' || reportPackage === 'treasure_base' || reportPackage === 'hs_base');
+  const shouldShowPetroleumBreakdown = canDisplayPetroleumBreakdown || canUnlockPetroleumBreakdown;
   const foundElementsForList = report.foundElements.map((item) => ({
     ...item,
     valueStyle: item.valueStyle || { backgroundColor: '#d1d5db', color: '#4b5563' },
@@ -161,22 +160,26 @@ const Index = ({ report, appUrl = '' }: IndexProps) => {
 
      
 
-      {/* 5. Heavy Metal Breakdown */}
-  <HeavyMetalBreakdownSection appUrl={appUrl} />
-      {/* 6. Multi Level Chart */}
-      <MultiLevelChartSection
-        group1Max={report.multiLevelCharts.group1Max}
-        group1Rows={report.multiLevelCharts.group1Rows}
-        group1ScaleLabels={report.multiLevelCharts.group1ScaleLabels}
-        group2Max={report.multiLevelCharts.group2Max}
-        group2Rows={report.multiLevelCharts.group2Rows}
-        group2ScaleLabels={report.multiLevelCharts.group2ScaleLabels}
-        locked={canUnlockHeavyMetalsBreakdown}
-        lockedPreviewImageUrl={`${appUrl}/images/heavy-metals-breakdown-locked-preview.svg`}
-        unlockHref={unlockHref('heavy_metals')}
-        unlockLabel={unlockLabel('heavy_metals', 'Heavy Metals')}
-        premiumUnlockHref={premiumUnlockHref}
-      />
+      {((reportPackage !== 'treasure_base' && reportPackage !== 'treasure_plus') || hasHeavyMetalsUnlock || canUnlockHeavyMetalsBreakdown) && (
+        <>
+          {/* 5. Heavy Metal Breakdown */}
+          <HeavyMetalBreakdownSection appUrl={appUrl} />
+          {/* 6. Multi Level Chart */}
+          <MultiLevelChartSection
+            group1Max={report.multiLevelCharts.group1Max}
+            group1Rows={report.multiLevelCharts.group1Rows}
+            group1ScaleLabels={report.multiLevelCharts.group1ScaleLabels}
+            group2Max={report.multiLevelCharts.group2Max}
+            group2Rows={report.multiLevelCharts.group2Rows}
+            group2ScaleLabels={report.multiLevelCharts.group2ScaleLabels}
+            locked={canUnlockHeavyMetalsBreakdown}
+            lockedPreviewImageUrl={`${appUrl}/images/heavy-metals-breakdown-locked-preview.svg`}
+            unlockHref={unlockHref('heavy_metals')}
+            unlockLabel={unlockLabel('heavy_metals', 'Heavy Metals')}
+            premiumUnlockHref={premiumUnlockHref}
+          />
+        </>
+      )}
 
       {/* 14. Unique Soil */}
       <UniqueSoilSection />
