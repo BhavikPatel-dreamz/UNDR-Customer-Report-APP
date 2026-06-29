@@ -172,24 +172,74 @@ const ReportDetailsSection = ({
   const showOilIndicator = quickViewPackage === "premium" || quickViewPackage === "treasure_plus" || quickViewPackage === "hs_plus";
   const showPreciousMetals =
     quickViewPackage === "premium" || quickViewPackage === "treasure_base" || quickViewPackage === "treasure_plus";
-  const showRareEarthElements = (quickViewPackage === "premium" || quickViewPackage === "treasure_plus") && rareEarthElements.length > 0;
+  const showRareEarthElements = quickViewPackage === "premium" || quickViewPackage === "treasure_plus";
   const hasTopRow = showHeavyMetals || (showOilIndicator && quickViewPackage !== "hs_plus");
   const showOilAsInfoBlock = showOilIndicator && quickViewPackage === "hs_plus";
   const topInfoRowHasBorder = showOilAsInfoBlock || showPreciousMetals || showRareEarthElements;
+
+  const metalListNoDetectedWrapperStyle: React.CSSProperties = {
+    width: '100%',
+    display: 'flex',
+    justifyContent: 'center',
+    padding: '24px 0 16px',
+  };
+
+  const metalListNoDetectedBoxStyle: React.CSSProperties = {
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: '220px',
+    maxWidth: '320px',
+    padding: '18px 24px',
+    borderRadius: '16px',
+    border: '1px solid rgba(153, 39, 44, 0.16)',
+    background: 'rgba(153, 39, 44, 0.06)',
+    color: '#99272c',
+    fontSize: '15px',
+    fontWeight: 700,
+    textAlign: 'center',
+    boxShadow: '0 4px 18px rgba(0, 0, 0, 0.04)',
+    lineHeight: 1.3,
+  };
+
+  const metalListNoDetectedWrapperStyleRare: React.CSSProperties = {
+    width: '100%',
+    display: 'flex',
+    justifyContent: 'center',
+    padding: '24px 0 16px',
+  };
+
+  const metalListNoDetectedBoxStyleRare: React.CSSProperties = {
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: '220px',
+    maxWidth: '320px',
+    padding: '18px 24px',
+    borderRadius: '16px',
+    border: '1px solid rgba(80, 96, 72, 0.12)',
+    background: 'rgba(80, 96, 72, 0.04)',
+    color: '#2e3a2a',
+    fontSize: '15px',
+    fontWeight: 700,
+    textAlign: 'center',
+    boxShadow: '0 4px 18px rgba(0, 0, 0, 0.03)',
+    lineHeight: 1.3,
+  };
 
   const formatHeavyMetalValue = (val: string) => {
     if (!val) return '';
     const cleaned = val.replace(/\s+/g, '');
     // If the value indicates "less than" the detection limit (e.g. "<0.1"),
     // treat as not detected and do not display a numeric value.
-    if (cleaned.includes('<')) return <span className="not detected">Not detected</span>;
+    if (cleaned.includes('<')) return <span className="not detected">Not Detected</span>;
     // Preserve explicit 'None Detected' text (including compacted forms like 'NoneDetected')
     if (/^nonedetected$/i.test(cleaned)) return <span className="not detected">None Detected</span>;
     const m = cleaned.match(/-?\d+(?:\.\d+)?/);
     if (!m) return cleaned.replace('ppm', ' ppm');
     const num = Number(m[0]);
     if (Number.isNaN(num)) return cleaned.replace('ppm', ' ppm');
-    if (num === 0) return <span className="not detected">Not detected</span>;
+    if (num === 0) return <span className="not detected">Not Detected</span>;
     if (Number.isInteger(num)) return `${num} ppm`;
     return `${parseFloat(num.toFixed(2)).toString()} ppm`;
   };
@@ -198,19 +248,64 @@ const ReportDetailsSection = ({
   const formatHeavyMetalValueText = (val: string) => {
     if (!val) return '';
     const cleaned = val.replace(/\s+/g, '');
-    // Respect detection-limit markers ("<...") by reporting as not detected.
-    if (cleaned.includes('<')) return 'not detected';
+    // Respect detection-limit markers ("<...") by reporting as Not Detected.
+    if (cleaned.includes('<')) return 'Not Detected';
     if (/^nonedetected$/i.test(cleaned)) return 'None Detected';
     const m = cleaned.match(/-?\d+(?:\.\d+)?/);
     if (!m) return cleaned.replace('ppm', ' ppm');
     const num = Number(m[0]);
     if (Number.isNaN(num)) return cleaned.replace('ppm', ' ppm');
-    if (num === 0) return 'not detected';
+    if (num === 0) return 'Not Detected';
     if (Number.isInteger(num)) return `${num} ppm`;
     return `${parseFloat(num.toFixed(2)).toString()} ppm`;
   };
 
   const stripLeadingPpm = (text: string) => text.replace(/^\s*ppm\b/i, '');
+
+  const elementSymbolMap: Record<string, string> = {
+    gold: 'Au',
+    silver: 'Ag',
+    platinum: 'Pt',
+    palladium: 'Pd',
+    rhodium: 'Rh',
+    ruthenium: 'Ru',
+    osmium: 'Os',
+    iridium: 'Ir',
+    rhenium: 'Re',
+    copper: 'Cu',
+    iron: 'Fe',
+    nickel: 'Ni',
+    cobalt: 'Co',
+    aluminum: 'Al',
+    aluminum: 'Al',
+    manganese: 'Mn',
+    zinc: 'Zn',
+    lead: 'Pb',
+    uranium: 'U',
+    thorium: 'Th',
+    lanthanum: 'La',
+    cerium: 'Ce',
+    praseodymium: 'Pr',
+    neodymium: 'Nd',
+    promethium: 'Pm',
+    samarium: 'Sm',
+    europium: 'Eu',
+    gadolinium: 'Gd',
+    terbium: 'Tb',
+    dysprosium: 'Dy',
+    holmium: 'Ho',
+    erbium: 'Er',
+    thulium: 'Tm',
+    ytterbium: 'Yb',
+    lutetium: 'Lu',
+    scandium: 'Sc',
+    yttrium: 'Y',
+  };
+
+  const getElementSymbol = (name: string) => {
+    const normalized = (name || '').trim().toLowerCase();
+    return elementSymbolMap[normalized] || name;
+  };
 
   const formatOilText = (txt: string): React.ReactNode => {
     if (!txt) return '';
@@ -244,53 +339,79 @@ const ReportDetailsSection = ({
     );
   };
 
-  const renderHeavyMetals = () => (
-    <div className="heavy_metals_block">
-      <h2 className="report_main_heading">Heavy Metals</h2>
-      <div className="metal_list_item_wrapper">
-        {
-          // Only show heavy metals that have a numeric ppm > 0. If none detected,
-          // fall back to showing Arsenic, Lead, and Uranium.
-          (() => {
-            const nonZero = heavyMetals.filter((item) => {
-              const m = (item.value || '').replace(/\s+/g, '').match(/-?\d+(?:\.\d+)?/);
-              return !!m && Number(m[0]) > 0;
-            });
-            let metalsToShow = [];
-            if (nonZero.length > 0) {
-              metalsToShow = nonZero;
-            } else {
-              // Ensure the default three appear: Arsenic, Lead, Uranium.
-              const defaults = ['Arsenic', 'Lead', 'Uranium'];
-              metalsToShow = defaults.map((name) => {
-                const found = heavyMetals.find((h) => h.name === name);
-                if (found) return found;
-                // placeholder for missing default: will render as "Not detected"
-                return {
-                  name,
-                  value: '0.000 ppm',
-                  valueClassName: '',
-                  valueStyle: {},
-                  textClassName: '',
-                } as any;
-              });
-            }
+  const renderHeavyMetals = () => {
+    const nonZero = heavyMetals.filter((item) => {
+      const m = (item.value || '').replace(/\s+/g, '').match(/-?\d+(?:\.\d+)?/);
+      return !!m && Number(m[0]) > 0;
+    });
 
-            return metalsToShow.map((item) => (
-              <div className="metal_list_item" key={item.name}>
-                <span className={`val_box ${item.valueClassName}`} style={{ backgroundColor: item.valueStyle?.backgroundColor }}>
-                  {formatHeavyMetalValue(item.value)}
-                </span>{" "}
-                <span className={`metal_txt ${item.textClassName}`} style={{ color: item.valueStyle?.color }}>
-                  {item.name}
-                </span>
-              </div>
-            ));
-          })()
-        }
+    if (nonZero.length === 0) {
+      return (
+        <div className="heavy_metals_block">
+          <h2 className="report_main_heading">Heavy Metals</h2>
+          <div className="metal_list_no_detected_wrapper">
+            <div className="metal_list_no_detected_box">Not Detected</div>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="heavy_metals_block">
+        <h2 className="report_main_heading">Heavy Metals</h2>
+        <div className="metal_list_item_wrapper">
+          {nonZero.map((item) => (
+            <div className="metal_list_item" key={item.name}>
+              <span className={`val_box ${item.valueClassName}`} style={{ backgroundColor: item.valueStyle?.backgroundColor }}>
+                {formatHeavyMetalValue(item.value)}
+              </span>{" "}
+              <span className={`metal_txt ${item.textClassName}`} style={{ color: item.valueStyle?.color }}>
+                {item.name}
+              </span>
+            </div>
+          ))}
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
+
+  const renderPreciousMetals = () => {
+    const nonZero = preciousMetals.filter((item) => {
+      const m = (item.ppm || '').replace(/\s+/g, '').match(/-?\d+(?:\.\d+)?/);
+      return !!m && Number(m[0]) > 0;
+    });
+
+    if (nonZero.length === 0) {
+      return (
+        <div className={`info_block ${!showRareEarthElements ? "no_border" : ""}`}>
+          <h2 className="report_main_heading">Precious Metals</h2>
+          <div className="metal_list_no_detected_wrapper">
+            <div className="metal_list_no_detected_box">Not Detected</div>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className={`info_block ${!showRareEarthElements ? "no_border" : ""}`}>
+        <h2 className="report_main_heading">Precious Metals</h2>
+        <div className="circles_flex">
+          {nonZero.map((item) => (
+            <div
+              className={`metal_circle ${item.className}`}
+              style={{ backgroundColor: item.valueStyle?.backgroundColor }}
+              key={item.name}
+            >
+              {getElementSymbol(item.name)}
+              <br />
+              <span>{formatHeavyMetalValue(item.ppm)}</span>
+            </div>
+          ))}
+        </div>
+        <img src={`${appUrl ? appUrl : ''}/images/treasure-icon.svg`} className="treasure_icon" alt="Icon" />
+      </div>
+    );
+  };
 
   const renderSplitOilButton = (text: string, className: string) => {
     const formatOilText = (txt: string) => {
@@ -327,6 +448,44 @@ const ReportDetailsSection = ({
     return <div className={`oil_btn ${className}`}>{formatOilText(text)}</div>;
   };
 
+  const renderRareEarthElements = () => {
+    const nonZero = rareEarthElements.filter((item) => {
+      const m = (item.ppm || '').replace(/\s+/g, '').match(/-?\d+(?:\.\d+)?/);
+      return !!m && Number(m[0]) > 0;
+    });
+
+    if (nonZero.length === 0) {
+      return (
+        <div className="info_block no_border">
+          <h2 className="report_main_heading">Rare Earth Elements</h2>
+          <div className="metal_list_no_detected_wrapper_rare">
+            <div className="metal_list_no_detected_box_rare">Not Detected</div>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="info_block no_border">
+        <h2 className="report_main_heading">Rare Earth Elements</h2>
+        <div className="circles_flex">
+          {nonZero.map((item) => (
+            <div
+              className={`metal_circle ${item.className}`}
+              style={{ backgroundColor: item.valueStyle?.backgroundColor }}
+              key={item.name}
+            >
+              {getElementSymbol(item.name)}
+              <br />
+              <span>{formatHeavyMetalValue(item.ppm)}</span>
+            </div>
+          ))}
+        </div>
+        <img src={`${appUrl ? appUrl : ''}/images/treasure-icon.svg`} className="treasure_icon" alt="Icon" />
+      </div>
+    );
+  };
+
   const renderOilIndicator = () => (
     <div className="oil_indicator_block">
       <h2 className="report_main_heading">Oil Indicator</h2>
@@ -360,7 +519,7 @@ const ReportDetailsSection = ({
     <div className="oil_indicator_block oil_indicator_block_compact">
       <h2 className="report_main_heading">Oil Indicator</h2>
       <div className="petroleum_indicator_card">
-        <span>Petroleum<br />Contaminants:</span>
+        <span>Petroleum Contaminants:</span>
         <strong>{petroleumValue}</strong>
       </div>
     </div>
@@ -451,50 +610,11 @@ const ReportDetailsSection = ({
               </div>
             )}
 
-            {showPreciousMetals && (
-              <div className={`info_block ${!showRareEarthElements ? "no_border" : ""}`}>
-                <h2 className="report_main_heading">Precious Metals</h2>
-                <div className="circles_flex">
-                  {preciousMetals.map((item) => (
-                    <div
-                      className={`metal_circle ${item.className}`}
-                      style={{ backgroundColor: item.valueStyle?.backgroundColor }}
-                      key={item.name}
-                    >
-                      {item?.name?.length > 7 ? item.name.slice(0, 7) + ".." : item.name}
-                      <br />
-                      <span>{formatHeavyMetalValue(item.ppm)}</span>
-                    </div>
-                  ))}
-                </div>
-                <img src={`${appUrl ? appUrl : ''}/images/treasure-icon.svg`} className="treasure_icon" alt="Icon" />
-              </div>
-            )}
+            {showPreciousMetals && renderPreciousMetals()}
 
 
 
-            {showRareEarthElements && (
-              <div className="info_block no_border">
-                <h2 className="report_main_heading">Rare Earth Elements</h2>
-                <div className="circles_flex">
-                  {rareEarthElements.map((item) => (
-                    <div
-                      className={`metal_circle ${item.className}`}
-                      style={{ backgroundColor: item.valueStyle?.backgroundColor }}
-                      key={item.name}
-                    >
-                      {item?.name?.length > 7 ? item.name.slice(0, 7) + ".." : item.name}
-                      <br />
-                      <span>{formatHeavyMetalValue(item.ppm)}</span>
-                    </div>
-                  ))}
-                </div>
-                <img src={`${appUrl ? appUrl : ''}/images/treasure-icon.svg`} className="treasure_icon" alt="Icon" />
-              </div>
-
-
-
-            )}
+            {showRareEarthElements && renderRareEarthElements()}
           </div>
         </div>
 

@@ -219,6 +219,7 @@ p {
     .main_banner_section {
         border-bottom-right-radius: 130px;
         padding: 60px 0;
+    
     }
 
     .main_banner_section .banner_title {
@@ -480,6 +481,10 @@ p {
     gap: 3px;
 }
 
+.report_details_section .oil_btn_label {
+    text-transform: capitalize;
+}
+
 .report_details_section .oil_btn_label,
 .report_details_section .oil_btn_value {
     display: block;
@@ -495,10 +500,9 @@ p {
     justify-content: center;
     min-width: 210px;
     width: auto;
-    min-height: 58px;
-    padding: 13px 22px;
+    padding: 10px 15px;
     border-radius: 0 0 0 10px;
-    font-size: 18px;
+    font-size: 14px;
     font-weight: 500;
 }
 
@@ -526,31 +530,28 @@ p {
 }
 
 .report_details_section .petroleum_indicator_card {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    align-items: center;
-    gap: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
     width: 100%;
     max-width: 360px;
-    min-height: 74px;
-    padding: 13px 18px;
+    padding: 10px 15px;
     border-radius: 0 10px 0 0;
     background: #9e241f;
     color: #ffffff;
     font-family: 'Obviously', Arial, sans-serif;
-    font-size: 23px;
-    font-weight: 400;
-    line-height: 1.02;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 20px;
     letter-spacing: 0;
 }
 
 .report_details_section .petroleum_indicator_card strong {
     color: #ffffff;
-    font-size: 21px;
-    font-weight: 400;
-    line-height: 1.05;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 20px;
     text-align: left;
-    width: min-content;
 }
 
 .report_details_section .info_block {
@@ -753,6 +754,28 @@ p {
     margin: 0 auto;
 }
 
+.report_details_section .metal_list_no_detected_box,
+.report_details_section .metal_list_no_detected_box_rare {
+    font-family: 'Obviously', Arial, sans-serif;
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 20px;
+    color: #fff;
+    background: #6d7566;
+    border-radius: 0 0 0 10px;
+    padding: 10px 15px;
+}
+
+.report_details_section.hs_base .metal_list_no_detected_box,
+.report_details_section.hs_plus .metal_list_no_detected_box {
+    width: fit-content;
+}
+
+.report_details_section .info_block .metal_list_no_detected_box,
+.report_details_section .metal_list_no_detected_box_rare {
+    width: fit-content;
+}
+
 @media (max-width: 1199px) {
 
     .report_details_section {
@@ -832,6 +855,16 @@ p {
     .report_details_section .circles_flex {
         justify-content: center;
     }
+
+    .report_details_section .info_block .metal_list_no_detected_box,
+    .report_details_section .metal_list_no_detected_box_rare {
+        margin: 0 auto;
+    }
+
+    .report_details_section.hs_base .metal_list_no_detected_box, 
+    .report_details_section.hs_plus .metal_list_no_detected_box  {
+        margin: 0 auto;
+    }
 }
 
 @media (max-width: 767px) {
@@ -892,6 +925,7 @@ p {
         width: 100%;
         max-width: 280px;
         margin: 0 auto 10px;
+        justify-content: center;
     }
 
     .report_details_section .oil_indicator_block_crude_only .oil_btn {
@@ -902,18 +936,16 @@ p {
     }
 
     .report_details_section .petroleum_indicator_card {
-        grid-template-columns: 1fr;
-        gap: 8px;
         max-width: 320px;
-        margin: 0 auto;
-        font-size: 20px;
-        text-align: left;
     }
 
     .report_details_section .petroleum_indicator_card strong {
-        font-size: 19px;
-        width: 100%;
         text-align: center;
+    }
+
+    .report_details_section .metal_list_no_detected_box {
+        width: fit-content;
+        margin: 0 auto;
     }
 
 }
@@ -1172,7 +1204,7 @@ p {
         padding-bottom: 0;
     }
 
-    .elemental_breakdown_section .element_bar_name, 
+    .elemental_breakdown_section .element_bar_name,
     .elemental_breakdown_section .element_bar_value {
         display: block;
         text-align: left;
@@ -1507,11 +1539,11 @@ p {
     letter-spacing: 0;
 }
 
-.multi_level_chart_section  .chart_group[data-max="35"] .scale_labels span {
+.multi_level_chart_section .chart_group[data-max="35"] .scale_labels span {
     width: 20px;
 }
 
-.multi_level_chart_section  .chart_group[data-max="450"] .scale_labels span {
+.multi_level_chart_section .chart_group[data-max="450"] .scale_labels span {
     width: 30px;
 }
 
@@ -3943,9 +3975,11 @@ p {
     line-height: 1;
     white-space: nowrap;
 }
+
 .found_elements_list_section .element_view_hint_line1 {
     font-size: 12px;
 }
+
 .found_elements_list_section .element_view_hint_line2 {
     font-size: 12px;
     margin-top: 2px;
@@ -4038,7 +4072,8 @@ p {
 
 /* Style for the leading chemical symbol when wrapped in a span */
 .element_blurb_eyebrow .element_blurb_symbol_lead {
-    text-transform: none; /* keep original case for symbol */
+    text-transform: none;
+    /* keep original case for symbol */
 }
 
 .element_blurb_title {
@@ -5303,6 +5338,7 @@ p {
 
     .report_details_section.hs_plus .petroleum_indicator_card {
         margin: 0 auto;
+        align-items: center;
     }
 
     .report_details_section.treasure_plus .oil_indicator_buttons {
