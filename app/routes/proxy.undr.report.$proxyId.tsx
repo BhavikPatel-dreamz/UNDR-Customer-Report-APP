@@ -528,7 +528,7 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
 <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@3.0.3/dist/jspdf.umd.min.js" defer></script>
-<script src="${appUrl}/proxy-report-init.js?v=20260529-pdf-zero-size-v2" defer></script>
+<script src="https://undr-customer-report-app.vercel.app/proxy-report-init.js?v=20260529-pdf-zero-size-v2" defer></script>
 `;
 
   return liquid(template, { layout: !embed });
