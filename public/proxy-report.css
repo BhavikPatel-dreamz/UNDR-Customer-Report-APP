@@ -1498,6 +1498,16 @@ p {
     text-align: left;
 }
 
+.multi_level_chart_section .petroleum_no_data_message {
+    width: 100%;
+    font-family: 'Obviously', Arial, sans-serif;
+    font-weight: 500;
+    font-size: 18px;
+    line-height: 26px;
+    color: #9aa0a3;
+    text-align: center;
+}
+
 .multi_level_chart_section .scale_container {
     display: flex;
     align-items: flex-start;

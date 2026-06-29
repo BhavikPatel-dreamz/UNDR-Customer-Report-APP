@@ -558,7 +558,7 @@ function renderRegistrationPage(state: ActionData | LoaderData) {
 					</label>
 
 			<label style="display:flex;align-items:center;gap:10px;">
-				<input type="checkbox" name="smsConsent" style="accent-color: #000;"  value="1" ${form.smsConsent ? 'checked' : ''} />
+				<input type="checkbox" name="smsConsent" style="min-width: 18px; min-height: 18px; accent-color: #000;"  value="1" ${form.smsConsent ? 'checked' : ''} />
 				<span style="font-size:13px;line-height:1.2;">I agree to receive SMS messages (Shopify messaging standard).</span>
 			</label>
 
@@ -571,7 +571,7 @@ function renderRegistrationPage(state: ActionData | LoaderData) {
 			</label>
 
 			<label style="display:flex;align-items:center;gap:10px;">
-				<input type="checkbox" name="agreeTerms" style="accent-color: #000;" value="1" ${form.agreedToTerms ? 'checked' : ''} />
+				<input type="checkbox" name="agreeTerms" style="min-width: 18px; min-height: 18px; accent-color: #000;" value="1" ${form.agreedToTerms ? 'checked' : ''} />
 				<span style="font-size:13px;line-height:1.2;">I agree to the <a href="${escapeHtml(storeBase)}/pages/terms-of-service" style="color:#065f46;text-decoration:underline;">Terms of Service</a>, <a href="${escapeHtml(storeBase)}/pages/terms-of-use" style="color:#065f46;text-decoration:underline;">Terms of Use</a>, and the <a href="${escapeHtml(storeBase)}/pages/master-disclaimer-and-limitation-of-liability" style="color:#065f46;text-decoration:underline;">Disclaimer</a>.</span>
 			</label>
 

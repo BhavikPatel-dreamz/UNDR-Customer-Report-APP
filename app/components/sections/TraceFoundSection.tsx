@@ -79,7 +79,7 @@ const TraceFoundSection = ({
   unlockLabel = "Unlock report section",
   premiumUnlockHref,
 }: TraceFoundSectionProps) => {
-
+  const isEmptyPetroleumData = rows.length === 0 || rows.every((row) => !row.displayVal?.trim());
 
   return (
     <section className="multi_level_chart_section">
@@ -107,6 +107,9 @@ const TraceFoundSection = ({
         ) : (
           <>
             <div className="traces_wrapper">
+              {isEmptyPetroleumData && (
+                <div className="petroleum_no_data_message">Not Detected</div>
+              )}
               {/* <h2 className="traces_main_title">{title}</h2> */}
               {/* <p className="traces_sub_text">{subtitle}</p> */}
             </div>
