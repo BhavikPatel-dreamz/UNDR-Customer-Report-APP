@@ -219,7 +219,7 @@ p {
     .main_banner_section {
         border-bottom-right-radius: 130px;
         padding: 60px 0;
-    
+
     }
 
     .main_banner_section .banner_title {
@@ -861,8 +861,8 @@ p {
         margin: 0 auto;
     }
 
-    .report_details_section.hs_base .metal_list_no_detected_box, 
-    .report_details_section.hs_plus .metal_list_no_detected_box  {
+    .report_details_section.hs_base .metal_list_no_detected_box,
+    .report_details_section.hs_plus .metal_list_no_detected_box {
         margin: 0 auto;
     }
 }
@@ -1501,14 +1501,14 @@ p {
 .multi_level_chart_section .petroleum_no_data_message {
     font-family: 'Obviously', Arial, sans-serif;
     font-weight: 500;
-    font-size: 14px;
-    line-height: 20px;
+    font-size: 20px;
+    line-height: 30px;
     color: #fff;
     background: #6d7566;
     border-radius: 5px;
     width: fit-content;
     margin: 0 auto;
-    padding: 10px 15px;
+    padding: 15px 50px;
 }
 
 .multi_level_chart_section .scale_container {
@@ -1793,6 +1793,12 @@ p {
         width: min(100%, 1040px);
     }
 
+    .multi_level_chart_section .petroleum_no_data_message {
+        font-size: 18px;
+        line-height: 26px;
+        padding: 14px 40px;
+    }
+
 }
 
 @media (max-width: 991px) {
@@ -1867,6 +1873,12 @@ p {
 
     .multi_level_chart_section .heavy_metals_breakdown_locked_preview {
         width: min(100%, 900px);
+    }
+
+    .multi_level_chart_section .petroleum_no_data_message {
+        font-size: 16px;
+        line-height: 24px;
+        padding: 13px 30px;
     }
 }
 
@@ -2010,6 +2022,12 @@ p {
     .multi_level_chart_section .heavy_metals_breakdown_locked_preview {
         width: min(112vw, 680px);
     }
+
+    .multi_level_chart_section .petroleum_no_data_message {
+        font-size: 14px;
+        line-height: 20px;
+        padding: 12px 20px;
+    } 
 }
 
 /* Oil Contaminants Section CSS */
@@ -4165,9 +4183,11 @@ p {
     .found_elements_list_section .element_col_info {
         width: 30%;
     }
+
     .found_elements_list_section .element_col_data {
         width: 50%;
     }
+
     .found_elements_list_section .ppm_value {
         width: 165px;
     }
