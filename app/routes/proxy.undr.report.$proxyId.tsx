@@ -473,15 +473,13 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
   // ── treasure_base: strip heavy metals, precious metals, oil, and petroleum ──
    if (selectedReportPackage === "treasure_base") {
     const hasHeavyMetalsUnlock = report.unlockedModules.includes("heavy_metals") || report.unlockedModules.includes("premium");
-    const hasPreciousUnlock = report.unlockedModules.includes("precious_metals") || report.unlockedModules.includes("premium");
     const hasCrudeOilUnlock = report.unlockedModules.includes("crude_oil") || report.unlockedModules.includes("premium");
     const hasPetroleumUnlock = report.unlockedModules.includes("petroleum") || report.unlockedModules.includes("premium");
 
     const STRIP_SYMS = new Set([
       // heavy metals — only strip if not unlocked
       ...(!hasHeavyMetalsUnlock ? ["as", "cd", "sb", "te", "hg", "tl", "th", "u", "cr", "pb"] : []),
-      // precious metals — only strip if not unlocked
-      ...(!hasPreciousUnlock ? ["au", "ag", "pt", "ru", "rh", "pd", "os", "ir"] : []),
+      // precious metals are default-display on treasure_base — never stripped
     ]);
 
     const extractSym = (name: string) => {
@@ -491,9 +489,8 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
     const shouldStrip = (sym: string) => STRIP_SYMS.has(sym.toLowerCase());
 
     // Quick look cards
-    if (report.reportDetails) {
+     if (report.reportDetails) {
       if (!hasHeavyMetalsUnlock) report.reportDetails.heavyMetals = [];
-      if (!hasPreciousUnlock) report.reportDetails.preciousMetals = [];
       report.reportDetails.oilIndicator = {
         crudeOil: hasCrudeOilUnlock ? report.reportDetails.oilIndicator.crudeOil : "Crude oil: 0 ppm",
         petroleum: hasPetroleumUnlock ? report.reportDetails.oilIndicator.petroleum : "Petroleum Contaminants: None Detected",
@@ -518,9 +515,7 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
     report.oilContaminants = hasCrudeOilUnlock ? report.oilContaminants : { status: "Not Detected", value: "0ppm" };
     report.petroleum_contaminant = hasPetroleumUnlock ? report.petroleum_contaminant : undefined;
     report.petroleumTraceFound = hasPetroleumUnlock ? report.petroleumTraceFound : { ...report.petroleumTraceFound, rows: [] };
-    if (!hasPreciousUnlock) {
-      report.preciousMetalPresent = { items: [] };
-    }
+    
 
     // Layered fingerprint chart
     if (report.reportDetails?.reportChart) {
