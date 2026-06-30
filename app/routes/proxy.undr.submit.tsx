@@ -634,7 +634,7 @@ function renderRegistrationPage(state: ActionData | LoaderData) {
 									if (!nameEl || !String(nameEl.value || '').trim()) { setInlineError('Name is required.'); return; }
 					if (!emailEl || !String(emailEl.value || '').trim()) { setInlineError('Email is required.'); return; }
 					var emailVal = String((emailEl && emailEl.value) || '').trim();
-					var emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+					var emailPattern = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;
 					if (!emailPattern.test(emailVal)) { setInlineError('Please enter a valid email address.'); return; }
 					var phoneVal = String((phoneEl && phoneEl.value) || '').trim();
 					var phonePattern = /^\\+1\\s*\\(?\\d{3}\\)?[\\s.-]?\\d{3}[\\s.-]?\\d{4}$/;
