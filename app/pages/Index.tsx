@@ -71,6 +71,7 @@ const Index = ({ report, appUrl = '' }: IndexProps) => {
   const shouldShowPetroleumBreakdown = canDisplayPetroleumBreakdown || canUnlockPetroleumBreakdown;
   const foundElementsForList = report.foundElements.map((item) => ({
     ...item,
+    ppmFull: item.ppmFull || item.ppm,
     valueStyle: item.valueStyle || { backgroundColor: '#d1d5db', color: '#4b5563' },
   }));
   const notFoundElementsForList = report.notFoundElements.map((item) => ({

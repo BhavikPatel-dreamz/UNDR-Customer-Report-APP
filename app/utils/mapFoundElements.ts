@@ -22,9 +22,8 @@ const formatPpm = (value: unknown): string => {
   const n = toNumber(value);
   if (n == null) return "0";
 
-  const str = Math.floor(n).toString();
-
-  return str.slice(0, 3);
+  const rounded = n >= 10 ? Math.round(n) : Number(n.toFixed(2));
+  return rounded.toLocaleString("en-US");
 };
 
 export function mapFoundElements(rows: unknown): FoundElementItem[] {
@@ -44,6 +43,7 @@ export function mapFoundElements(rows: unknown): FoundElementItem[] {
         symbol: symbol || key,
         name: formatElementName(name || key).replace(/\s*\([^)]+\)\s*$/, ""),
         ppm: formatPpm(raw.ppm)+" ppm",
+        ppmFull: (toStr(raw.ppmFull) || formatPpm(raw.ppm)+" ppm"),
         margin: toStr(raw.margin, "0"),
         bgClass: toStr(raw.bgClass, "bg-green-50"),
         colorClass: toStr(raw.colorClass, "text-green-700"),

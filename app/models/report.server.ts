@@ -843,6 +843,12 @@ function formatBreakdownPpm(value: number) {
   return `${rounded}ppm`;
 }
 
+function formatBreakdownPpmFull(value: number) {
+  if (!Number.isFinite(value)) return "0ppm";
+  const rounded = value >= 10 ? Math.round(value) : Number(value.toFixed(2));
+  return `${rounded} ppm`;
+}
+
 function createEmptyProxyReportData(customerName: string, kitNumber: string): ProxyReportData {
   return {
     banner: {
@@ -930,11 +936,40 @@ export function buildReportDataFromRows(
     : "Petroleum Contaminants: None Detected";
   base.reportDetails.oilIndicator.petroleumClassName = hasPetroleumContaminant ? "btn_red_curved" : "btn_gray";
 
-  const reportRows = rows.filter(
+  const filteredReportRows = rows.filter(
     (row) =>
       !isIgnoredReportElement(row.element) &&
       !isPetroleumContaminantCategory(String(row.category || "")),
   );
+
+  // Resolve a stable canonical key (the element symbol where known) so that
+  // rows like "Al" and "Aluminum" collapse to the same element.
+  const canonicalElementKey = (name: string): string => {
+    const keys = getElementLookupKeys(String(name || ""));
+    const symbolKey = keys.find((k) => ELEMENT_NAME_MAP[k]); // already a symbol
+    if (symbolKey) return symbolKey;
+    const nameKey = keys.find((k) => ELEMENT_SYMBOL_FROM_NAME[k]); // name -> symbol
+    if (nameKey) return ELEMENT_SYMBOL_FROM_NAME[nameKey];
+    return keys[0] || String(name || "").trim().toLowerCase();
+  };
+
+  // Deduplicate by element, keeping the row with the largest ppm. This mirrors
+  // the bar-chart's client-side dedup so every section reports the same value.
+  const reportRows = (() => {
+    const byKey = new Map<string, (typeof filteredReportRows)[number]>();
+    const order: string[] = [];
+    for (const row of filteredReportRows) {
+      const k = canonicalElementKey(String(row.element || ""));
+      const existing = byKey.get(k);
+      if (!existing) {
+        byKey.set(k, row);
+        order.push(k);
+      } else if (Number(row.ppmValue) > Number(existing.ppmValue)) {
+        byKey.set(k, row);
+      }
+    }
+    return order.map((k) => byKey.get(k)!);
+  })();
 
   if (reportRows.length === 0) return base;
 
@@ -983,11 +1018,14 @@ base.foundElements = found
         standardDeviationPpm = getElementStandardDeviationPpm(r.element) as number | null;
       }
 
+      console.log(`Element: ${r.element}, PPM: ${r.ppmValue}, StdDev: ${standardDeviationPpm}`);
+
       const mapped: FoundElementItem = {
       symbol: formatElementSymbol(ELEMENT_SYMBOL_FROM_NAME[key] || key.substring(0, 2)),
       name: formatElementName(r.element).replace(/\s*\([^)]+\)\s*$/, ""),
       // ppm: r.ppmValue.toFixed(2),
-      ppm: Math.floor(r.ppmValue).toString().slice(0, 3) + "ppm",
+      ppm: formatBreakdownPpm(r.ppmValue),
+      ppmFull: formatBreakdownPpmFull(r.ppmValue) ,
       margin: standardDeviationPpm == null ? "± 0 ppm" : `± ${Number.isFinite(standardDeviationPpm) ? Number(standardDeviationPpm.toFixed(2)) : standardDeviationPpm} ppm`,
       valueStyle: {
         backgroundColor: colors.bg,

@@ -52,6 +52,7 @@ export type FoundElementItem = {
   symbol: string;
   name: string;
   ppm: string;
+  ppmFull: string;
   margin: string;
   bgClass: string;
   colorClass: string;

@@ -5,6 +5,7 @@ interface ElementItem {
   symbol: string;
   name: string;
   ppm: string;
+  ppmFull: string;
   margin: string;
   bgClass: string;
   colorClass: string;
@@ -17,6 +18,9 @@ type FoundElementsListSectionProps = {
 
 const FoundElementsListSection = ({ elements, appUrl = '' }: FoundElementsListSectionProps) => {
   const elementBlurbsJson = JSON.stringify(ELEMENT_BLURBS_BY_SYMBOL).replaceAll("<", "\\u003c");
+
+
+  console.log('FoundElementsListSection elements:', elements);
 
   return (
     <section id="full_list_of_elements_section" className="found_elements_list_section">
@@ -31,10 +35,10 @@ const FoundElementsListSection = ({ elements, appUrl = '' }: FoundElementsListSe
               <div className="element_col_info">
                 <span className={`element_symbol_box ${el.bgClass}`}  style={{ backgroundColor: el.valueStyle?.backgroundColor }}
 >{el.symbol ? el.symbol.charAt(0).toUpperCase() + el.symbol.slice(1).toLowerCase() : ""}</span>
-                <h4 className={`element_name_text ${el.colorClass}`}  style={{ color: el.valueStyle?.color }}>{el.name}</h4>
+                <h4 className={`element_name_text ${el.colorClass}`}>{el.name}</h4>
               </div>
               <div className="element_col_data">
-                <p className="ppm_value">{el.ppm}</p>
+                <p className="ppm_value">{el.ppmFull}</p>
                 <p className="margin_value">{el.margin}</p>
               </div>
               <div className="element_col_arrow">
