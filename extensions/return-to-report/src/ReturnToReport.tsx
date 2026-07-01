@@ -40,8 +40,9 @@ export default extension(TARGET, (root, api) => {
 
   if (!origin) return;
 
-  // ── 2. Read kit from order attributes ────────────────────────────
+  // ── 2. Read kit + unlocked module from order attributes ──────────
   let kitNumber = '';
+  let unlockedModule = '';
 
   try {
     const attrs = (api as any)?.attributes?.current ?? [];
@@ -50,10 +51,9 @@ export default extension(TARGET, (root, api) => {
         .toLowerCase()
         .replace(/^_+/, '');
       const val = String(attr?.value || '').trim();
-      if (val && (key === 'undr_kit' || key === 'undr_kit_number')) {
-        kitNumber = val;
-        break;
-      }
+      if (!val) continue;
+      if (key === 'undr_kit' || key === 'undr_kit_number') kitNumber = val;
+      else if (key === 'undr_unlock') unlockedModule = val.toLowerCase();
     }
   } catch (e) {
     // ignore
@@ -62,7 +62,12 @@ export default extension(TARGET, (root, api) => {
   if (!kitNumber) return;
 
   // ── 3. Build report URL ───────────────────────────────────────────
-  const reportUrl = buildReportUrl(origin, kitNumber);
+  // Append the just-purchased module so the report page can poll for the
+  // async orders/paid unlock and auto-refresh once it lands (no manual reload).
+  let reportUrl = buildReportUrl(origin, kitNumber);
+  if (unlockedModule) {
+    reportUrl += `?unlocked=${encodeURIComponent(unlockedModule)}`;
+  }
 
   // ── 4. Render ─────────────────────────────────────────────────────
   root.appendChild(root.createComponent(Divider, {}));

@@ -332,6 +332,17 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
     .map((unlock) => String(unlock.module || "").trim().toLowerCase())
     .filter(isUnlockModule);
 
+  // Lightweight JSON status endpoint used by the report page to poll for a
+  // just-completed unlock (the orders/paid webhook is async, so the customer
+  // can land back here before the unlock is persisted). Returns after all the
+  // access checks above, so it stays gated to the report owner.
+  if (url.searchParams.get("format") === "unlock-status") {
+    return new Response(
+      JSON.stringify({ unlockedModules: report.unlockedModules }),
+      { headers: { "Content-Type": "application/json", "Cache-Control": "no-store" } },
+    );
+  }
+
   // If the customer does not have the REE (rare earth) breakdown available
   // (either via package or explicit unlock), ensure rare earth elements do
   // not appear in the overall charts / breakdowns. This prevents non-premium
@@ -841,6 +852,45 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@3.0.3/dist/jspdf.umd.min.js" defer></script>
 <script src="https://undr-customer-report-app-two.vercel.app/proxy-report-init.js?v=20260529-pdf-zero-size-v2" defer></script>
+<script>
+(function(){
+  try{
+    var params = new URLSearchParams(window.location.search);
+    var awaited = (params.get('unlocked') || '').trim().toLowerCase();
+    if(!awaited) return;
+    var has = function(mods){ return mods.indexOf(awaited) !== -1 || mods.indexOf('premium') !== -1; };
+    var current = [];
+    try{ current = (JSON.parse(document.getElementById('proxy-report-data').textContent || '{}').unlockedModules) || []; }catch(e){}
+    var stripAndReload = function(){
+      params.delete('unlocked');
+      var q = params.toString();
+      window.location.replace(window.location.pathname + (q ? ('?' + q) : '') + window.location.hash);
+    };
+    if(has(current)) { stripAndReload(); return; }
+    var bar = document.createElement('div');
+    bar.setAttribute('role','status');
+    bar.style.cssText = 'position:fixed;left:0;right:0;top:0;z-index:99999;background:#111827;color:#fff;padding:12px 16px;text-align:center;font:600 15px/1.4 system-ui,-apple-system,sans-serif;';
+    bar.textContent = 'Finalizing your unlock…';
+    var mount = function(){ if(document.body){ document.body.appendChild(bar); } };
+    if(document.body){ mount(); } else { document.addEventListener('DOMContentLoaded', mount); }
+    var statusParams = new URLSearchParams(window.location.search);
+    statusParams.delete('unlocked');
+    statusParams.set('format','unlock-status');
+    var statusUrl = window.location.pathname + '?' + statusParams.toString();
+    var attempts = 0, max = 20;
+    var timer = setInterval(function(){
+      attempts++;
+      fetch(statusUrl, { headers:{ 'Accept':'application/json' }, credentials:'include', cache:'no-store' })
+        .then(function(r){ return r.ok ? r.json() : null; })
+        .then(function(j){
+          if(j && has((j.unlockedModules) || [])){ clearInterval(timer); stripAndReload(); }
+        })
+        .catch(function(){});
+      if(attempts >= max){ clearInterval(timer); bar.textContent = 'Your unlock is taking a little longer. Please refresh in a moment.'; }
+    }, 1500);
+  }catch(e){}
+})();
+</script>
 `;
 
   return liquid(template, { layout: !embed });
