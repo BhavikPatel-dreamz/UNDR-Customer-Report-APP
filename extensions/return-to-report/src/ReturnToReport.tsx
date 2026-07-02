@@ -8,9 +8,16 @@ import {
   Divider,
   Banner,
   Icon,
+  Spinner,
 } from '@shopify/ui-extensions/checkout';
 
 const TARGET = 'purchase.thank-you.block.render' as const;
+
+// The `orders/paid` webhook unlocks the report section server-side, and it fires
+// asynchronously after checkout. If the buyer clicks "Return to report" before it
+// lands, the section is still locked. Hold the link behind a short loader so the
+// webhook has time to process before the buyer can navigate.
+const UNLOCK_WAIT_MS = 7000;
 
 function encodeReportProxyId(kitRegistrationNumber: string): string {
   const value = kitRegistrationNumber.trim();
@@ -75,47 +82,79 @@ export default extension(TARGET, (root, api) => {
   const container = root.createComponent(BlockStack, { spacing: 'loose' });
   root.appendChild(container);
 
-  const banner = root.createComponent(Banner, { status: 'success' });
-
-  // Use a BlockStack inside the banner so items render on separate lines
-  const bannerStack = root.createComponent(BlockStack, { spacing: 'tight' });
-  banner.appendChild(bannerStack);
-
-  // ── Thank you message ─────────────────────────────────────────────
-  const thankYou = root.createComponent(Text, {
-    size: 'large',
-    emphasis: 'bold',
-  });
-  thankYou.appendChild(root.createText('🎉 Thank you for your purchase!'));
-  bannerStack.appendChild(thankYou);
-
-  // ── Unlock confirmation ───────────────────────────────────────────
-  const unlockMsg = root.createComponent(Text, { size: 'base' });
-  unlockMsg.appendChild(
-    root.createText('Your report tab has been unlocked successfully.')
-  );
-  bannerStack.appendChild(unlockMsg);
-
-
-  // ── Return to report link ─────────────────────────────────────────
-  const link = root.createComponent(Link, {
-    to: reportUrl,
-    appearance: 'monochrome',
-  });
-
-  const linkInner = root.createComponent(InlineStack, {
+  // ── 4a. Loading state ─────────────────────────────────────────────
+  // Show a loader while the `orders/paid` webhook unlocks the section. This
+  // stops the buyer from opening the report before the tab is actually unlocked.
+  const loadingBanner = root.createComponent(Banner, { status: 'info' });
+  const loadingStack = root.createComponent(InlineStack, {
     spacing: 'tight',
     blockAlignment: 'center',
   });
+  loadingStack.appendChild(
+    root.createComponent(Spinner, {
+      size: 'small',
+      accessibilityLabel: 'Unlocking your report',
+    })
+  );
+  const loadingText = root.createComponent(Text, { size: 'base' });
+  loadingText.appendChild(
+    root.createText('Unlocking your report… this takes a few seconds.')
+  );
+  loadingStack.appendChild(loadingText);
+  loadingBanner.appendChild(loadingStack);
+  container.appendChild(loadingBanner);
 
-  const linkText = root.createComponent(Text, {
-    size: 'base',
-    emphasis: 'bold',
-  });
-  linkText.appendChild(root.createText('Return to report →'));
-  linkInner.appendChild(linkText);
-  link.appendChild(linkInner);
-  bannerStack.appendChild(link);
+  // ── 4b. Success state (revealed after the webhook has had time to run) ──
+  const renderSuccess = () => {
+    try {
+      container.removeChild(loadingBanner);
+    } catch (e) {
+      // already removed
+    }
 
-  container.appendChild(banner);
+    const banner = root.createComponent(Banner, { status: 'success' });
+
+    // Use a BlockStack inside the banner so items render on separate lines
+    const bannerStack = root.createComponent(BlockStack, { spacing: 'tight' });
+    banner.appendChild(bannerStack);
+
+    // ── Thank you message ───────────────────────────────────────────
+    const thankYou = root.createComponent(Text, {
+      size: 'large',
+      emphasis: 'bold',
+    });
+    thankYou.appendChild(root.createText('🎉 Thank you for your purchase!'));
+    bannerStack.appendChild(thankYou);
+
+    // ── Unlock confirmation ─────────────────────────────────────────
+    const unlockMsg = root.createComponent(Text, { size: 'base' });
+    unlockMsg.appendChild(
+      root.createText('Your report tab has been unlocked successfully.')
+    );
+    bannerStack.appendChild(unlockMsg);
+
+    // ── Return to report link ───────────────────────────────────────
+    const link = root.createComponent(Link, {
+      to: reportUrl,
+      appearance: 'monochrome',
+    });
+
+    const linkInner = root.createComponent(InlineStack, {
+      spacing: 'tight',
+      blockAlignment: 'center',
+    });
+
+    const linkText = root.createComponent(Text, {
+      size: 'base',
+      emphasis: 'bold',
+    });
+    linkText.appendChild(root.createText('Return to report →'));
+    linkInner.appendChild(linkText);
+    link.appendChild(linkInner);
+    bannerStack.appendChild(link);
+
+    container.appendChild(banner);
+  };
+
+  setTimeout(renderSuccess, UNLOCK_WAIT_MS);
 });
